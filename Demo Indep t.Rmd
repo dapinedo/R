@@ -1,0 +1,190 @@
+---
+title: "Demo Independent t-test "
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+Example 1: You are a HR Manager for a large corporation and have been interested in implementing a new training program for your marketing employees. To test this, you have 80 new employees that are about to be trained on marketing strategies. 40 of the employees you will put through your typical 1-day training program (Group A), the other 40 employees will be placed in your new week-long training program (Group B). You ask your assistant to randomly take 40 names out of a hat to determine which group gets put into the new program. You decide to test which training program works better by the amount of marketing ideas produced after the first month of being in the company. Based on your findings, should you implement the new training program or not? Why? 
+
+```{r}
+library(psych)
+library(jmv)
+library(summarytools)
+```
+
+
+```{r}
+dat_A <- read.csv("https://www.dropbox.com/s/mhcbxwwb6rofcuy/independent.A.csv?dl=1")
+```
+
+Not split by group:
+```{r}
+desc <- descriptives(dat_A, vars = c('Marketing_Ideas'), hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
+desc
+```
+
+Split by group:
+```{r}
+groupdesc <- descriptives(dat_A, vars = c('Marketing_Ideas'), splitBy = 'Group', hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
+groupdesc
+
+dat_A$Group <- as.factor(dat_A$Group)
+```
+
+
+```{r}
+ttestIS(data = dat_A, vars = 'Marketing_Ideas', group = 'Group', eqv = TRUE, effectSize = TRUE, ci = TRUE, desc = TRUE)
+```
+
+# Visualization
+
+```{r}
+library(ggplot2)
+library(plyr)
+```
+
+```{r}
+# creating this function will allow you to generate summary stats needed for visualization - mean scores, standard error, etc. It's super useful - keep it handy, you'll see it a lot.
+
+summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                      conf.interval=.95, .drop=TRUE) {
+  library(plyr)
+  
+  # New version of length which can handle NA's: if na.rm==T, don't count them
+  length2 <- function (x, na.rm=FALSE) {
+    if (na.rm) sum(!is.na(x))
+    else       length(x)
+  }
+  
+  # This does the summary. For each group's data frame, return a vector with
+  # N, mean, and sd
+  datac <- ddply(data, groupvars, .drop=.drop,
+                 .fun = function(xx, col) {
+                   c(N    = length2(xx[[col]], na.rm=na.rm),
+                     mean = mean   (xx[[col]], na.rm=na.rm),
+                     sd   = sd     (xx[[col]], na.rm=na.rm)
+                   )
+                 },
+                 measurevar
+  )
+  
+  # Rename the "mean" column    
+  datac <- rename(datac, c("mean" = measurevar))
+  
+  datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+  
+  # Confidence interval multiplier for standard error
+  # Calculate t-statistic for confidence interval: 
+  # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
+  ciMult <- qt(conf.interval/2 + .5, datac$N-1)
+  datac$ci <- datac$se * ciMult
+  
+  return(datac)
+}
+```
+
+```{r}
+# Saving the summary data to call when putting in the ggplot2 code for the graph (for geom_errorbar).
+sumdat <- summarySE(dat_A, measurevar="Marketing_Ideas", groupvars=c("Group"))
+```
+
+
+```{r}
+# creation of the bar graph - including specifications such as the color (#GoDodgers), title, addition of error bars, etc. 
+bar1 <- ggplot(sumdat, aes(x = Group, y = Marketing_Ideas)) +
+  geom_bar(stat='identity', fill = 'dodgerblue3') +
+  theme_minimal() +
+  geom_errorbar(aes(ymin=Marketing_Ideas-se, ymax=Marketing_Ideas+se), width = .1)
+
+bar1 + ggtitle('Marketing Ideas by Training Program')
+
+```
+
+Example 2: From your last study, you have some evidence that your week-long training works better than the one-day training for incoming marketing employees. You decide, this time, to see if the week-long training works significantly better for incoming marketing employees compared to those who have been with the program for a year. You don't have many incoming marketing employees who weren't in the first  study, though. 15 of the incoming employees were not in the first study (Group A). You get 15 marketing employees that have been with the company for a year to participate as well (Group B). Everyone is placed in your new week-long training program. You are still collecting data on the amount of marketing ideas produced after the first month of being in the company. Based on your findings, does the training work better for incoming employees compared to employees that have been there for a year? Why? 
+
+```{r}
+dat_B <- read.csv("https://www.dropbox.com/s/qd4kcorra9js23i/independent.B.csv?dl=1")
+```
+
+
+```{r}
+descB <- descriptives(dat_B, vars = ('Marketing_Ideas'), hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
+descB
+```
+
+
+```{r}
+groupdescB <- descriptives(dat_B, vars = ('Marketing_Ideas'), splitBy = 'Group', hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
+groupdescB
+
+dat_B$Group <- as.factor(dat_B$Group)
+```
+
+
+```{r}
+ttestIS(data = dat_B, vars = 'Marketing_Ideas', group = 'Group', eqv = TRUE, effectSize = TRUE, ci = TRUE, desc = TRUE)
+
+# With Welchs
+ttestIS(data = dat_B, vars = 'Marketing_Ideas', group = 'Group', welchs = TRUE, effectSize = TRUE, ci = TRUE, desc = TRUE)
+```
+
+```{r}
+# Saving the summary data to call when putting in the ggplot2 code for the graph (for geom_errorbar).
+sumdat2 <- summarySE(dat_B, measurevar="Marketing_Ideas", groupvars=c("Group"))
+```
+
+
+```{r}
+# Creation of the bar graph - including specifications such as the color (#GoDodgers), title, addition of error bars, etc. 
+bar2 <- ggplot(sumdat2, aes(x = Group, y = Marketing_Ideas)) +
+  geom_bar(stat='identity', fill = 'dodgerblue3') +
+  theme_minimal() +
+  geom_errorbar(aes(ymin=Marketing_Ideas-se, ymax=Marketing_Ideas+se), width = .1)
+
+bar2 + ggtitle('Marketing Ideas by Training Program')
+```
+
+Example 3: You want to see now if the training program is more effective for marketing different types of products. You get 40 employees who have not yet been through the training. Half of them and randomly assigned to creating marketing strategies for dog toys (Group A). The other half is randomly assigned to creating marketing strategies for children's books (Group B). You are still collecting data on the amount of marketing ideas produced after the first month of being in the company. Based on your findings, is there a difference for the training based on the type of product individuals are marketing? Why? 
+
+```{r}
+dat_C <- read.csv("https://www.dropbox.com/s/nn8evxc5dhe3oyb/independent.C.csv?dl=1")
+```
+
+```{r}
+descC <- descriptives(dat_C, vars = c('Marketing_Ideas'), hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
+descC
+```
+
+
+```{r}
+groupdescC <- descriptives(dat_C, vars = c('Marketing_Ideas'), splitBy = 'Group', hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
+groupdescC
+
+dat_C$Group <- as.factor(dat_C$Group)
+```
+
+
+```{r}
+ttestIS(data = dat_C, vars = 'Marketing_Ideas', group = 'Group', eqv = TRUE, effectSize = TRUE, ci = TRUE, desc = TRUE)
+```
+
+```{r}
+# Saving the summary data to call when putting in the ggplot2 code for the graph (for geom_errorbar).
+sumdat3 <- summarySE(dat_C, measurevar="Marketing_Ideas", groupvars=c("Group"))
+```
+
+
+```{r}
+# creation of the bar graph - including specifications such as the color (#GoDodgers), title, addition of error bars, etc. 
+bar3 <- ggplot(sumdat3, aes(x = Group, y = Marketing_Ideas)) +
+  geom_bar(stat='identity', fill = 'dodgerblue3') +
+  theme_minimal() +
+  geom_errorbar(aes(ymin=Marketing_Ideas-se, ymax=Marketing_Ideas+se), width = .1)
+
+bar3 + ggtitle('Marketing Ideas by Training Program')
+
+```
+
+
