@@ -56,6 +56,8 @@ Questions
 
 3. Please check the assumptions for the second type of analyses. Report whether each is violated or not and provide evidence to support your conclusions.
 
+# dat.1 <- subset(dat_A, dat_A$Group == 'A')
+# dim(dat_A)
 4. You are interested in looking at the study techniques individually: 
 (a) Did individuals in Group A obtain significantly higher exam scores after they engaged in the required study technique? 
 (b) Did individuals in Group B obtain significantly higher exam scores after they engaged in the required study technique? 

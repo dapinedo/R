@@ -19,13 +19,18 @@ library(summarytools)
 dat_A <- read.csv("https://www.dropbox.com/s/mhcbxwwb6rofcuy/independent.A.csv?dl=1")
 ```
 
-Not split by group:
+#DESCRIPTIVES
+
+#Not split by group (we need it to be by group):
+#class(desc)
+#class(dat_A) ---> What is this?
 ```{r}
 desc <- descriptives(dat_A, vars = c('Marketing_Ideas'), hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
 desc
 ```
 
-Split by group:
+#Split by group (We need this):
+#View(groupdesc)
 ```{r}
 groupdesc <- descriptives(dat_A, vars = c('Marketing_Ideas'), splitBy = 'Group', hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
 groupdesc
@@ -33,7 +38,8 @@ groupdesc
 dat_A$Group <- as.factor(dat_A$Group)
 ```
 
-
+# analysis {jmv library}
+#vars = DV, group = IV, eqv = homogeneity of variance
 ```{r}
 ttestIS(data = dat_A, vars = 'Marketing_Ideas', group = 'Group', eqv = TRUE, effectSize = TRUE, ci = TRUE, desc = TRUE)
 ```
