@@ -1,28 +1,35 @@
 ---
 title: "Demo Dependent t-test"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
   word_document: default
 ---
   
 Example 1: You have just been hired by a local non-profit that focuses on improving premature infant's weight, to see whether or not their parental education classes are effective. The weight of the premature infant is taken before parents learned strategies to help their premature infants and after the education classes. You collect a sample in your target population: low income families. Given this sample, what can you conclude about the parental education classes? Explain what this means to the head of the education program. Then explain this to someone who is well-versed in statistics. 
+
+#Answer: Parental education classes effect cannot be determined at this time, as the design of the study is flawed. That is, maturation effects may account for the difference between pre- and post-test weights of infants. In plain English, infants' natural growth irrespective of education program may account for the differences in time 1 and time 2.
 
 ```{r}
 library(psych)
 library(jmv)
 ```
 
+#read the data from csv
+#View(dat_B)
 ```{r}
 dat_A <- read.csv("https://www.dropbox.com/s/155ouxhzbcjqw7f/dependent.A.csv?dl=1")
 ```
 
+#descriptives of pre/post
+#histogram
 ```{r}
 desc <- descriptives(dat_A, vars = c('Before_Weight', 'After_Weight'), hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
 desc
 ```
 
-
+#calculate difference scores and add a column to dat_A
+#descriptives of difference scores
 ```{r}
 dat_A$diff <- (dat_A$After_Weight - dat_A$Before_Weight)
 
@@ -30,7 +37,7 @@ desc <- descriptives(dat_A, vars = c('diff'), hist = TRUE, sd = TRUE, se = TRUE,
 desc
 ```
 
-
+#paired t-test with Cohen's d, CI, and descriptives
 ```{r}
 ttestPS(data = dat_A, pairs = list(list(i1='Before_Weight', i2='After_Weight')), effectSize = TRUE, ci = TRUE, desc = TRUE)
 ```
@@ -38,19 +45,23 @@ ttestPS(data = dat_A, pairs = list(list(i1='Before_Weight', i2='After_Weight')),
 
 Example 2: The non-profit wants to see if the education classes work in a different population. You collect the same size sample, but now with middle-upper class families. Given this sample, what can you conclude about the parental education classes? Explain what this means to the head of the education program. Then explain this to someone who is well-versed in statistics. 
 
+#Answer: As specified in Example 1, parental education classes cannot be measured in this manner, as effects may be due simply to maturation effects, that is, infants' natural growth during the course of the program. What can be inferred from the data is that infant weight pre and post is higher for the higher SES group. SES may have an effect on the initial birthweight of the child and subsequent growth, but that cannot be determined with this design.
 
-
+#read the data from csv
+#View(dat_B)
 ```{r}
 dat_B <- read.csv("https://www.dropbox.com/s/ht1asp6uqwf5z1w/dependent.B.csv?dl=1")
 ```
 
-
+#descriptives of pre/post
+#histogram
 ```{r}
 desc.b <- descriptives(dat_B, vars = c('Weight_Before', 'Weight_After'), hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
 desc.b
 ```
 
-
+#calculate difference scores and add a column to dat_B
+#descriptives of difference scores
 ```{r}
 dat_B$diff <- (dat_B$Weight_After - dat_B$Weight_Before)
 
@@ -58,19 +69,24 @@ desc.b <- descriptives(dat_B, vars = c('diff'), hist = TRUE, sd = TRUE, se = TRU
 desc.b
 ```
 
-
+#paired t-test with Cohen's d, CI, and descriptives
 ```{r}
 ttestPS(data = dat_B, pairs = list(list(i1='Weight_Before', i2='Weight_After')), effectSize = TRUE, ci = TRUE, desc = TRUE)
 ```
 
 Example 3: The nonprofit only has a little bit of money left for your studies, but they really want to see if their parental education classes are effective with just fathers. With the small amount of money, you can only collect a small sample, but you decide to run analyses anyway. Given this sample, what can you conclude about the parental education classes? Explain what this means to the head of the education program. Then explain this means to someone who is well-versed in statistics.
 
+#Answer: As in examples 1 amd 2 above, the birth weight of infants may have changes simply due to natural growth / maturation. Based on the sample of fathers, there remains a significant effect (p = .011), with a smaller effect size that is still large (Cohen's d = .6) than the combined group of mothers and fathers, likely due to small sample size (n=20).
+
+#read the data from csv
+#View(dat_C)
 ```{r}
 
 dat_C <- read.csv("https://www.dropbox.com/s/awtdtf9cgwgf747/dependent.C.csv?dl=1")
 ```
 
-
+#descriptives of pre/post
+#Two different types of histograms
 ```{r}
 desc.c <- descriptives(dat_C, vars = c('Before_Weight', 'After_Weight'), hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
 desc.c
@@ -79,7 +95,8 @@ hist(dat_C$Before_Weight)
 hist(dat_C$After_Weight)
 ```
 
-
+#calculate difference scores and add a column to dat_C
+#descriptives of difference scores
 ```{r}
 dat_C$diff <- (dat_C$After_Weight - dat_C$Before_Weight)
 
@@ -89,12 +106,12 @@ desc.c
 hist(dat_C$diff)
 ```
 
-
+#paired t-test with Cohen's d, CI, and descriptives
 ```{r}
 ttestPS(data = dat_C, pairs = list(list(i1='Before_Weight', i2='After_Weight')), effectSize = TRUE, ci = TRUE, desc = TRUE)
 ```
 
-
+#knitr options {DO NOT REMOVE}
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
