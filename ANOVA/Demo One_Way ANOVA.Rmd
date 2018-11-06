@@ -16,31 +16,36 @@ library(plyr)
 ```
 
 ```{r}
-# load in data
+#load data
 dat_A <- read.csv("https://www.dropbox.com/s/vf50iy07fytkhjb/One-way%20ANOVA.A.csv?dl=1")
 
+#encode $Style column as a factor because groups are numeric and need to be read as factor and not number
 dat_A$Style <- as.factor(dat_A$Style)
 ```
 
 ```{r}
+#Descriptives for all data, including histogram
 desc <- descriptives(dat_A, vars = c('Self_esteem'), hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
 desc
 
+#Descriptives by group, including grouped historgrams
 desc.group <- descriptives(dat_A, vars = c('Self_esteem'), splitBy = 'Style', hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
 desc.group
 
+#Subset by group
 dat1 <- subset(dat_A, dat_A$Style == "1")
 dat2 <- subset(dat_A, dat_A$Style == "2")
 dat3 <- subset(dat_A, dat_A$Style == "3")
 
-
+#Histogram for each subsetted group
 hist(dat1$Self_esteem)
 hist(dat2$Self_esteem)
 hist(dat3$Self_esteem)
 ```
 
 ```{r}
-anova(data = dat_A, dep = 'Self_esteem', factors = c('Style'), effectSize = 'partEta', postHoc = c('Style'), postHocCorr = 'tukey', homo = TRUE, desc = TRUE)
+#anova with tukey post-hoc test
+anova(data = dat_A, dep = 'Self_esteem', factors = c('Style'), effectSize = 'partEta', postHoc = c('Style'), postHocCorr = 'tukey', homo = TRUE)
 
 ```
 
