@@ -9,8 +9,10 @@ Example 1:
 A developmental psychologist is looking for a graduate student who can help them with their research project--you have been chosen! Their research looks into adolescent self-esteem and its relationship with parenting styles. There are three primary parenting styles: (1) authoritative (high expectations with support), (2) authoritarian (high expectations with little support), and (3) permissive (low expectations with support). You have collected data on 90 teenagers self-esteem levels and the parenting style they experienced (30 per style). Is there a significant difference in self-esteem by parenting style? What do your findings seem to indicate?
 
 ```{r}
+#load library packages needed for analysis
 library(psych)
 library(jmv)
+#load library packages needed for graphs
 library(ggplot2)
 library(plyr)
 ```
@@ -19,16 +21,23 @@ library(plyr)
 #load data
 dat_A <- read.csv("https://www.dropbox.com/s/vf50iy07fytkhjb/One-way%20ANOVA.A.csv?dl=1")
 
+#View(dat_A) Row x Col
+head(dat_A)
+tail(dat_A)
+dim(dat_A)
+
 #encode $Style column as a factor because groups are numeric and need to be read as factor and not number
+class(dat_A$Style)
 dat_A$Style <- as.factor(dat_A$Style)
+class(dat_A$Style)
 ```
 
 ```{r}
-#Descriptives for all data, including histogram
+#Descriptives for all data, including histogram - does not check assumptions, but helps for big picture of data
 desc <- descriptives(dat_A, vars = c('Self_esteem'), hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
 desc
 
-#Descriptives by group, including grouped historgrams
+#Descriptives by group, including grouped histograms
 desc.group <- descriptives(dat_A, vars = c('Self_esteem'), splitBy = 'Style', hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
 desc.group
 
@@ -132,7 +141,7 @@ hist(dat3.b$Self_esteem)
 ```
 
 ```{r}
-anova(data = dat_B, dep = 'Self_esteem', factors = c('Style'), effectSize = 'partEta', postHoc = c('Style'), postHocCorr = 'tukey', homo = TRUE, desc = TRUE)
+anova(data = dat_B, dep = 'Self_esteem', factors = c('Style'), effectSize = 'partEta', postHoc = c('Style'), postHocCorr = 'tukey', homo = TRUE)
 
 ```
 
@@ -185,7 +194,7 @@ hist(dat3.c$Self_esteem)
 ```{r}
 
 
-anova(data = dat_C, dep = 'Self_esteem', factors = c('Style'), effectSize = 'partEta', postHoc = c('Style'), postHocCorr = 'tukey', homo = TRUE, desc = TRUE)
+anova(data = dat_C, dep = 'Self_esteem', factors = c('Style'), effectSize = 'partEta', postHoc = c('Style'), postHocCorr = 'tukey', homo = TRUE)
 
 ```
 
