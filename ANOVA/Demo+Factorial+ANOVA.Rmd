@@ -98,10 +98,10 @@ anova(data = dat_A.3, dep = 'Score', factors = c('Break'), effectSize = 'eta', p
 
 ```
 
-#FYI
+#FYI - t test simple interaction
 
 ```{r}
-#FYI
+#FYI  - simple interactions using t-tests instead of ANOVA (because IV only has 2 levels)
 
 
 anova(data = dat_A.1, dep = 'Score', factors = c('Break'), effectSize = 'eta', postHoc = 'Break', postHocCorr = 'bonf')
@@ -113,7 +113,7 @@ ttestIS(dat_A.1, vars = 'Score', group = 'Break', eqv = TRUE, effectSize = TRUE,
 
 ```{r}
 
-
+#This piece of code errors out with plots, so it may be erroneous.
 anova(data = dat_A, dep = 'Score', factors = c('Break', 'Room'), plotHAxis = 'Break', plotSepLines = 'Room')
 
 ```
