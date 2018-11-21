@@ -205,7 +205,7 @@ hist(dat_B.3$Score)
 ```{r}
 
 dat_B.4 <- subset(dat_B, dat_B$Break == "No Break")
-dat_B.5 <- subset(dat_B, dat_B$Braek == "Break")
+dat_B.5 <- subset(dat_B, dat_B$Break == "Break")
 
 
 desc.bybreakB <- descriptives(dat_B, vars = c('Score'), splitBy = 'Break', hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
@@ -238,7 +238,7 @@ anova(data = dat_B, dep = 'Score', factors = c('Room', 'Break'), effectSize = 'p
 
 ```{r}
 
-
+# Simple effects of Break on each level of Room
 anova(data = dat_B.1, dep = 'Score', factors = c('Break'), effectSize = 'eta', postHoc = 'Break', postHocCorr = 'bonf')
 anova(data = dat_B.2, dep = 'Score', factors = c('Break'), effectSize = 'eta', postHoc = 'Break', postHocCorr = 'bonf')
 anova(data = dat_B.3, dep = 'Score', factors = c('Break'), effectSize = 'eta', postHoc = 'Break', postHocCorr = 'bonf')
