@@ -21,6 +21,11 @@ library(jmv)
 library(ggplot2)
 
 dat_A <- read.csv("https://www.dropbox.com/s/7036my3n8lbb7nh/PSY.308b.FACTORIAL_DEMO_A.csv?dl=1")
+
+#Put levels of IV's in correct order for later analysis and plots.
+
+dat_A$Break <- factor(dat_A$Break, levels = c("Break", "No Break"))
+dat_A$Room <- factor(dat_A$Room, levels = c("Alone", "Half", "Full"))
 ```
 
 #Assumptions
@@ -181,6 +186,11 @@ You decide that those results were interesting, but you wonder what would happen
 #STUDY 2
 ```{r}
 dat_B <- read.csv("https://www.dropbox.com/s/ke2vmbmokse96fj/PSY.308b.FACTORIAL_DEMO_B.csv?dl=1")
+
+#Put levels of IV's in correct order for later analysis and plots.
+
+dat_B$Break <- factor(dat_B$Break, levels = c("Break", "No Break"))
+dat_B$Room <- factor(dat_B$Room, levels = c("Alone", "Half", "Full"))
 ```
 
 #ASSUMPTIONS
