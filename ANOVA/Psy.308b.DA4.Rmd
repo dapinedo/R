@@ -1,0 +1,253 @@
+---
+title: "PSY.308b.DA4.2017"
+output: word_document
+---
+  <!-- LEAVE THIS HERE, DO NOT PUT ANY CODE ABOVE IT -->
+```{r, echo=FALSE, results=FALSE, message=FALSE, cache=FALSE}
+library(knitr); opts_chunk$set(error=TRUE, cache=FALSE)
+
+```
+Instructions:
+
+Suppose a study was conducted to investigate the physical and cognitive effects of sports related concussions.  Assume that baseline measures were obtained for balance and delayed recall (two assessments that are known to be diagnostic of concussion).  Also assume that balance and delayed recall were measured in 40 athletes immediately after suffering a concussion (again, these are common on-field assessments).  Finally, assume that balance and delayed recall were measured once more one week after the concussion to determine if the effects had dissipated.  In the file on Canvas "bal" refers to balance and "dr" refers to delayed recall (for both, higher scores are better).  Time 1 refers to the baseline assessment, Time 2 refers to the assessment immediately after the concussion, and Time 3 refers to the one-week follow-up (i.e., variable names are bal1, bal2, bal3, dr1, dr2, dr3).
+
+#Read in your data
+```{r}
+con.data <- read.csv("https://www.dropbox.com/s/wuyz2l70fwgvp83/PSY.308b.DA4a.csv?dl=1") 
+
+#separate into two separate sets of data if you intend to melt into a ggplot chart
+
+```
+
+#Prep
+```{r}
+library(psych)
+library(jmv)
+library(reshape2)
+library(ez)
+```
+
+
+
+```{r}
+#melt for graph/chart later
+#Note that ID was read by R as an integer. ID 1 = 1, NOT ID 1 = scored 1
+class(con.data$athlete)
+
+#View data. Time points are separated by columns
+head(con.data)
+
+#Need to "melt" the data for both DVs separately
+bal.data.melt <- melt(con.data, id.vars = "athlete", measure.vars = c("bal1", "bal2", "bal3"))
+dr.data.melt <- melt(con.data, id.vars = "athlete", measure.vars = c("dr1", "dr2", "dr3"))
+
+#Time points are "melted" into variable column
+head(bal.data.melt)
+head(dr.data.melt)
+
+```
+
+```{r}
+#Q2 
+#Assumptions: balance
+#Assumption 2: DV is normally distributed (across each difference score)
+#add possible difference scores
+con.data$diff_bal1_bal2 <- (con.data$bal1 - con.data$bal2)
+con.data$diff_bal1_bal3 <- (con.data$bal1 - con.data$bal3)
+con.data$diff_bal2_bal3 <- (con.data$bal2 - con.data$bal3)
+
+describe(con.data)
+hist(con.data$diff_bal1_bal2)
+hist(con.data$diff_bal1_bal3)
+hist(con.data$diff_bal2_bal3)
+
+#Assumption 3 is covered in ANOVA model below - test for sphericity
+#F = systematic / unsystematic differences; SSs accounts for individual differences over time
+#F = MSa/MSaxs | Partial Eta squared = SSa / (SSa + SSaxs) || Full Eta squared = SSa / (SSa + SSaxs + SSs)
+#DFa = a-1 | DFaxs = (a-1)(N-1) | DFs = N-1 **a - number of time points, N = number of subjects**
+
+```
+
+```{r}
+#Q3 
+#Repeated Methods ANOVA for balance
+
+model <- anovaRM(data = con.data, 
+                 rm = list(list(label = 'Balance',
+                                levels = c('bal1', 'bal2', 'bal3'))), 
+                 rmCells = list(list(measure = 'bal1', cell = 'bal1'),
+                                list(measure = 'bal2', cell = 'bal2'),
+                                list(measure = 'bal3', cell = 'bal3')),
+                 rmTerms = list('Balance'),
+                 effectSize = c('partEta', 'eta'),
+                 spherTests = TRUE,
+                 spherCorr = c('none','GG'),
+                 postHoc = list('Balance'),
+                 postHocCorr = 'holm',
+                 emMeans = list(NULL))
+model
+
+```
+
+```{r}
+#Q6
+#Assumptions: delayed recall
+#Assumption 2: DV is normally distributed (across each difference score)
+#add possible difference scores
+con.data$diff_dr1_dr2 <- (con.data$dr1 - con.data$dr2)
+con.data$diff_dr1_dr3 <- (con.data$dr1 - con.data$dr3)
+con.data$diff_dr2_dr3 <- (con.data$dr2 - con.data$dr3)
+
+describe(con.data)
+hist(con.data$diff_dr1_dr2)
+hist(con.data$diff_dr1_dr3)
+hist(con.data$diff_dr2_dr3)
+
+#Assumption 3 is covered in ANOVA model below - test for sphericity
+#F = systematic / unsystematic differences; SSs accounts for individual differences over time
+#F = MSa/MSaxs | Partial Eta squared = SSa / (SSa + SSaxs) || Full Eta squared = SSa / (SSa + SSaxs + SSs)
+#DFa = a-1 | DFaxs = (a-1)(N-1) | DFs = N-1 **a - number of time points, N = number of subjects**
+
+```
+
+```{r}
+#Q8 
+
+#Repeated Methods ANOVA for balance
+
+model <- anovaRM(data = con.data, 
+                 rm = list(list(label = 'Delayed Recall',
+                                levels = c('dr1', 'dr2', 'dr3'))), 
+                 rmCells = list(list(measure = 'dr1', cell = 'dr1'),
+                                list(measure = 'dr2', cell = 'dr2'),
+                                list(measure = 'dr3', cell = 'dr3')),
+                 rmTerms = list('Delayed Recall'),
+                 effectSize = c('partEta', 'eta'),
+                 spherTests = TRUE,
+                 spherCorr = c('none','GG'),
+                 postHoc = list('Delayed Recall'),
+                 postHocCorr = 'holm',
+                 emMeans = list(NULL))
+model
+ 
+```
+
+#Pretty graphs
+##Error bar function
+```{r}
+# we need to find the standard errors here so we can have beautiful error bars --- always have error bars...always.
+summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                      conf.interval=.95, .drop=TRUE) {
+  library(plyr)
+  
+  # New version of length which can handle NA's: if na.rm==T, don't count them
+  length2 <- function (x, na.rm=FALSE) {
+    if (na.rm) sum(!is.na(x))
+    else       length(x)
+  }
+  
+  # This does the summary. For each group's data frame, return a vector with
+  # N, mean, and sd
+  datac <- ddply(data, groupvars, .drop=.drop,
+                 .fun = function(xx, col) {
+                   c(N    = length2(xx[[col]], na.rm=na.rm),
+                     mean = mean   (xx[[col]], na.rm=na.rm),
+                     sd   = sd     (xx[[col]], na.rm=na.rm)
+                   )
+                 },
+                 measurevar
+  )
+  
+  # Rename the "mean" column    
+  datac <- rename(datac, c("mean" = measurevar))
+  
+  datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+  
+  # Confidence interval multiplier for standard error
+  # Calculate t-statistic for confidence interval: 
+  # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
+  ciMult <- qt(conf.interval/2 + .5, datac$N-1)
+  datac$ci <- datac$se * ciMult
+  
+  return(datac)
+}
+```
+
+##Gotta make two pretty plots
+```{r}
+sumdat.bal <- summarySE(bal.data.melt, measurevar="value", groupvars=c("variable"))
+sumdat.dr <- summarySE(dr.data.melt, measurevar="value", groupvars=c("variable"))
+
+# creation of the line graph - including specifications such as the color, title, addition of error bars, etc. 
+bar1 <- ggplot() +
+  geom_line(data = sumdat.bal, aes(x = variable, y = value, group = 1), color = "blue", size = 1) + 
+  geom_point(data = sumdat.bal, aes(x = variable, y = value, group = 1), color = "red", size = 2) +
+  theme_minimal() +
+  geom_errorbar(data = sumdat.bal, aes(x = variable, y = value, group = 1, ymin=value-se, ymax=value+se), width = .1) +
+  geom_line(data = sumdat.dr, aes(x = variable, y = value, group = 1), color = "red", size = 1) + 
+  geom_point(data = sumdat.dr, aes(x = variable, y = value, group = 1), color = "blue", size = 2) +
+  theme_minimal() +
+  geom_errorbar(data = sumdat.dr, aes(x = variable, y = value, group = 1, ymin=value-se, ymax=value+se), width = .1)
+
+bar1 + ggtitle('Balance and Delayed Recall by Time Points')
+
+
+
+```
+
+>1.  As the description notes we are going to be testing whether there are differences across the three time points for the players' balance and then also for their delayed recall. What test will you use for this? How many will you run?
+
+One-way repeated measures ANOVA. Two tests, one for each DV (balance, delayed recall)
+
+>2. Test the necessary assumptions for conducting this test looking at players' balance.
+
+Assumption 1. IV is categorical, and DV is continuous. IV is time 1, 2, 3 and are discrete **Pass** DV is integer measured on interval or scale level **Pass**
+
+Assumption 2. DV is normally distributed (across each difference score) **Pass**
+Skew (-3 to +3) and kurtosis (-10 to +10) are within mormal limits for each difference score
+Visual inspection of histograms of difference scores across all conditions look normal
+
+Assumption 3. Mauchly's test for sphericity **Pass** *W* = 0.92, *p* = .916
+
+>3. Is there a main effect for balance? Report all relevant statistics according to APA format.
+
+There is a main effect for balance over time, *F*(2, 78) = 22.60, *p* < .001, *$\eta$~p~^2^* = .37. There was a large effect, with time accounting for 37% of the variance in balance scores.
+
+>4. Are there significant differences between timepoints for balance? Report where the differences are and all relevant statistics in an orderly manner.
+
+Post-hoc tests were completed using Holm correction. Significance was found between baseline and immediately after injury (*M~1~*-*M~2~* = 4.68, *p* < .001) with baseline being favorable and between immediate injury and two week follow-up (*M~2~*-*M~3~* = -4.85, *p* < .001), with two week follow-up being favorable. There was no significance found between baseline and follow-up time points.
+
+>5. Interpret your results from #3 - #4 for your statistics professor. Then interpret your results from #3 - #4 for your football coach.
+
+A one-way repeated measured ANOVA was used to compare balance scores at three time points (baseline, immediately after injury, two week follow-up), with higher scores being favorable. There was a significance main effect for balance over time, *F*(2, 78) = 22.60, *p* < .001, *$\eta$~p~^2^* = .37. There was a large effect, with time accounting for 37% of the variance in balance scores. Post-hoc tests were completed using Holm correction. Significance was found between baseline and immediately after injury (*M~1~*-*M~2~* = 4.68, *p* < .001) with baseline being favorable and between immediate injury and two week follow-up (*M~2~*-*M~3~* = -4.85, *p* < .001), with two week follow-up being favorable. There was no significance found between baseline and follow-up time points.
+
+It looks like athletes did better in regards to balance after the concussion subsided. Specifically, concussion symptoms came close to baseline levels of balance two weeks after injury, but right after their injury they had problems with balance. It is recommended to possibly test balance daily if you want to understand more when exactly balance returns to baseline after injury. In the meantime, keep the players off the field until you can determine their baseline levels of balance have returned.
+
+>6. Now test the necessary assumptions for conducting this test looking at players' delayed recall. Report whether the assumptions are violated or not and provide evidence as to why you have decided this.
+
+Assumption 1. IV is categorical, and DV is continuous. IV is time 1, 2, 3 and are discrete **Pass** DV is integer measured on interval or scale level **Pass**
+
+Assumption 2. DV is normally distributed (across each difference score) **Pass**
+Skew (-3 to +3) and kurtosis (-10 to +10) are within mormal limits for each difference score
+Visual inspection of histograms of difference scores across all conditions do not look normal, but skew and kurtosis are within normal limits.
+
+Assumption 3. Mauchly's test for sphericity **Pass** *W* = 0.93, *p* = .268
+
+>7. Is there a main effect for delayed recall? Report all relevant statistics according to APA format. 
+
+There is a main effect for delayed recall over time, *F*(2, 78) = 4.12, *p* = .020, *$\eta$~p~^2^* = .10. There was a medium effect, with time accounting for 10% of the variance in delayed recall scores.
+
+>8. Are there significant differences between timepoints for delayed recall? Report where the differences are and all relevant statistics in an orderly manner. 
+
+Post-hoc tests were completed using Holm correction. Significance was found between baseline and immediately after injury (*M~1~*-*M~2~* = 0.70, *p* = .029) with baseline being favorable. There was no significance found between baseline and follow-up or between immediate injury and two week follow-up time points.
+
+>9. Please interpret your results from #7 - #8 for the for the football coach. Then interpret #7-#8 for your statistics professor.
+
+It looks like athletes also did not do better with delayed recall after their inital injury. Specifically, the baseline level was better than the immediately measured level, and it did not appear to return back to baseline. The recommendation is to run more memory tests for athletes as these numbers do not look good for repeated injuries, as they do not appear to be getting better post injury. Time also may not be the only element related to recall ability improving, so you may want to try and place the players into a memory rehabilitation / memory training program.
+
+A one-way repeated measured ANOVA was used to compare delayed recall scores at three time points (baseline, immediately after injury, two week follow-up), with higher scores being favorable. There was a significance main effect for delayed recall over time, *F*(2, 78) = 4.12, *p* = .020, *$\eta$~p~^2^* = .10. There was a medium effect, with time accounting for 10% of the variance in delayed recall scores. Post-hoc tests were completed using Holm correction. Significance was found between baseline and immediately after injury (*M~1~*-*M~2~* = 0.70, *p* = .029) with baseline being favorable. There was no significance found between baseline and follow-up or between immediate injury and two week follow-up time points.
+
+>10. Is it possible to get a significant result from your F-test, but then not find significant differences from post-hoc tests? Explain your reasoning.
+
+Yes, it would be possible to find significance such as in the delayed recall test, but to not have significance in a post-hoc analysis, particularly a more conservative one like Bonferroni, as the correction against Type 1 error is made only in post-hoc analysis and not in the omnibus ANOVA.
+
