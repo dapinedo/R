@@ -22,6 +22,7 @@ con.data <- read.csv("https://www.dropbox.com/s/wuyz2l70fwgvp83/PSY.308b.DA4a.cs
 #Prep
 ```{r}
 library(psych)
+library(ggplot2)
 library(jmv)
 library(reshape2)
 library(ez)
@@ -191,8 +192,6 @@ bar1 <- ggplot() +
 
 bar1 + ggtitle('Balance and Delayed Recall by Time Points')
 
-
-
 ```
 
 >1.  As the description notes we are going to be testing whether there are differences across the three time points for the players' balance and then also for their delayed recall. What test will you use for this? How many will you run?
@@ -243,7 +242,7 @@ Post-hoc tests were completed using Holm correction. Significance was found betw
 
 >9. Please interpret your results from #7 - #8 for the for the football coach. Then interpret #7-#8 for your statistics professor.
 
-It looks like athletes also did not do better with delayed recall after their inital injury. Specifically, the baseline level was better than the immediately measured level, and it did not appear to return back to baseline. The recommendation is to run more memory tests for athletes as these numbers do not look good for repeated injuries, as they do not appear to be getting better post injury. Time also may not be the only element related to recall ability improving, so you may want to try and place the players into a memory rehabilitation / memory training program.
+It looks like athletes also did not do better with delayed recall after their inital injury. Specifically, the baseline level was better than the immediately measured level, and it did appear to return back to baseline when looking at the chart, but it was not significant enough to measure. The recommendation is to run more memory tests for athletes as these numbers do not look good for repeated injuries, as they do not appear to be getting better post injury. Time also may not be the only element related to recall ability improving, so you may want to try and place the players into a memory rehabilitation / memory training program.
 
 A one-way repeated measured ANOVA was used to compare delayed recall scores at three time points (baseline, immediately after injury, two week follow-up), with higher scores being favorable. There was a significance main effect for delayed recall over time, *F*(2, 78) = 4.12, *p* = .020, *$\eta$~p~^2^* = .10. There was a medium effect, with time accounting for 10% of the variance in delayed recall scores. Post-hoc tests were completed using Holm correction. Significance was found between baseline and immediately after injury (*M~1~*-*M~2~* = 0.70, *p* = .029) with baseline being favorable. There was no significance found between baseline and follow-up or between immediate injury and two week follow-up time points.
 
