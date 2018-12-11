@@ -44,10 +44,10 @@ levels(dat$Age)
 ```{r}
 # Assumptions: 
 
+#cast to wide format from long format [ID and room = between, Age = between]
 dat.wide <- cast(dat, ID + Room ~ Age, value = "Time")
 
-# Normal distribution for R-M variable - 
-
+# Normal distribution for RM variable - calculate difference scores
 dat.wide$diff1 <- (dat.wide$Young - dat.wide$Middle)
 dat.wide$diff2 <- (dat.wide$Young - dat.wide$Old)
 dat.wide$diff3 <- (dat.wide$Middle - dat.wide$Old)
@@ -56,7 +56,7 @@ descriptives(dat.wide, vars = c('diff1', 'diff2', 'diff3'), skew = TRUE, kurt = 
 
 # Normal distribution for B-S variable -
 
-# Need to find the average time for each B-S condition before being able to check the distribution with descriptives.
+# Need to find the average time across RM conditions for each BS condition before being able to check the distribution with descriptives.
 
 dat.wide$averagetime <- (dat.wide$Young + dat.wide$Middle + dat.wide$Old) / 3
 
@@ -65,7 +65,7 @@ descriptives(dat.wide, vars = c('averagetime'), splitBy = c('Room'), skew = TRUE
 ```
 
 ```{r Levenes Test}
-# Levene's Test of Homogeneity of Variance
+# Levene's Test of Homogeneity of Variance for BS variable
 
 leveneTest(dat.wide$averagetime, dat.wide$Room, center = mean)
 ```
@@ -99,15 +99,19 @@ Middle <- subset(dat, dat$Age == "Middle")
 
 Old <- subset(dat, dat$Age == "Old")
 
-#Example: we are running this for difference between the B-S conditions (room) at each level of R-M measure (young, middle, old).
+#Example: we are running this for difference between the BS conditions (room) at each level of RM measure (young, middle, old).
+#Welch's only if Levene's test is significant
+message("Young")
 ttestIS(data=Young, vars = 'Time', group = 'Room', eqv = T, effectSize = T)
 
+message("Middle")
 ttestIS(data=Middle, vars = 'Time', group = 'Room', eqv = T, effectSize = T)
 
+message("Old")
 ttestIS(data=Old, vars = 'Time', group = 'Room', eqv = T, effectSize = T)
 
 # What is another way that you could run simple effects? What would be the benefit of that?
-# Try it on your own to find out!
+# Try it on your own to find out! (difference between RM condition (time) at each level of BS measure (alone, peer))
 ```
 
 
