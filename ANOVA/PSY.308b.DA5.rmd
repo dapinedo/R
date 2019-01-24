@@ -258,7 +258,7 @@ There was a significant interaction of time and condition on value, *F*(2, 96) =
 
 >Question 6: Test the assumptions for the simple effect analyses between conditions. What did you test? Are any assumptions violated? Report any violations using APA format.  (Hint: You should be testing assumptions for three simple effect analyses)
 
-Simple effects assumptions were run for the simple effect of condition (control, treatment) on each level of time (pre, during, post). The assumptions run were for homogeneity of variance (Levene's test). The assumption of homogeneity of variance was violated for the simple effect of condition on post level of time, *F*(1) = 10.7, *p* = .002.
+Simple effects assumptions were run for the simple effect of condition (control, treatment) on each level of time (pre, during, post). The assumptions run were for homogeneity of variance (Levene's test). The assumption of homogeneity of variance was violated for the simple effect of condition on post level of time, *F*(1, 48) = 10.7, *p* = .002.
 
 
 >Question 7: Test the simple effects between conditions. Report all relevant statistics for each simple effect according to APA format. (Hint: You should be running three simple effect analyses).
