@@ -1,0 +1,23 @@
+---
+title: "PSY.308c.DA1"
+output: pdf_document
+---
+
+```{r, echo=FALSE, results=FALSE, message=FALSE, cache=FALSE, warning=FALSE}
+library(knitr); opts_chunk$set(error=TRUE, cache=FALSE)
+```
+
+**Prompt**
+A local business has implemented a new program to encourage employees to take more control over their workday. Acccording to the program, employees are allowed to take their break at any point during the day for as long as they want between 1 and 60 minutes. As businesses do, they were wondering how this program may relate to productivity on a 1-100 scale. At the end of the first month, the business conducted a short survey which had all 175 employees report the average length of their break, enjoyment had during the break, and desire to come to work. The business employed you to investigate these factors and how they may relate to productivity.
+
+**Variables:**
+Length - numeric; length of break in minutes (range 1-60).
+Enjoy - numeric; self-reported level of enjoyment of break period (scale average; range 1-10).
+Desire - numeric; self-reported level of desire to come to work (scale average; range 1-10).
+Product (Productivity) - numeric; percentage of time meeting weekly goals (range 1-100; represented as whole number).
+
+
+```{r}
+dat <- read.csv('https://www.dropbox.com/s/b7vnpku0c1sezb6/PSY.308c.DA1.csv?dl=1')
+```
+

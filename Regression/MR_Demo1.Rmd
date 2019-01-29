@@ -183,13 +183,14 @@ cortable
 **Simple Regression**
 ```{r}
 # Simple regression
+# start with the simpler model first - Belief is most highly correlated with outcome variable (Amount)
 model1 <- linReg(data = dat2, 
-                 dep = 'Amount', 
-                 covs = c('Belief'), 
-                 blocks = list(c('Belief')), 
-                 modelTest = TRUE, 
-                 stdEst = TRUE)
-model1
+                 dep = 'Amount', #outcome
+                 covs = c('Belief'), #predictors
+                 blocks = list(c('Belief')), #order - doesn't matter fore simple regression as there is only one variable
+                 modelTest = TRUE, #significance test on model [H0: R squared = 0]
+                 stdEst = TRUE) #standardized regression coefficient for individual variable
+model1 #print to screen
 
 model2 <- linReg(data = dat2, 
                  dep = 'Amount', 
@@ -204,9 +205,9 @@ model2
 ```{r}
 # Multiple regression
 model3 <- linReg(data = dat2, 
-                 dep = 'Amount', 
-                 covs = c('Belief', 'Need'), 
-                 blocks = list(c('Belief', 'Need')), 
+                 dep = 'Amount', #outcome
+                 covs = c('Belief', 'Need'), #predictors
+                 blocks = list(c('Belief', 'Need')), #order matters here if separate blocks of variables are provided
                  modelTest = TRUE, 
                  stdEst = TRUE, 
                  ciStdEst = TRUE, 
@@ -227,11 +228,22 @@ model4
 **Model Comparison**
 ```{r}
 # Hierarchical regression with model comparison (R2 change)
+
+# ALTERNATIVE
+# modelA<- lm(Amount ~ Belief + Need, data = dat2)
+# modelB <- lm(Amount ~ Belief + Need + Happy, data = dat2)
+# stats::anova(modelA, modelB)
+# summary(modelA)
+# summary(modelB)
+
+# 2 models plus comparison of them for final homework should be presented
+# Model 1 is Belief + Need
+# Model 2 is Belief + Need + Interest (just one more variable added to model)
 compare1 <- linReg(data = dat2, 
                    dep = 'Amount', 
                    covs = c('Belief', 'Need', 'Interest'),
                    blocks = list(
-                     list('Belief', 'Need'), 
+                     list('Belief', 'Need'), #comparison of models
                      list('Interest')), 
                    modelTest = TRUE,
                    r2Adj = TRUE,
@@ -239,6 +251,9 @@ compare1 <- linReg(data = dat2,
                    ciStdEst = TRUE)
 compare1
 
+
+# Model 1 is Belief + Need + Interest
+# Model 2 is Belief + Need + Interest + Happy (just one more variable added to model)
 compare2 <- linReg(data = dat2, 
                    dep = 'Amount',
                    covs = c('Belief', 'Need', 'Interest', 'Happy'),
