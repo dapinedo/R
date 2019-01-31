@@ -1,7 +1,7 @@
 ---
 title: "PSY.308c.DA1"
 author: "Daniel Pinedo"
-output: pdf_document
+output: word_document
 ---
 
 ```{r, echo=FALSE, results=FALSE, message=FALSE, cache=FALSE, warning=FALSE}
@@ -43,7 +43,7 @@ dat <- read.csv('https://www.dropbox.com/s/b7vnpku0c1sezb6/PSY.308c.DA1.csv?dl=1
   # 1. Variables are measured on the continuous level
 
 # Assumptions
-  # 1. Normal Distribution for Y (Product) [i.e. histogram, skew +-3, kurtosis +-10]
+  # 1. Normal Distribution for X and Y (Product) [i.e. histogram, skew +-3, kurtosis +-10]
     # Distribition for Y appears to be bimodal, but otherwise normally distributed
     # Skew for Y is -0.15; Kurtosis for Y is -.38 ---> both pass
   # 2. Linear Relationship beween X and Y
@@ -78,6 +78,7 @@ cortable <- corrMatrix(data = dat,
                        vars = c('Length', 'Enjoy', 'Desire', 'Product'), 
                        flag = TRUE)
 cortable
+
 ```
 
 
