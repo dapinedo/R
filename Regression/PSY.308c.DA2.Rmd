@@ -86,7 +86,7 @@ plot(dat$Hours, dat$Test, abline(lm(dat$Test ~ dat$Hours)))
 ```{r}
 # Homoscedasticity [Assumption 3b]
 
-#non-constant variance Chi-squared test
+#non-constant variance Chi-squared test [Chi-squared (df) = ##.##, p = .###]
 #H0 = homoscedastic - TRUE
 #Ha = heteroscedastic
 
