@@ -1,5 +1,6 @@
 ---
 title: "PSYC308C.DA2"
+author: "Daniel Pinedo"
 output: word_document
 ---
 
@@ -8,17 +9,256 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 **Prompt**
-You are employed by a local university to conduct research regarding the performance of incoming students during their first semester. The grades reported by the previous years has been markedly low, which is concerning for the reputation and quality of the school. The university is interested in student's commitment to studying, amount of stress felt, and the average hours of sleep each student was getting and how these variables impact average test score. You are put to the task of determining what factors impact this year's incoming students exam scores and must report back to the university in order to develop an intervention to improve the grades of future first-years.
+You are employed by a local university to conduct research regarding the performance of incoming students during their first semester. The grades reported by the previous years has been markedly low, which is concerning for the reputation and quality of the school. The university is interested in student's commitment to studying, amount of stress felt, and the average hours of sleep each student was getting and how these variables impact average test scores. You are put to the task of determining what factors impact this year's incoming students exam scores and must report back to the university in order to develop an intervention to improve the grades of future first-years.
 
 **Variables**
+Commitment (Comm) - average amount of commitment to studying in the past week, 1-10 scale.
 Stress - average amount of stress report by students in the past week, 1-10 scale.
-Commitment - average amount of commitment to studying in the past week, 1-10 scale.
-Hours - average amount of hours of sleep in the past week, 1-10 scale.
-Test - average test score, 1-100 scale.
+Hours of Sleep (Hours) - average amount of hours of sleep in the past week, 1-10 scale.
+Test Score (Test) (outcome) - average test score, 1-100 scale.
 
+**Hypotheses**
+H~0~: no relationship between variables
+H~a~: commitment + stress + hours predict test score
+N = 70
 
-Prep
 ```{r echo = FALSE, message = FALSE}
+#Load libraries
+
+library(psych)
+library(car)
+library(lsr)
+library(jmv)
+library(ggeffects)
+library(ggplot2)
+```
+
+```{r echo = FALSE, message = FALSE}
+#Read data frame
+
 dat <- read.csv("https://www.dropbox.com/s/xepc73fmss42xsb/PSY.308c.DA2.csv?dl=1")
 ```
 
+**Descriptive Statistics and Assumptions**
+```{r}
+# Prerequisitites
+  # 1. Variables are measured on the continuous level
+
+# Assumptions
+  # 1. Normal Distribution for X and Y (Product) [i.e. histogram, skew +-3, kurtosis +-10]
+    # Histogram for Comm appears positively skewed and unimodal
+    # Histogram for Stress appears negatively skewed and unimodal
+    # Histogram for Hours appears symmetric and bimodal
+    # Histogram for Test appears symmetric and bimodal
+    # Skewness - Comm 0.65 Stress 0.14 Hours -0.21 Test 0.26
+    # Kurtosis -      0.11       -0.30       -0.28     -0.21 
+  
+  # 2. Linear Relationship beween X and Y
+    # Visual inspection of scatterplot and prediction model line indicate ...
+  # 3. Homoscedasticity
+    # a. Visual inspection of scatterplots indicate: 
+      # higher variance at the lower end for Comm 
+      # assymettric variance at the lower end for Stress
+      # higher variance at the upper end for Hours
+    # b. non-constant variance test - H0 = TRUE (PASS)
+  
+  # 4. [Examine residuals (e = Y - Y~predicted~) to understand 2 and 3 mathematically]
+
+# Descriptives [Assumption 1]
+desc <- descriptives(data = dat, 
+                     vars = c('Comm', 'Stress', 'Hours', 'Test'), 
+                     hist = TRUE, 
+                     sd = TRUE, 
+                     range = TRUE, 
+                     skew = TRUE, 
+                     kurt = TRUE)
+desc
+
+```
+
+```{r}
+# Scatterplots [Assumption 2 and 3a]
+plot(dat$Comm, dat$Test, abline(lm(dat$Test ~ dat$Comm)))
+plot(dat$Stress, dat$Test, abline(lm(dat$Test ~ dat$Stress)))
+plot(dat$Hours, dat$Test, abline(lm(dat$Test ~ dat$Hours)))
+```
+
+```{r}
+# Homoscedasticity [Assumption 3b]
+
+#non-constant variance Chi-squared test
+#H0 = homoscedastic - TRUE
+#Ha = heteroscedastic
+
+ncvTest(lm(Test ~ Comm + Stress + Hours, data = dat))
+
+```
+
+**Correlations**
+```{r}
+# Correlation
+cortable <- corrMatrix(data = dat, 
+                       vars = c('Comm', 'Stress', 'Hours', 'Test'), 
+                       flag = TRUE)
+cortable
+
+```
+
+**Simple Regression**
+```{r}
+# Simple Regression Model 1
+# Start with the simpler model first - Stress is most correlated with outcome variable (Test)
+model1 <- linReg(data = dat, 
+                 dep = 'Test', #outcome
+                 covs = c('Stress'), #predictors
+                 blocks = list(c('Stress')), #order - doesn't matter for simple regression as there is only one variable
+                 modelTest = TRUE, #significance test on model [H0: R squared = 0]
+                 stdEst = TRUE) #standardized regression coefficient for individual variable [Stand. Estimate or Beta]
+model1 #print to screen
+
+#This model is best fit for simple regression based on R squared and Beta Estimates
+
+# ALTERNATIVE
+model1.1<- lm(Test ~ Stress, data = dat)
+summary(model1.1)
+```
+
+```{r}
+# Simple Regression Model 2
+# Comm is second most correlated with outcome variable (Test)
+model2 <- linReg(data = dat, 
+                 dep = 'Test', #outcome
+                 covs = c('Comm'), #predictors
+                 blocks = list(c('Comm')), #order - doesn't matter for simple regression as there is only one variable
+                 modelTest = TRUE, #significance test on model [H0: R squared = 0]
+                 stdEst = TRUE) #standardized regression coefficient for individual variable
+model2 #print to screen
+
+# model has predictive significance
+
+# ALTERNATIVE
+model2.1<- lm(Test ~ Comm, data = dat)
+summary(model2.1)
+```
+
+```{r}
+# Simple Regression Model 3
+# Hours is third most correlated with outcome variable (Test)
+model3 <- linReg(data = dat, 
+                 dep = 'Test', #outcome
+                 covs = c('Hours'), #predictors
+                 blocks = list(c('Hours')), #order - doesn't matter for simple regression as there is only one variable
+                 modelTest = TRUE, #significance test on model [H0: R squared = 0]
+                 stdEst = TRUE) #standardized regression coefficient for individual variable
+model3 #print to screen
+
+# model has predictive significance
+
+# ALTERNATIVE
+model3.1<- lm(Test ~ Hours, data = dat)
+summary(model2.1)
+```
+
+**Multiple Regression**
+```{r}
+# Multiple regression test #A [Test ~ Stress + Comm] - best fit
+
+modelA <- linReg(data = dat, 
+                 dep = 'Test', #outcome
+                 covs = c('Stress', 'Comm'), #predictors
+                 blocks = list(c('Stress', 'Comm')), #order matters here if separate blocks of variables are provided
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ciStdEst = TRUE, 
+                 r2Adj = TRUE)
+modelA
+
+# ALTERNATIVE
+modelA.1<- lm(Test ~ Stress + Comm, data = dat)
+summary(modelA.1)
+```
+
+```{r}
+# Multiple regression test #A [Test ~ Stress + Comm + Hours]
+
+modelB <- linReg(data = dat, 
+                 dep = 'Test', #outcome
+                 covs = c('Stress', 'Comm', 'Hours'), #predictors
+                 blocks = list(c('Stress', 'Comm', 'Hours')), #order matters here if separate blocks of variables are provided
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ciStdEst = TRUE, 
+                 r2Adj = TRUE)
+modelB
+
+# ALTERNATIVE
+modelB.1<- lm(Test ~ Stress + Comm, data = dat)
+summary(modelB.1)
+```
+
+
+**Model Comparison**
+```{r}
+# Hierarchical regression with model comparison (significance of R squared change)
+# 2 models plus comparison of them for final homework should be presented
+
+# Comparison Model 1
+  # Model B: Test ~ Stress + Comm + Hours
+  # Model A: Test ~ Stress + Comm [ best fit ]
+
+compare1 <- linReg(data = dat, 
+                   dep = 'Test', 
+                   covs = c('Stress', 'Comm', 'Hours'),
+                   blocks = list(
+                     list('Stress', 'Comm'), #Model A
+                     list('Hours')), #Model B
+                   modelTest = TRUE,
+                   r2Adj = TRUE,
+                   stdEst = TRUE,
+                   ciStdEst = TRUE)
+compare1
+
+# ALTERNATIVE
+stats::anova(modelB.1, modelA.1)
+
+# Both statistical tests yield no significant difference between models B and A
+```
+
+```{r}
+# Comparison Model 2
+  # Model A: Test ~ Stress + Comm [ best fit ]
+  # Model 1: Test ~ Stress
+
+compare2 <- linReg(data = dat, 
+                   dep = 'Test', 
+                   covs = c('Stress', 'Comm'),
+                   blocks = list(
+                     list('Stress'), #Model A
+                     list('Comm')), #Model B
+                   modelTest = TRUE,
+                   r2Adj = TRUE,
+                   stdEst = TRUE,
+                   ciStdEst = TRUE)
+compare2
+
+# ALTERNATIVE
+stats::anova(modelA.1, model1.1)
+
+# Both statistical tests yield a significant difference between models B and A
+```
+
+**Visualization** 
+```{r}
+# plotting a multiple regression model based on: 
+  # Model A: Test ~ Stress + Comm (from lm command of model created 'modelA.1')
+
+# create predicted values from predictors and save in object
+model_p <- ggpredict(modelA.1, terms = c('Stress', 'Comm'), full.data = TRUE,  pretty = FALSE)
+
+# plot predicted line
+plot <- ggplot(model_p, aes(x, predicted)) +
+      geom_smooth(method = "lm", se = FALSE, fullrange=TRUE) + xlab("Score") + ggtitle("Plot of Model of Stress and Commitment Predicting Test Score") + ylab("Test Score") +
+      geom_point() + theme_minimal()
+
+plot 
+```
