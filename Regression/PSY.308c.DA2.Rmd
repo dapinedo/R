@@ -247,6 +247,20 @@ stats::anova(modelA.1, model1.1)
 # Both statistical tests yield a significant difference between models B and A
 ```
 
+**Best Model with Centered Data**
+```{r}
+#Predicted score on Y when all predictors are averaged vs 
+  #{uncentered} predicted score on Y when all predictors are zero.
+
+#CHANGE/FIX BELOW
+#Support
+dat2$Support.C <- dat2$Support - mean(dat2$Support)
+  
+#Salary
+dat2$Salary.C <- dat2$Salary - mean(dat2$Salary)
+#CHANGE/FIX ABOVE
+```
+
 **Visualization** 
 ```{r}
 # plotting a multiple regression model based on: 
