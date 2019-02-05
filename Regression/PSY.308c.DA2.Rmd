@@ -1,0 +1,24 @@
+---
+title: "PSYC308C.DA2"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Prompt**
+You are employed by a local university to conduct research regarding the performance of incoming students during their first semester. The grades reported by the previous years has been markedly low, which is concerning for the reputation and quality of the school. The university is interested in student's commitment to studying, amount of stress felt, and the average hours of sleep each student was getting and how these variables impact average test score. You are put to the task of determining what factors impact this year's incoming students exam scores and must report back to the university in order to develop an intervention to improve the grades of future first-years.
+
+**Variables**
+Stress - average amount of stress report by students in the past week, 1-10 scale.
+Commitment - average amount of commitment to studying in the past week, 1-10 scale.
+Hours - average amount of hours of sleep in the past week, 1-10 scale.
+Test - average test score, 1-100 scale.
+
+
+Prep
+```{r echo = FALSE, message = FALSE}
+dat <- read.csv("https://www.dropbox.com/s/xepc73fmss42xsb/PSY.308c.DA2.csv?dl=1")
+```
+
