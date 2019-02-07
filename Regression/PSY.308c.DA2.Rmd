@@ -244,7 +244,7 @@ compare2
 # ALTERNATIVE
 stats::anova(modelA.1, model1.1)
 
-# Both statistical tests yield a significant difference between models B and A
+# Both statistical tests yield a significant difference between models A and 1
 ```
 
 **Best Model with Centered Data**
@@ -252,22 +252,33 @@ stats::anova(modelA.1, model1.1)
 #Predicted score on Y when all predictors are averaged vs 
   #{uncentered} predicted score on Y when all predictors are zero.
 
-#CHANGE/FIX BELOW
-#Support
-dat2$Support.C <- dat2$Support - mean(dat2$Support)
+#Stress
+dat$Stress.C <- dat$Stress - mean(dat$Stress)
   
-#Salary
-dat2$Salary.C <- dat2$Salary - mean(dat2$Salary)
-#CHANGE/FIX ABOVE
+#Comm
+dat$Comm.C <- dat$Comm - mean(dat$Comm)
+
+modelA.C <- linReg(data = dat, 
+                 dep = 'Test', #outcome
+                 covs = c('Stress.C', 'Comm.C'), #predictors
+                 blocks = list(c('Stress.C', 'Comm.C')), #order matters here if separate blocks of variables are provided
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ciStdEst = TRUE, 
+                 r2Adj = TRUE)
+modelA.C
+
+modelA.2<- lm(Test ~ Stress.C + Comm.C, data = dat)
+summary(modelA.2)
 ```
 
-**Visualization** 
+**Visualization with Centered Data** 
 ```{r}
 # plotting a multiple regression model based on: 
   # Model A: Test ~ Stress + Comm (from lm command of model created 'modelA.1')
 
 # create predicted values from predictors and save in object
-model_p <- ggpredict(modelA.1, terms = c('Stress', 'Comm'), full.data = TRUE,  pretty = FALSE)
+model_p <- ggpredict(modelA.2, terms = c('Stress.C', 'Comm.C'), full.data = TRUE,  pretty = FALSE)
 
 # plot predicted line
 plot <- ggplot(model_p, aes(x, predicted)) +
