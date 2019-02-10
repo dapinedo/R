@@ -20,7 +20,7 @@ Success (outcome): successful transition scaled based on a variety of factors co
 
 **Hypotheses**
 H~0~: no relationship between variables
-H~a~: income + illiteracy + safety predict success + graduation status
+H~a~: income + illiteracy + safety + graduation status predict success
 N = 50
 
 ```{r echo = FALSE, message = FALSE}
@@ -266,7 +266,7 @@ compare9 <- linReg(data = dat,
 compare9
 ```
 Model 9 is not a parsimonious fit for multiple regression
-Income, Illiteracy, and Graduation predict 62% of variance for Success (no significant added account for variance)
+Income, Illiteracy, and Graduation predict 62% of variance for Success (no significant added account for prior predicted variance of 60%)
 
 Based on literature, Graduation and Safety are best predictors of success.  In this case, graduation did not account for a significantly greater amount of variance when added to Income and Illiteracy, Income accounted for highest amount of overall variance by itself, and income and illiteracy accounted for the most parsimonious model overall.
 
