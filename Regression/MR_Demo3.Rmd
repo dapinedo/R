@@ -122,7 +122,7 @@ compare <- linReg(data = dat,
 compare
 ```
 
-**Center the predictor variables**
+**Center the continuous predictor variables**
 ```{r}
 # Centering only quantitatively changes the intercept for regression equation
 # Center age and activeyears
@@ -161,7 +161,6 @@ compare <- linReg(data = dat,
                   ci = TRUE)
 compare
 ```
-
 
 **Let's add type of exercise to the dataframe**
 ```{r}

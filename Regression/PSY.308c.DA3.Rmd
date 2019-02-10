@@ -1,0 +1,318 @@
+---
+title: "PSY.308c.DA3"
+author: "Daniel Pinedo"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Prompt**
+You now work for a nationwide transitional living program. They serve homeless individuals between the age of 16-25. The various services they are providing include: (1) a service that helps youth get a job (2) a literacy program (3) a program to help youth graduate from high school and (4) shelter to live in. They've collected data on the youth in their program on income, illiteracy, high school graduation, and safety levels (see below for an explanation of the variables). The program ultimately cares about what best predicts the successful transition of these youth. According to the literature, high school graduation and safety levels explain successful transitioning best. The CEO thinks that from her experience income is actually an important factor to consider as well.
+
+**Variables**
+Income: annual income
+Illiteracy: level of illiteracy on a scale of 0-3 (higher being more illiterate)
+Safety: safety levels in the area in which they live on a scale of 0-10
+HS.Grad: whether they graduated on time (18 yrs old; D2), later (any age after 18; D1), or did not graduate at all (intercept / B~0~)
+Success (outcome): successful transition scaled based on a variety of factors compiling to an ultimate score between the values of 0-10
+
+**Hypotheses**
+H~0~: no relationship between variables
+H~a~: income + illiteracy + safety predict success + graduation status
+N = 50
+
+```{r echo = FALSE, message = FALSE}
+#Load libraries
+
+library(psych)
+library(car)
+library(lsr)
+library(jmv)
+library(ggeffects)
+library(ggplot2)
+```
+
+```{r echo = FALSE, message = FALSE}
+dat <- read.csv("https://www.dropbox.com/s/w3wl461s45t1yia/PSY.308c.DA3.csv?dl=1")
+```
+
+**Descriptive Statistics and Assumptions**
+```{r}
+# Prerequisitites
+  # 1. Variables are measured on the continuous level
+
+# Assumptions
+  # 1. Normal Distribution for X and Y (Product) [i.e. histogram, skew +-3, kurtosis +-10]
+    # Histogram for Income appears normal
+    # Histogram for Illitaracy appears unimodal and skewed positively
+    # Histogram for Safety appears normal
+    # Histogram for Success appears normal
+    # Skewness - ALL PASS
+    # Kurtosis - ALL PASS  
+  
+  # 2. Linear Relationship beween X and Y
+    # Visual inspection of scatterplot and prediction model line indicate a linear relationship
+  # 3. Homoscedasticity
+    # a. Visual inspection of scatterplots indicate: 
+      # possible lower variance at lower end of Income
+      # possible lower variance at upper end of Illiteracy
+      # likely equal variance across Safety
+    # b. non-constant variance test - H0 = TRUE (PASS)
+  
+  # 4. [Examine residuals (e = Y - Y~predicted~) to understand 2 and 3 mathematically]
+
+# Descriptives [Assumption 1]
+desc <- descriptives(data = dat, 
+                     vars = c('Income', 'Illiteracy', 'Safety', 'Success'), 
+                     hist = TRUE, 
+                     sd = TRUE, 
+                     range = TRUE, 
+                     skew = TRUE, 
+                     kurt = TRUE)
+desc
+
+```
+
+```{r}
+# Scatterplots [Assumption 2 and 3a]
+plot(dat$Income, dat$Success, abline(lm(dat$Success ~ dat$Income)))
+plot(dat$Illiteracy, dat$Success, abline(lm(dat$Success ~ dat$Illiteracy)))
+plot(dat$Safety, dat$Success, abline(lm(dat$Success ~ dat$Safety)))
+```
+
+```{r}
+# Homoscedasticity [Assumption 3b]
+
+# non-constant variance Chi-squared test [Chi-squared (df) = ##.##, p = .###]
+# H0 = homoscedastic - TRUE
+# Ha = heteroscedastic
+
+ncvTest(lm(Success ~ Income + Illiteracy + Safety, data = dat))
+
+```
+
+**Correlations**
+```{r}
+# Correlation
+cortable <- corrMatrix(data = dat, 
+                       vars = c('Income', 'Illiteracy', 'Safety', 'Success'), 
+                       flag = TRUE)
+cortable
+
+```
+
+**Center the continuous predictor variables**
+```{r}
+# c = x - M
+# Centering only quantitatively changes the intercept for regression equation
+# Center Income, Illiteracy, Safety
+dat$Income.c <- dat$Income - mean(dat$Income)
+dat$Illiteracy.c <- dat$Illiteracy - mean(dat$Illiteracy)
+dat$Safety.c <- dat$Safety - mean(dat$Safety)
+```
+
+**Simple Regression of centered continuous predictor variables**
+```{r}
+# Simple regression
+# R = correlation between observed scores and predicted scores
+# R squared = percentage of variance explained
+# t = Estimate / SE
+# df = N - k - 1 [k is number of predictors]
+# H0: B0 = 0; H0; R squared = 0
+
+model1 <- linReg(data = dat, 
+                 dep = 'Success', 
+                 covs = c('Income.c'),
+                 blocks = list('Income.c'), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ci = TRUE)
+model1
+
+model2 <- linReg(data = dat, 
+                 dep = 'Success',
+                 covs = c('Illiteracy.c'),
+                 blocks = list('Illiteracy.c'), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ci = TRUE)
+model2
+
+model3 <- linReg(data = dat, 
+                 dep = 'Success',
+                 covs = c('Safety.c'),
+                 blocks = list('Safety.c'), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ci = TRUE)
+model3
+```
+
+**Multiple regression with dummy codes for Categorical Variable (Graduation Status [3 levels])**
+```{r}
+# Model comparison
+# D1 is predicted difference between D1 (Graduated later) and reference group (Did not graduate) for a 1 unit change in Y (Success)
+# D2 is predicted difference between D2 (Graduated normal) and reference group (did not graduate) for 1 unit change in Y (Success)
+model4 <- linReg(data = dat, 
+                 dep = 'Success', #outcome
+                 covs = c('D1', 'D2'), #predictors
+                 blocks = list(c('D1', 'D2')), #order matters here if separate blocks of variables are provided
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ciStdEst = TRUE, 
+                 r2Adj = TRUE)
+model4
+```
+
+Model 1 is best fit for simple regression
+Income predicts 49% of variance for Success
+
+**Model 1 Comparison with Illiteracy added**
+```{r}
+# Model comparison
+# H0 = delta of R squared = 0
+compare5 <- linReg(data = dat, 
+                  dep = 'Success', 
+                  covs = c('Income.c', 'Illiteracy.c'),
+                  blocks = list(
+                    list('Income.c'),
+                    list('Illiteracy.c')), 
+                  modelTest = TRUE, 
+                  stdEst = TRUE, 
+                  ci = TRUE)
+compare5
+```
+Model 5 is a good fit for multiple regression
+Income and Illiteracy predict 60% of variance for Success
+
+**Model 1 Comparison with Safety added**
+```{r}
+# Model comparison
+# H0 = delta of R squared = 0
+compare6 <- linReg(data = dat, 
+                  dep = 'Success', 
+                  covs = c('Income.c', 'Safety.c'),
+                  blocks = list(
+                    list('Income.c'),
+                    list('Safety.c')), 
+                  modelTest = TRUE, 
+                  stdEst = TRUE, 
+                  ci = TRUE)
+compare6
+```
+Model 6 is not best fit for multiple regression
+Income and Safety predict 54% of variance for Success
+
+**Model 1 Comparison with Graduation added**
+```{r}
+# Model comparison
+# H0 = delta of R squared = 0
+# D1 is predicted difference between D1 (Graduated later) and reference group (Did not graduate) for a 1 unit change in Y (Success)
+# D2 is predicted difference between D2 (Graduated normal) and reference group (did not graduate) for 1 unit change in Y (Success)
+compare7 <- linReg(data = dat, 
+                  dep = 'Success', 
+                  covs = c('Income.c', 'D1', 'D2'),
+                  blocks = list(
+                    list('Income.c'),
+                    list('D1', 'D2')), 
+                  modelTest = TRUE, 
+                  stdEst = TRUE, 
+                  ci = TRUE)
+compare7
+```
+Model 7 is not best fit for multiple regression
+Income and Graduation predict 57% of variance for Success
+
+Model 5 is most parsimonious fit for multiple regression
+Income and Illiteracy predict 60% of variance for Success
+
+**Model 5 Comparison with Safety added**
+```{r}
+# Model comparison
+# H0 = delta of R squared = 0
+compare8 <- linReg(data = dat, 
+                  dep = 'Success', 
+                  covs = c('Income.c', 'Illiteracy.c', 'Safety.c'),
+                  blocks = list(
+                    list('Income.c', 'Illiteracy.c'),
+                    list('Safety.c')), 
+                  modelTest = TRUE, 
+                  stdEst = TRUE, 
+                  ci = TRUE)
+compare8
+```
+
+Model 8 is not a parsimonious fit for multiple regression
+Income, Illiteracy, and Safety predict 60% of variance for Success (no added account for variance)
+
+**Model 5 Comparison with Graduation added**
+
+```{r}
+# Model comparison
+# H0 = delta of R squared = 0
+# D1 is predicted difference between D1 (Graduated later) and reference group (Did not graduate) for a 1 unit change in Y (Success)
+# D2 is predicted difference between D2 (Graduated normal) and reference group (did not graduate) for 1 unit change in Y (Success)
+compare9 <- linReg(data = dat, 
+                  dep = 'Success', 
+                  covs = c('Income.c', 'Illiteracy.c', 'D1', 'D2'),
+                  blocks = list(
+                    list('Income.c', 'Illiteracy.c'),
+                    list('D1', 'D2')), 
+                  modelTest = TRUE, 
+                  stdEst = TRUE, 
+                  ci = TRUE)
+compare9
+```
+Model 9 is not a parsimonious fit for multiple regression
+Income, Illiteracy, and Graduation predict 62% of variance for Success (no significant added account for variance)
+
+Based on literature, Graduation and Safety are best predictors of success.  In this case, graduation did not account for a significantly greater amount of variance when added to Income and Illiteracy, Income accounted for highest amount of overall variance by itself, and income and illiteracy accounted for the most parsimonious model overall.
+
+Thus, Model 5 is best, most parsimonious fit for multiple regression
+Income and Illiteracy predict 60% of variance for Success
+
+Illiteracy: level of illiteracy on a scale of 0-3 (higher being more illiterate)
+**Transform Normalized Illiteracy to Literacy on a scale of 0-3 (higher being more literate)**
+```{r}
+dat$Literacy.t <- 3 - dat$Illiteracy.c
+```
+
+**Model 5 with normalized Literacy transform**
+```{r}
+# Multiple regression [Success ~ Income.c + Literacy.t]
+# Y = B0 + B1*Income + B2*Literacy + residuals [B0 = 2.48, B1 = 12,600, B2 = 0.87]
+# Accounting for error (Sum of Y - Y predicted / N - standard error in gray below): 
+  #with average income and literacy, Y is 2.48 {low success}
+  #with average success and literacy, income is 12,600
+  #with average success and income, literacy is 0.87 {low literacy}
+
+transform5 <- linReg(data = dat, 
+                 dep = 'Success', #outcome
+                 covs = c('Income.c', 'Literacy.t'), #predictors
+                 blocks = list(c('Income.c', 'Literacy.t')), #order matters here if separate blocks of variables are provided
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ciStdEst = TRUE, 
+                 r2Adj = TRUE)
+transform5
+```
+
+**Visualization with Centered and Transformed Data** 
+```{r}
+# plotting a multiple regression model based on: 
+  # Model 5 Transform: Success.c ~ Income.c + Literacy.t [centered predictors]
+
+# create predicted values from predictors and save in object
+model5 <- lm(Success ~ Income.c + Literacy.t, data = dat)
+summary(model5)
+model_p <- ggpredict(model5, terms = c('Income.c', 'Literacy.t'), full.data = TRUE,  pretty = FALSE)
+
+# plot predicted line
+plot <- ggplot(model_p, aes(x, predicted)) +
+      geom_smooth(method = "lm", se = TRUE, fullrange=TRUE) + xlab("Score") + ggtitle("Plot of Model of Income and Literacy Predicting Success") + ylab("Success") +
+      geom_point() + theme_minimal()
+
+plot 
+```

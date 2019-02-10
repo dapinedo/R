@@ -282,7 +282,7 @@ model_p <- ggpredict(modelA.2, terms = c('Stress.C', 'Comm.C'), full.data = TRUE
 
 # plot predicted line
 plot <- ggplot(model_p, aes(x, predicted)) +
-      geom_smooth(method = "lm", se = FALSE, fullrange=TRUE) + xlab("Score") + ggtitle("Plot of Model of Stress and Commitment Predicting Test Score") + ylab("Test Score") +
+      geom_smooth(method = "lm", se = TRUE, fullrange=TRUE) + xlab("Score") + ggtitle("Plot of Model of Stress and Commitment Predicting Test Score") + ylab("Test Score") +
       geom_point() + theme_minimal()
 
 plot 
