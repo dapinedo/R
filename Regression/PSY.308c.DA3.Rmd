@@ -268,12 +268,11 @@ compare9
 Model 9 is not a parsimonious fit for multiple regression
 Income, Illiteracy, and Graduation predict 62% of variance for Success (no significant added account for prior predicted variance of 60%)
 
-Based on literature, Graduation and Safety are best predictors of success.  In this case, graduation did not account for a significantly greater amount of variance when added to Income and Illiteracy, Income accounted for highest amount of overall variance by itself, and income and illiteracy accounted for the most parsimonious model overall.
+Based on prior literature, Graduation and Safety are best predictors of success.  In this case, neither graduation nor safety accounted for a significantly greater amount of variance when added to Income and Illiteracy, Income accounted for highest amount of overall variance by itself, and Income and Illiteracy accounted for the most parsimonious model overall.
 
 Thus, Model 5 is best, most parsimonious fit for multiple regression
 Income and Illiteracy predict 60% of variance for Success
 
-Illiteracy: level of illiteracy on a scale of 0-3 (higher being more illiterate)
 **Transform Normalized Illiteracy to Literacy on a scale of 0-3 (higher being more literate)**
 ```{r}
 dat$Literacy.t <- 3 - dat$Illiteracy.c
@@ -285,8 +284,6 @@ dat$Literacy.t <- 3 - dat$Illiteracy.c
 # Y = B0 + B1*Income + B2*Literacy + residuals [B0 = 2.48, B1 = 12,600, B2 = 0.87]
 # Accounting for error (Sum of Y - Y predicted / N - standard error in gray below): 
   #with average income and literacy, Y is 2.48 {low success}
-  #with average success and literacy, income is 12,600
-  #with average success and income, literacy is 0.87 {low literacy}
 
 transform5 <- linReg(data = dat, 
                  dep = 'Success', #outcome
