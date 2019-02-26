@@ -181,13 +181,15 @@ desc_no.uni
 #Negative skew --> reflect and square root
 dat.no.NA$Amount_T <- sqrt(max(dat.no.NA$Amount) + 1 - dat.no.NA$Amount)
 
+# If positive skew then dat.no.NA$Amount_T <- sqrt(dat.no.NA$Amount)
+
 #Log transformation for hella skew
 #Negative skew --> reflect and log
 dat.no.NA$Amount_T2 <- log10(max(dat.no.NA$Amount) + 1 - dat.no.NA$Amount)
 
 head(dat.no.NA)
 
-#check out descriptives for skew and kurtosis now
+#check out descriptives for skew and kurtosis before and after all transforms
 desc_transformed <- descriptives(data = dat.no.NA, 
                                  vars = c('Amount', 'Amount_T', 'Amount_T2'), 
                                  hist = TRUE, 
@@ -207,14 +209,18 @@ desc_transformed
 model <- linReg(data = dat.no.uni, 
                 dep = 'Amount', 
                 covs = c('Belief', 'Need', 'Interest', 'Happy'),
-                blocks = list('Belief', 'Need', 'Interest', 'Happy'), 
+                blocks = list(c('Belief', 'Need', 'Interest', 'Happy')), 
                 modelTest = TRUE, 
                 r2Adj = TRUE, 
                 stdEst = TRUE, 
                 ciStdEst = TRUE,
-                qqPlot = TRUE, 
-                resPlots = TRUE)
+                qqPlot = TRUE,
+                resPlots = TRUE) 
 model
+
+#Alternate
+#model <- lm(Amount ~ Belief + Need, data = dat.no.uni)
+#plot(model)
 
 ```
 
@@ -223,9 +229,9 @@ model
 #Check and remove multivariate outliers based on mahalanobis' distance
 
 #Create a variable of mahalanobis' distance
-x <- dat.no.uni[1:5]
-mean <- colMeans(x)
-Sx <- cov(x)
+x <- dat.no.uni[1:5] #predictors variables subset columns
+mean <- colMeans(x) #mean of each column
+Sx <- cov(x)        #covariance of predictors
 dat.no.uni$mahal <- mahalanobis(x, mean, Sx)
 
 #Identify any multivariate outliers based on mahalanobis' distance variable --> +/- 3 SD's of mahalanobis distance mean
