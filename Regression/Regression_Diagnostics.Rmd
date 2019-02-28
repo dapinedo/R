@@ -134,6 +134,7 @@ desc2
 
 ```{r}
 #Identify outliers
+#Scale() converts to z scores
 dat.no.NA[abs(scale(dat.no.NA$Belief)) > 3, ]
 dat.no.NA[abs(scale(dat.no.NA$Need)) > 3, ]
 dat.no.NA[abs(scale(dat.no.NA$Interest)) > 3, ]
@@ -149,11 +150,14 @@ dat.no.NA[abs(scale(dat.no.NA$Amount)) > 3, ]
 
 ```{r}
 #Remove outliers
-dat.no.uni <- dat.no.NA[!abs(scale(dat.no.NA$Belief)) > 3, ]
-dat.no.uni <- dat.no.NA[!abs(scale(dat.no.uni$Need)) > 3, ]
-dat.no.uni <- dat.no.NA[!abs(scale(dat.no.uni$Interest)) > 3, ]
-dat.no.uni <- dat.no.uni[!abs(scale(dat.no.uni$Happy)) > 3, ]
-dat.no.uni <- dat.no.uni[!abs(scale(dat.no.uni$Amount)) > 3, ]
+#Order to remove matters - look up for loop for this ugly code
+dat.no.uni1 <- dat.no.NA[!abs(scale(dat.no.NA$Belief)) > 3, ]
+dat.no.uni2 <- dat.no.uni1[!abs(scale(dat.no.uni1$Need)) > 3, ]
+dat.no.uni3 <- dat.no.uni2[!abs(scale(dat.no.uni2$Interest)) > 3, ]
+dat.no.uni4 <- dat.no.uni3[!abs(scale(dat.no.uni3$Happy)) > 3, ]
+dat.no.uni5 <- dat.no.uni4[!abs(scale(dat.no.uni4$Amount)) > 3, ]
+
+dat.no.uni <- dat.no.uni5
 
 #Removed 5 cases that were outside +/-3 SD's for the variables
 
@@ -167,7 +171,7 @@ desc_no.uni <- descriptives(data = dat.no.uni,
                             kurt = TRUE)
 desc_no.uni
 
-#data set is now called "dat.no.uni"
+#data set is now called "dat.no.uni5"
 #everything is now within range of normal distribution
 
 ```
@@ -227,9 +231,11 @@ model
 
 ```{r}
 #Check and remove multivariate outliers based on mahalanobis' distance
+#MD = Leverage = how much each observation contributes to the model's prediction
 
 #Create a variable of mahalanobis' distance
-x <- dat.no.uni[1:5] #predictors variables subset columns
+#This calculation only works with continuous variables
+x <- dat.no.uni[1:5] #predictor variables subset columns
 mean <- colMeans(x) #mean of each column
 Sx <- cov(x)        #covariance of predictors
 dat.no.uni$mahal <- mahalanobis(x, mean, Sx)
@@ -247,6 +253,8 @@ dat.no.mult <- dat.no.uni[!abs(scale(dat.no.uni$mahal)) > 3,]
 
 ```{r}
 #OR Check and remove multivariate outliers based on cook's distance
+#CD = Influence = Leverage + Discrepancy (Discrepancy = how much an observation deviates from the overall pattern of the model)
+#CD > 1 or > 4/N
 
 #create your model
 model.cook <- lm(dat.no.uni$Amount ~ dat.no.uni$Need + dat.no.uni$Interest + dat.no.uni$Happy + dat.no.uni$Belief)
@@ -257,7 +265,7 @@ dat.no.uni$cook <- cooks.distance(model.cook)
 #create the cutoff
 Cook.cutoff <- 4/nrow(dat.no.uni) 
 
-# 4/106 --> cutoff = .04
+# 4/98 --> cutoff = .04
 
 #plot it out
 plot(model.cook, which = 4, cook.levels = Cook.cutoff)
@@ -290,16 +298,20 @@ ncvTest(lm(dat_final$Amount ~ dat_final$Belief + dat_final$Need + dat_final$Inte
 **MULTICOLLINEARITY**
 ```{r}
 
-#VIF and Tolerance
+#Tolerance = 1 - R squared
+#VIF = 1/Tolerance 
+#  Small VIF values indicates low correlation among variables under ideal conditions
+#Multicollinearity occurs when two or more predictors in the model are correlated and provide redundant information about the response. Multicollinearity was measured by variance inflation factors (VIF) and tolerance. If VIF value exceeding 4.0, or by tol- erance less than 0.2 then there is a problem with multicollinearity (Hair et al., 2010).
+
 model2 <- linReg(data = dat_final, 
                  dep = 'Amount', 
                  cov = c('Belief', 'Need', 'Interest', 'Happy'),
-                 blocks = list('Belief', 'Need', 'Interest', 'Happy'), 
+                 blocks = list(c('Belief', 'Need', 'Interest', 'Happy')), 
                  modelTest = TRUE,
                  r2Adj = TRUE,
                  stdEst = TRUE,
                  ciStdEst = TRUE, 
-                 collin = TRUE)
+                 collin = TRUE) #this line does the thing
 model2
 
 ```
