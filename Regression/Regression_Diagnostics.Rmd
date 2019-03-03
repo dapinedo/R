@@ -38,7 +38,7 @@ library(mice)
 library(VIM)
 
 
-dat[dat=="99"] <- NA
+dat[dat=="99"] <- NA #assign NA value to anything in dataset with placeholder value 99
 
 ```
 
@@ -298,7 +298,7 @@ ncvTest(lm(dat_final$Amount ~ dat_final$Belief + dat_final$Need + dat_final$Inte
 **MULTICOLLINEARITY**
 ```{r}
 
-#Tolerance = 1 - R squared
+#Tolerance = 1 - R squared --> for our purpose < .4 is bad
 #VIF = 1/Tolerance 
 #  Small VIF values indicates low correlation among variables under ideal conditions
 #Multicollinearity occurs when two or more predictors in the model are correlated and provide redundant information about the response. Multicollinearity was measured by variance inflation factors (VIF) and tolerance. If VIF value exceeding 4.0, or by tol- erance less than 0.2 then there is a problem with multicollinearity (Hair et al., 2010).
@@ -323,7 +323,7 @@ model2
 model1 <- linReg(data = dat, 
                  dep = 'Amount', 
                  covs = c('Belief', 'Need', 'Interest', 'Happy'),
-                 blocks = list('Belief', 'Need', 'Interest', 'Happy'), 
+                 blocks = list(c('Belief', 'Need', 'Interest', 'Happy')), 
                  modelTest = TRUE,
                  r2Adj = TRUE, 
                  stdEst = TRUE,
@@ -334,7 +334,7 @@ model1
 model3 <- linReg(data = dat_final, 
                  dep = 'Amount', 
                  covs = c('Belief', 'Need', 'Interest', 'Happy'),
-                 blocks = list('Belief', 'Need', 'Interest', 'Happy'), 
+                 blocks = list(c('Belief', 'Need', 'Interest', 'Happy')), 
                  modelTest = TRUE,
                  r2Adj = TRUE, 
                  stdEst = TRUE,
