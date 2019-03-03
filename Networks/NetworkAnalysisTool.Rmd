@@ -1,0 +1,131 @@
+---
+title: "Network Modeling Tool"
+author: "Christopher J. Shmank", "Daniel A. Pinedo"
+date: "March 21, 2019"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This document was adapted from a Workshop presented by Christopher J. Shmank
+at Claremont Graduate University (CGU)
+
+TO-DO: 
+  a. read qgraph library documentation
+    - cor_auto()
+    - qgraph()
+    - averageLayout()
+    - ggmFit()
+  1. Find dataset with multiple correlations (e.g. Big Five in psych library)
+  2. Clean dataset
+  3. Apply qgraph function to dataset
+  4. add useful comments
+  5. add useful references
+
+NOTE: **qgraph is the only loaded library currently implemented**
+
+*Load libraries and data*
+```{r}
+library(pacman) #Package used to load all packages using p_load()
+p_load (qgraph, NetworkComparisonTest, bootnet, tidyverse, mice, VIM) 
+#library(knitr)#HOW TO SUCCESSFULLY KNIT THE MARKDOWN
+#library(psych) #PACKAGE NEEDED TO OPEN BIG 5 INVENTORY DATASET
+#library(qgraph) #VISUALIZATION PACKAGE FOR GENERATING NETWORK MODELS
+#library(NetworkComparisonTest) #USED TO DIRECTLY COMPARE TWO MODELS WITH SAME OBSERVED VARIABLES
+#library(bootnet) #USED ONLY WHEN FULL DATASET IN POSSESION TO DETERMINE STABILITY OF CENTRALITY INDICES/NETWORK
+#library(tidyverse) #USED FOR QUICK DATA CLEANING/MANIPULATION
+#library(mice) #MICE AND VIM ARE USED TO IMPUTE MISSING DATA
+#library(VIM)
+
+mydata <- read.csv("datafile.csv")
+
+```
+
+```{r}
+FreqCOR<-cor_auto(dat)
+
+FreqCOR
+# round(cor(datX),2)
+
+groups <- list( #to group things in network graphs using pretty color groupings
+  Example1=c(2, 5, 9, 13),
+  Example2=c(1, 4, 8, 12, 15),
+  Example3=c(3, 6, 11),
+  Example4=c(7, 10, 14) )
+
+```
+
+```{r}
+g1 <- qgraph(FreqCOR, layout = "spring", groups = groups, title = "Correlation Network", legend.cex = 0.5, details = TRUE)
+
+pdf("g1.pdf", width=10, height=7) #output
+qgraph(g1)
+dev.off()
+```
+
+```{r}
+g2 <- qgraph(FreqCOR, layout = "spring", graph = "pcor", groups = groups, title = "Partial Correlation Network", legend.cex = 0.5, details = TRUE)
+
+pdf("g2.pdf", width = 10, height = 7) #output
+qgraph(g2)
+dev.off()
+```
+
+```{r}
+g3 <- qgraph(FreqCOR, layout = "spring", graph = "EBICglasso", sampleSize = 9999, groups = groups, title = "Regularized Correlation Network", legend.cex = 0.5, details = TRUE)
+
+pdf("g3.pdf", width = 10, height = 7) #output
+qgraph(g3)
+dev.off()
+```
+
+```{r}
+g3t <- qgraph(FreqCOR, layout = "spring", graph = "EBICglasso", threshold = TRUE, sampleSize = 9999, groups = groups, title = "Regularized Correlation Network (Threshold)", legend.cex = 0.5, details = TRUE)
+
+pdf("g3t.pdf", width = 10, height = 7) #output
+qgraph(g3t)
+dev.off()
+```
+
+```{r}
+gEBIC <- EBICglasso(FreqCOR, n = 9999, gamma = .5, lambda.min.ratio = .01)
+
+pdf("gEBIC.pdf", width = 10, height = 7) #output
+qgraph(gEBIC, layout = "spring", title = "EBICglasso Network", subtitle = "Gamma = 0.5, Lambda = 0.01", groups = groups)
+dev.off()
+```
+
+```{r}
+gBIC <- EBICglasso(FreqCOR, gamma = .0, lambda.min.ratio = .01, n = 9999)
+
+pdf("gBIC.pdf", width = 10, height = 7) #output
+qgraph(gBIC, layout = "spring", groups = groups, title = "BICglasso Network", subtitle = "Gamma = 0.0; Lamba = 0.01" )
+dev.off()
+```
+
+```{r}
+L <- averageLayout(g1,g2,g3)
+
+pdf("Networks.pdf", width=10, height=7)
+qgraph(g1, layout = L)
+qgraph(g2, layout = L)
+qgraph(g3, layout = L)
+
+```
+
+```{r}
+# Fit Statistics of Network models
+fitNetwork <- ggmFit(gEBIC, FreqCOR, sampleSize = 9999, ebicTuning = .5)
+fitNetwork2 <- ggmFit(gBIC, FreqCOR, sampleSize = 9999, ebicTuning = .0)
+fitNetwork3 <- ggmFit(g3, FreqCOR, sampleSize = 9999, ebicTuning = .5)
+
+fitNetwork
+fitNetwork3
+fitNetwork2
+```
+
