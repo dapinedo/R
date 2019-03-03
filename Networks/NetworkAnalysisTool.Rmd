@@ -9,11 +9,13 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE) #knitting markdown to html, word, or pdf
 ```
 
 This document was adapted from a Workshop presented by Christopher J. Shmank
 at Claremont Graduate University (CGU)
+
+WARNING: the dataset we are using here uses a lot of processing power. Do not attempt this on a i386
 
 TO-DO: 
   a. read qgraph library documentation
@@ -32,36 +34,41 @@ NOTE: **qgraph is the only loaded library currently implemented**
 *Load libraries and data*
 ```{r}
 library(pacman) #Package used to load all packages using p_load()
-p_load (qgraph, NetworkComparisonTest, bootnet, tidyverse, mice, VIM) 
-#library(knitr)#HOW TO SUCCESSFULLY KNIT THE MARKDOWN
-#library(psych) #PACKAGE NEEDED TO OPEN BIG 5 INVENTORY DATASET
+p_load (qgraph, NetworkComparisonTest, bootnet) 
+
 #library(qgraph) #VISUALIZATION PACKAGE FOR GENERATING NETWORK MODELS
 #library(NetworkComparisonTest) #USED TO DIRECTLY COMPARE TWO MODELS WITH SAME OBSERVED VARIABLES
-#library(bootnet) #USED ONLY WHEN FULL DATASET IN POSSESION TO DETERMINE STABILITY OF CENTRALITY INDICES/NETWORK
-#library(tidyverse) #USED FOR QUICK DATA CLEANING/MANIPULATION
-#library(mice) #MICE AND VIM ARE USED TO IMPUTE MISSING DATA
-#library(VIM)
+#library(bootnet) #DETERMINE STABILITY OF CENTRALITY INDICES/NETWORK
+```
 
-mydata <- read.csv("datafile.csv")
+
+```{r}
+# Load big5 dataset:
+data(big5)
+data(big5groups)
+
+FreqCOR<-cor_auto(big5) #create positive definite correlational matrix
+
+# Correlations:
+Q <- qgraph(FreqCOR, minimum = 0.25, cut = 0.4, vsize = 1.5, groups = big5groups, 
+    legend = TRUE, borders = FALSE)
+title("Big 5 correlations", line = 2.5)
+```
+
+```{r}
+
+#Below is an example of groupings, here we are using the loaded "big5groups" from qgraph
+#to group things in network graphs using pretty color groupings
+#groups <- list( 
+  #Example1=c(2, 5, 9, 13),
+  #Example2=c(1, 4, 8, 12, 15),
+  #Example3=c(3, 6, 11),
+  #Example4=c(7, 10, 14) )
 
 ```
 
 ```{r}
-FreqCOR<-cor_auto(dat)
-
-FreqCOR
-# round(cor(datX),2)
-
-groups <- list( #to group things in network graphs using pretty color groupings
-  Example1=c(2, 5, 9, 13),
-  Example2=c(1, 4, 8, 12, 15),
-  Example3=c(3, 6, 11),
-  Example4=c(7, 10, 14) )
-
-```
-
-```{r}
-g1 <- qgraph(FreqCOR, layout = "spring", groups = groups, title = "Correlation Network", legend.cex = 0.5, details = TRUE)
+g1 <- qgraph(FreqCOR, layout = "spring", groups = big5groups, title = "Big 5 Correlation Network", legend.cex = 0.5, details = TRUE)
 
 pdf("g1.pdf", width=10, height=7) #output
 qgraph(g1)
@@ -69,7 +76,7 @@ dev.off()
 ```
 
 ```{r}
-g2 <- qgraph(FreqCOR, layout = "spring", graph = "pcor", groups = groups, title = "Partial Correlation Network", legend.cex = 0.5, details = TRUE)
+g2 <- qgraph(FreqCOR, layout = "spring", graph = "pcor", groups = big5groups, title = "Big 5 Partial Correlation Network", legend.cex = 0.5, details = TRUE)
 
 pdf("g2.pdf", width = 10, height = 7) #output
 qgraph(g2)
@@ -77,7 +84,7 @@ dev.off()
 ```
 
 ```{r}
-g3 <- qgraph(FreqCOR, layout = "spring", graph = "EBICglasso", sampleSize = 9999, groups = groups, title = "Regularized Correlation Network", legend.cex = 0.5, details = TRUE)
+g3 <- qgraph(FreqCOR, layout = "spring", graph = "EBICglasso", sampleSize = 500, groups = big5groups, title = "Big 5 Regularized Correlation Network", legend.cex = 0.5, details = TRUE)
 
 pdf("g3.pdf", width = 10, height = 7) #output
 qgraph(g3)
@@ -85,7 +92,7 @@ dev.off()
 ```
 
 ```{r}
-g3t <- qgraph(FreqCOR, layout = "spring", graph = "EBICglasso", threshold = TRUE, sampleSize = 9999, groups = groups, title = "Regularized Correlation Network (Threshold)", legend.cex = 0.5, details = TRUE)
+g3t <- qgraph(FreqCOR, layout = "spring", graph = "EBICglasso", threshold = TRUE, sampleSize = 500, groups = big5groups, title = "Big 5 Regularized Correlation Network (Threshold)", legend.cex = 0.5, details = TRUE)
 
 pdf("g3t.pdf", width = 10, height = 7) #output
 qgraph(g3t)
@@ -120,9 +127,9 @@ qgraph(g3, layout = L)
 
 ```{r}
 # Fit Statistics of Network models
-fitNetwork <- ggmFit(gEBIC, FreqCOR, sampleSize = 9999, ebicTuning = .5)
-fitNetwork2 <- ggmFit(gBIC, FreqCOR, sampleSize = 9999, ebicTuning = .0)
-fitNetwork3 <- ggmFit(g3, FreqCOR, sampleSize = 9999, ebicTuning = .5)
+fitNetwork <- ggmFit(gEBIC, FreqCOR, sampleSize = 500, ebicTuning = .5)
+fitNetwork2 <- ggmFit(gBIC, FreqCOR, sampleSize = 500, ebicTuning = .0)
+fitNetwork3 <- ggmFit(g3, FreqCOR, sampleSize = 500, ebicTuning = .5)
 
 fitNetwork
 fitNetwork3
