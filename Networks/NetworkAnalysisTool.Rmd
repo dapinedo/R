@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE) #knitting markdown to html, word, or pdf
 ```
 
 This document was adapted from a Workshop presented by Christopher J. Shmank
-at Claremont Graduate University (CGU)
+at Claremont Graduate University (CGU) in February 2019
 
 WARNING: the dataset we are using here uses a lot of processing power. Do not attempt this on a i386
 
