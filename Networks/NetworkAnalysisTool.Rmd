@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE) #knitting markdown to html, word, or pdf
 ```
 
 This document was adapted from a Workshop presented by Christopher J. Shmank
-at Claremont Graduate University (CGU) in February 2019
+at Claremont Graduate University (CGU)
 
 WARNING: the dataset we are using here uses a lot of processing power. Do not attempt this on a i386
 
@@ -23,7 +23,8 @@ TO-DO:
     - qgraph()
     - averageLayout()
     - ggmFit()
-  1. Find dataset with multiple correlations (e.g. Big Five in psych library)
+    - EBICglasso()
+  1. ~~Find dataset with multiple correlations (e.g. Big Five)~~
   2. Clean dataset
   3. Apply qgraph function to dataset
   4. add useful comments
@@ -46,13 +47,21 @@ p_load (qgraph, NetworkComparisonTest, bootnet)
 # Load big5 dataset:
 data(big5)
 data(big5groups)
+dim(big5)
 
-FreqCOR<-cor_auto(big5) #create positive definite correlational matrix
+#only take first 240 observations
+big5.subset <- big5[c(1:240),]
+dim(big5.subset)
+```
 
-# Correlations:
-Q <- qgraph(FreqCOR, minimum = 0.25, cut = 0.4, vsize = 1.5, groups = big5groups, 
-    legend = TRUE, borders = FALSE)
-title("Big 5 correlations", line = 2.5)
+```{r}
+#create positive definite correlational matrix of subsetted dataset
+#go grab some tea, this will take a minute
+FreqCOR<-cor_auto(big5.subset)
+
+#Covariance matrix, will have negative values so doesn't work in all cases
+#This method results in negative numbers and is not implemented here
+CovMat <- abs(cov(big5.subset, use="pairwise.complete.obs"))
 ```
 
 ```{r}
@@ -68,7 +77,15 @@ title("Big 5 correlations", line = 2.5)
 ```
 
 ```{r}
-g1 <- qgraph(FreqCOR, layout = "spring", groups = big5groups, title = "Big 5 Correlation Network", legend.cex = 0.5, details = TRUE)
+#Correlations:
+Q <- qgraph(FreqCOR, minimum = 0.25, cut = 0.4, vsize = 1.5, groups = big5groups, 
+    legend = TRUE, borders = FALSE, details = TRUE, sampleSize = nrow(FreqCOR), minimum = .5)
+title("Big 5 correlations", line = 2.5)
+```
+
+```{r}
+g1 <- qgraph(FreqCOR, layout = "spring", groups = big5groups, legend.cex = 0.5, details = TRUE, sampleSize = nrow(FreqCOR), minimum = .25)
+title("Big 5 Correlation Network")
 
 pdf("g1.pdf", width=10, height=7) #output
 qgraph(g1)
@@ -76,7 +93,8 @@ dev.off()
 ```
 
 ```{r}
-g2 <- qgraph(FreqCOR, layout = "spring", graph = "pcor", groups = big5groups, title = "Big 5 Partial Correlation Network", legend.cex = 0.5, details = TRUE)
+g2 <- qgraph(FreqCOR, layout = "spring", graph = "pcor", groups = big5groups, legend.cex = 0.5, details = TRUE, sampleSize = nrow(FreqCOR), minimum = .25)
+title("Big 5 Partial Correlation Network")
 
 pdf("g2.pdf", width = 10, height = 7) #output
 qgraph(g2)
@@ -84,7 +102,8 @@ dev.off()
 ```
 
 ```{r}
-g3 <- qgraph(FreqCOR, layout = "spring", graph = "EBICglasso", sampleSize = 500, groups = big5groups, title = "Big 5 Regularized Correlation Network", legend.cex = 0.5, details = TRUE)
+g3 <- qgraph(FreqCOR, layout = "spring", graph = "EBICglasso", sampleSize = 240, groups = big5groups, legend.cex = 0.5, details = TRUE)
+title("Big 5 Regularized Correlation Network")
 
 pdf("g3.pdf", width = 10, height = 7) #output
 qgraph(g3)
@@ -92,7 +111,8 @@ dev.off()
 ```
 
 ```{r}
-g3t <- qgraph(FreqCOR, layout = "spring", graph = "EBICglasso", threshold = TRUE, sampleSize = 500, groups = big5groups, title = "Big 5 Regularized Correlation Network (Threshold)", legend.cex = 0.5, details = TRUE)
+#base threshold value on the dataset by viewing the distribution, min, and or max values
+g3t <- qgraph(FreqCOR, layout = "spring", graph = "EBICglasso", threshold = 0.05, sampleSize = 240, groups = big5groups, title = "Big 5 Regularized Correlation Network (Threshold)", legend.cex = 0.5, details = TRUE)
 
 pdf("g3t.pdf", width = 10, height = 7) #output
 qgraph(g3t)
@@ -100,39 +120,49 @@ dev.off()
 ```
 
 ```{r}
-gEBIC <- EBICglasso(FreqCOR, n = 9999, gamma = .5, lambda.min.ratio = .01)
+# This is similar to g3 above, but in this case you may change gamma and lambda
+gEBIC <- EBICglasso(FreqCOR, n = 240, gamma = .5, lambda.min.ratio = .01)
+qgraph(gEBIC, layout = "spring", title = "Big 5 EBICglasso Network", groups = big5groups, details = TRUE)
 
 pdf("gEBIC.pdf", width = 10, height = 7) #output
-qgraph(gEBIC, layout = "spring", title = "EBICglasso Network", subtitle = "Gamma = 0.5, Lambda = 0.01", groups = groups)
 dev.off()
 ```
 
 ```{r}
-gBIC <- EBICglasso(FreqCOR, gamma = .0, lambda.min.ratio = .01, n = 9999)
+gBIC <- EBICglasso(FreqCOR, gamma = .0, lambda.min.ratio = .01, n = 240)
+qgraph(gBIC, layout = "spring", groups = big5groups, title = "Big 5 BICglasso Network", details = TRUE)
 
 pdf("gBIC.pdf", width = 10, height = 7) #output
-qgraph(gBIC, layout = "spring", groups = groups, title = "BICglasso Network", subtitle = "Gamma = 0.0; Lamba = 0.01" )
 dev.off()
 ```
 
 ```{r}
 L <- averageLayout(g1,g2,g3)
-
-pdf("Networks.pdf", width=10, height=7)
 qgraph(g1, layout = L)
 qgraph(g2, layout = L)
-qgraph(g3, layout = L)
+qgraph(g3, layout = L) 
+title("Averaged Partial, Regularized, and Full Correlational Networks")
 
+pdf("AveragedNetworks.pdf", width=10, height=7)
+dev.off()
 ```
 
 ```{r}
 # Fit Statistics of Network models
-fitNetwork <- ggmFit(gEBIC, FreqCOR, sampleSize = 500, ebicTuning = .5)
-fitNetwork2 <- ggmFit(gBIC, FreqCOR, sampleSize = 500, ebicTuning = .0)
-fitNetwork3 <- ggmFit(g3, FreqCOR, sampleSize = 500, ebicTuning = .5)
+
+#These are not working and throwing error:
+#Refitting network
+#NaNs producedError in if (lower.lambda(0) * lower.lambda(Tm) > 0) { : 
+#  missing value where TRUE/FALSE needed
+
+#may need to tweak edge detection/lambda values, but not there yet.
+
+fitNetwork <- ggmFit(gEBIC, FreqCOR, sampleSize = nrow(FreqCOR), ebicTuning = .5, verbose = TRUE)
+fitNetwork2 <- ggmFit(gBIC, FreqCOR, sampleSize = nrow(FreqCOR), ebicTuning = .0, verbose = TRUE)
+fitNetwork3 <- ggmFit(g3, FreqCOR, sampleSize = nrow(FreqCOR), ebicTuning = .5, verbose = TRUE)
 
 fitNetwork
-fitNetwork3
 fitNetwork2
+fitNetwork3
 ```
 
