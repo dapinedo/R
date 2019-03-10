@@ -13,11 +13,11 @@ library(knitr); opts_chunk$set(error=TRUE, cache=FALSE)
 
 *Prompt*
 ----------
-Suppose a clinical psychologist wanted to test the hypothesis that, among teenagers, state anxiety moderates the relationship between neuroticism and depression. The psychologist conducts a correlational study of 231 teenagers in a high school in the Midwest.
+Suppose a clinical psychologist wanted to test the hypothesis that among teenagers, state anxiety moderates the relationship between neuroticism and depression. The psychologist conducts a correlational study of 231 teenagers in a high school in the Midwest.
 
 *Variables:*
 bdi = Beck Depression Inventory
-epiNeur = Neuroticism from Eysenck Personlaity Inventory
+epiNeur = Neuroticism from Eysenck Personality Inventory
 stateanx = state anxiety
 
 *Data:*
@@ -27,10 +27,9 @@ From the console, View(epi.bfi)
 ```{r}
 
 # Load packages
-library(psych)
-library(jmv)
-library(car)
-library(rockchalk)
+library(pacman)
+p_load(psych, jmv, car, rockchalk)
+# rockchalk is used for figure
 
 # Create dataframe
 dat <- epi.bfi
@@ -47,7 +46,7 @@ desc <- descriptives(data = dat,
                      kurt = TRUE)
 desc
 
-# Correlations
+# Correlations of all variables in this dataset
 round(cor(dat), 2)
 
 # Correlations for this analysis
@@ -59,6 +58,7 @@ round(cor(newdat), 2)
 
 ```{r}
 # Multiple regression, No moderation
+# REMEMBER: Coefficient estimate for one predictor is slope across average of other predictors.
 
 model1 <- linReg(data = dat, 
                  dep = 'bdi', 
@@ -73,14 +73,19 @@ model1
 ```
 
 ```{r}
-# Multiple regression, Moderation
+# Multiple regression with Moderation
+# REMEMBER: Coefficient estimate for one predictor is slope across average of other predictors.
+#F test tests null hypothesis that null hypothesis is zero (is square of t score of product term)
+#T test test null hypothesis that product term is zero
 
 dat$mod <- dat$epiNeur * dat$stateanx
 
 model2 <- linReg(data = dat, 
                  dep = 'bdi', 
                  covs = c('epiNeur', 'stateanx', 'mod'),
-                 blocks = list('epiNeur', 'stateanx', 'mod'), 
+                 blocks = list(
+                            list('epiNeur', 'stateanx'), 
+                            list('mod') ), 
                  modelTest = TRUE, 
                  r2Adj = TRUE,
                  stdEst = TRUE,
@@ -90,7 +95,7 @@ model2
 ```
 
 ```{r}
-# Hierarchical regression wiht model comparison (R2 change when adding moderator)
+# Hierarchical regression with model comparison (R2 change when adding moderator)
 
 modelcomp <- linReg(data = dat, 
                     dep = 'bdi', 
@@ -125,6 +130,8 @@ modelcomp.c <- linReg(data = dat,
 modelcomp.c
 
 # Graph it
+# moderator is represented on the plot line that is in the legend
+# high state anxiety "exaggerates" the relationship between neuroticism and beck depression inventory
 plot1 <- lm(bdi ~ epiNeur + stateanx + (epiNeur*stateanx), data = dat)
 plotSlopes(plot1, plotx = "epiNeur", modx = "stateanx", modxVals = "std.dev.", main = "Moderation Analysis")
 
