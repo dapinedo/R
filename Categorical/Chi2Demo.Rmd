@@ -39,6 +39,7 @@ You are relabeling the levels of each variable.
 dat$sex <- factor(dat$sex, levels = c(1,2), labels = c("Male", "Female"))
 dat$rank <- factor(dat$rank, levels = c(1,2,3,4), labels = c("Full", "Associate", "Assistant", "Instructor"))
 dat$level <- factor(dat$level, levels = c(1,2), labels = c("Doctorate", "Masters"))
+head(dat)
 ```
 
 ## Goodness of Fit
@@ -95,11 +96,12 @@ jmv::propTestN(data = dat,
                ratio = c(.44, .28, .26, .02))
 ```
 
-## Chi-sqaure Test of Independence
+## Chi-square Test of Independence
 Is sex dependent upon rank? Is there a relationship between sex and rank? 
 
-We have a *new* effect size here (Cramér's V), what does it mean in the context of these results?
+We have a *new* effect size here (Cramer's V), what does it mean in the context of these results?
 ```{r}
+# Cramer's V - small = .1; medium = .3, large = .5
 jmv::contTables(dat = dat,
                 rows = 'sex',
                 cols = 'rank',
@@ -164,7 +166,7 @@ summary(model4)
 
 Compare Models
 ```{r}
-anova(model1,model2,model3, model4)
+stats::anova(model1,model2,model3, model4)
 ```
 
 The JMV way produces a cleaner output, but there are some drawbacks. Overall, it's good to know multiple ways but see which may be best for your analyses or purpose(s). For now, stick with loglm function.
