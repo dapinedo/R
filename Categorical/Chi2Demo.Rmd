@@ -1,0 +1,203 @@
+---
+title: "Chi Squared"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Instructions
+----------
+  The data comes from the faculty salary example.
+
+  There are three variables: 
+    sex (sex of professor)
+      1 = male
+      2 = female
+    rank (rank of professor)
+      1 = full professor
+      2 = associate professor
+      3 = assistant professor
+      4 = instructor
+    level (type of program that professor teaches in)
+      1 = doctoral program
+      2 = masters program  
+        
+```{r}
+library(pacman) #Package used to load all packages using p_load(); will install missing packages
+p_load(vcd, MASS, jmv, gmodels)
+```
+Load your data
+```{r}
+dat <- read.csv("https://www.dropbox.com/s/w2bcd0c2n7qgwzz/Salary-1.csv?dl=1")
+head(dat)
+```
+
+While this part isn't necessary it will make this entire demo easier to read.
+You are relabeling the levels of each variable. 
+```{r}
+dat$sex <- factor(dat$sex, levels = c(1,2), labels = c("Male", "Female"))
+dat$rank <- factor(dat$rank, levels = c(1,2,3,4), labels = c("Full", "Associate", "Assistant", "Instructor"))
+dat$level <- factor(dat$level, levels = c(1,2), labels = c("Doctorate", "Masters"))
+```
+
+## Goodness of Fit
+Observed Frequencies for each variable.
+```{r}
+sex <- table(dat$sex)
+sex
+
+rank <- table(dat$rank)
+rank
+
+level <- table(dat$level)
+level
+
+## uses descriptives from jmv library - it is mas cute
+
+desc <- descriptives(data = dat, 
+                     vars = c('sex', 'rank', 'level'), 
+                     freq = TRUE)
+desc
+
+```
+
+Chi Squared Test Goodness of fit (testing if all frequencies are equal)
+```{r}
+jmv::propTestN(data = dat,
+               var = 'sex',
+               expected = TRUE, 
+               ratio = c(1,1))
+
+jmv::propTestN(data = dat,
+               var = 'rank',
+               expected = TRUE, 
+               ratio = c(1,1,1,1))
+
+jmv::propTestN(data = dat,
+               var = 'level',
+               expected = TRUE, 
+               ratio = c(1,1))
+
+```
+
+# However, what if we expected the proportions to be a little different. For example, based on an educated guess:  
+  44% full Professors,  
+  28% Associate Professors,  
+  26% Assistant Professors,  
+  2% Instructors
+
+# How does it compare to the Chi-square where all levels were expected to have equal proportions?
+```{r}
+jmv::propTestN(data = dat,
+               var = 'rank',
+               expected = TRUE, 
+               ratio = c(.44, .28, .26, .02))
+```
+
+## Chi-sqaure Test of Independence
+Is sex dependent upon rank? Is there a relationship between sex and rank? 
+
+We have a *new* effect size here (Cramér's V), what does it mean in the context of these results?
+```{r}
+jmv::contTables(dat = dat,
+                rows = 'sex',
+                cols = 'rank',
+                exp = TRUE,
+                phiCra = TRUE)
+
+```
+
+### Chi-square Test of Independence
+Is level dependent upon sex? Is there a relationship between level and sex?
+```{r}
+jmv::contTables(dat = dat,
+                rows = 'sex',
+                cols = 'level',
+                exp = TRUE,
+                phiCra = TRUE)
+```
+
+### Chi-square Test of Independence
+How about for rank and level?
+```{r}
+jmv::contTables(dat = dat,
+                rows = 'rank',
+                cols = 'level',
+                exp = TRUE,
+                phiCra = TRUE)
+```
+
+# What happens if we take this a step further...
+
+Three way contingency test require *log-linear modeling*.  
+Start with the independence model and end with the saturated model.  
+
+Model 1: There are no relationships among the variables.
+
+```{r}
+# overall model test
+mytable<-xtabs(~dat$sex+dat$rank+dat$level)
+model1 <- loglm(~dat$sex+dat$rank+dat$level, mytable)
+summary(model1)
+
+
+```
+
+Model 2: Rank and Sex are *independent* but Rank/Level are related and Sex/Level are *related*.
+```{r}
+model2 <- loglm(~(dat$rank+dat$sex)*dat$level, mytable)
+summary(model2)
+```
+
+Model 3: *All two-way* relationships
+```{r}
+model3 <- loglm(~dat$rank*dat$level + dat$level*dat$sex + dat$rank*dat$sex, mytable)
+summary(model3)
+```
+
+Model 4: All two-way relationships *and the three-way* relationship
+```{r}
+model4 <- loglm(~dat$rank*dat$level*dat$sex, mytable)
+summary(model4)
+```
+
+Compare Models
+```{r}
+anova(model1,model2,model3, model4)
+```
+
+The JMV way produces a cleaner output, but there are some drawbacks. Overall, it's good to know multiple ways but see which may be best for your analyses or purpose(s). For now, stick with loglm function.
+```{r}
+# note the similarities between 'Deviance' values and the model comparison stats with the loglm output. 
+# this output is cleaner looking, but will give incorrect df for each model. 
+
+jmv::logLinear(
+  data = dat,
+  counts = NULL,
+  factors = c('sex', 'rank', 'level'),
+  blocks = list(
+    list(
+      'sex', 'rank', 'level'),
+    list(
+      c('sex', 'level'),
+      c('rank', 'level')),
+    list(
+      c('sex', 'rank')),
+    list(
+      c('sex', 'rank', 'level'))),
+  refLevels = list(
+    list(
+      var = 'sex',
+      ref = 'Male'),
+    list(
+      var = 'rank',
+      ref = 'Full'),
+    list(
+      var = 'level',
+      ref = 'Doctorate')),
+  modelTest = TRUE)
+
+
+
+```
