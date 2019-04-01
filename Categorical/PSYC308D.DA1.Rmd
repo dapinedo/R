@@ -1,0 +1,162 @@
+---
+title: "PSY308d.DA1"
+author: "Daniel Pinedo"
+date: "April 2, 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Main Analyses:**
+
+A set of researchers from a marketing company conducted a survey to investigate reading habits of Americans (this is a real dataset). Although a study has been published on this already, they have tasked you with investigating it further in order to understand the relationships between certain demographic variables of their sampled readers, inculding sex, employment, martial status, race, and age. 
+
+While your advisor thinks there might be some interesting results that could come from this data for an upcoming conference presentation, she only wants a sample write-up of a Results and Discussion section to start based on the following proposed RQs. 
+
+    Research Questions to Investigate:
+      *1:* Is there a relationship betwween sex and employment?
+      *2:* Is there a relationship between sex and education? 
+      *3:* Is there a relationship between martial status and employment? 
+
+**Conceptual Addition:**
+Following your analyses - please incorporate into the Discussion section of your write-up the following conceptual addition: 
+
+1.) Your advisor would also like your notes on a potentially interesting caveat for using this information to make generalizations to the general public. Specifically, your advisor wants you to test that the proportions of the sample match those which may be expected in the U.S. population for race, per the proportions below:
+    
+    White: 80%
+    Black or African American: 12%
+    Asian or Pacific Islander: 3%
+	  Mixed Race: 2%
+	  Native American/American Indian: 1%
+	  Other: 2%
+
+2.) Following testing, interpret these results and discuss how this may affect your ability to interpret the data and make generalizations. What suggestions could you make moving forward? 
+
+*_Please report all relevant statistics per APA format and write for a professional audience._*
+
+```{r}
+library(pacman) #Package used to load all packages using p_load(); will install missing packages
+p_load(vcd, MASS, jmv, gmodels)
+```
+
+```{r}
+dat <- read.csv("https://www.dropbox.com/s/zhhyiegj8gyakuu/Reading.csv?dl=1")
+head(dat) # check to see if labels are needed. In this case they are not. See Chi2Demo.Rmd for how-to.
+```
+
+Take a look at the data set,
+```{r}
+# Run descriptives for categorical variables
+glimpse <- descriptives(data = dat, 
+                        vars = c('Sex', 'Employement', 'Education', 'Married', 'Race'), 
+                        freq = TRUE)
+glimpse
+
+# First thing to note is the Row for "Missing" DATA --> Different N's and the line that indicates how many are missing shows there are missing cases in our sample of items to be tested
+# There are 44 missing total all from the "Race" category {no further analysis of missing values needed - see /Regression/Regression_DIagnostics for how-to}
+#Option: (1) delete list-wise
+```
+
+Remove missing cases and view data again with **observed frequencies**
+```{r}
+# Option: Listwise deletion of missing data. New dataset is named "dat.no.NA"
+dat.no.NA <- na.omit(dat)
+
+# check descriptives again
+# no missing cases
+glimpse.no.NA <- descriptives(data = dat.no.NA, 
+                              vars = c('Sex', 'Employement', 'Education', 'Married', 'Race'), 
+                              freq = TRUE)
+glimpse.no.NA
+
+```
+
+Assumptions
+  - 1. Adequate expected cell counts
+    - 5 or more in 2 x 2 or 5 or more in 80% of cells for larger table
+    - Otherwise, Fisher's test
+  - 2. Independence of Observations
+    - otherwise McNemar's test of dependent proportions
+    
+## Chi-square Test of Independence
+H1: Is Sex dependent upon Employement? Is there a relationship between Sex and Employement? 
+H2: Is Sex dependent upon Education? Is there a relationship between Sex and Education? 
+H3: Is Married dependent upon Employement? Is there a relationship between Married and Employement? 
+
+Cramer's V - small = .1; medium = .3, large = .5; 
+indicates effect size of discrepancy between observed and expected scores
+```{r}
+# Chi-square = Sum[(Observed - Expected)^2/Expected]
+# Expected = [(# of row entries for cel)/(# total entries)] * (# of column entries for cel)
+# Expected indicates expected values for each category if there is no relationship between two categorical variables
+# df = (# rows - 1) * (# columns - 1)
+# report APA, magnitude of effect (Cramer's V), direction of effect example (more or less than expected in each category - include Contingency Table)
+
+H1 <- jmv::contTables(dat = dat.no.NA,
+                rows = 'Employement',
+                cols = 'Sex',
+                exp = TRUE,
+                phiCra = TRUE)
+
+H1
+
+H2 <- jmv::contTables(dat = dat.no.NA,
+                rows = 'Education',
+                cols = 'Sex',
+                exp = TRUE,
+                phiCra = TRUE)
+
+H2
+
+H3 <- jmv::contTables(dat = dat.no.NA,
+                rows = 'Employement',
+                cols = 'Married',
+                exp = TRUE,
+                phiCra = TRUE)
+
+H3
+
+```
+
+## Conceptual Question: Goodness-of-Fit
+H0: Proportions fit expected values for Race
+Ha: Proportions do not fit expected values for Race
+
+*Order Matters*
+Asian or Pacific Islander: 3%
+Black or African American: 12%
+Mixed Race: 2%
+Native American/American Indian: 1%
+Other: 2%
+White: 80%
+
+```{r}
+# H0 = equal proportions in each category; Ha = unequal proportions in each category
+# Chi-square = Sum[(Observed - Expected)^2/Expected]
+# df = # of categories - 1
+
+# use print(levels(dat.no.NA$Race)) to check for order of list in order to apply ratios accurately
+# in this case it is in alphabetical order
+
+# First checking unweighted expected values
+# H0: equal proportions in each category
+# Ha: unequal proportions in each category
+goodness <- jmv::propTestN(data = dat.no.NA,
+                                    var = 'Race',
+                                    expected = TRUE, 
+                                    ratio = c(1, 1, 1, 1, 1, 1))
+
+goodness
+# Ha holds
+
+# check with weights added from conceptual question
+goodness.weighted <- jmv::propTestN(data = dat.no.NA,
+                                    var = 'Race',
+                                    expected = TRUE, 
+                                    ratio = c(.03, .12, .02, .01, .02, .80))
+
+goodness.weighted
+# H0 holds
+```

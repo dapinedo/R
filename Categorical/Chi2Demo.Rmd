@@ -63,8 +63,18 @@ desc
 
 ```
 
+Assumptions
+  - 1. Adequate expected cell counts
+    - 5 or more in 2 x 2 or 5 or more in 80% of cells for larger table
+    - Otherwise, Fisher's test
+  - 2. Independence of Observations
+    - otherwise McNemar's test of dependent proportions
+
 Chi Squared Test Goodness of fit (testing if all frequencies are equal)
 ```{r}
+# H0 = equal proportions in each category; Ha = unequal proportions in each category
+# Chi-square = Sum[(Observed - Expected)^2/Expected]
+# df = # of categories - 1
 jmv::propTestN(data = dat,
                var = 'sex',
                expected = TRUE, 
@@ -90,6 +100,7 @@ jmv::propTestN(data = dat,
 
 # How does it compare to the Chi-square where all levels were expected to have equal proportions?
 ```{r}
+# H0 = baseline model proportions; Ha = significantly different than baseline model proportions
 jmv::propTestN(data = dat,
                var = 'rank',
                expected = TRUE, 
@@ -97,17 +108,21 @@ jmv::propTestN(data = dat,
 ```
 
 ## Chi-square Test of Independence
-Is sex dependent upon rank? Is there a relationship between sex and rank? 
+Ha: Is sex dependent upon rank? Is there a relationship between sex and rank? 
 
 We have a *new* effect size here (Cramer's V), what does it mean in the context of these results?
 ```{r}
-# Cramer's V - small = .1; medium = .3, large = .5
+# Chi-square = Sum[(Observed - Expected)^2/Expected]
+# Expected = [(# of row entries for cel)/(# total entries)] * (# of column entries for cel)
+# Expected means expected values for each category if there is no relationship between two categorical variables
+# df = (# rows - 1) * (# columns - 1)
+# Cramer's V - small = .1; medium = .3, large = .5; discrepancy between observed and expected scores
 jmv::contTables(dat = dat,
                 rows = 'sex',
                 cols = 'rank',
                 exp = TRUE,
                 phiCra = TRUE)
-
+# report APA, magnitude of effect (Cramer's V), direction of effect example (more or less than expected in each category - see Contingency Table)
 ```
 
 ### Chi-square Test of Independence
@@ -135,12 +150,19 @@ jmv::contTables(dat = dat,
 Three way contingency test require *log-linear modeling*.  
 Start with the independence model and end with the saturated model.  
 
-Model 1: There are no relationships among the variables.
+Model 1, There are no relationships among the variables.
 
 ```{r}
 # overall model test
-mytable<-xtabs(~dat$sex+dat$rank+dat$level)
-model1 <- loglm(~dat$sex+dat$rank+dat$level, mytable)
+# 2 x 4 x 2 contingency table
+# Observed = mytable
+# Expected = loglm
+# Expected = Expected frequencies in 2 x 4 x 2 table if there are no relationships
+# Null hypothesis means that expected frequencies satisfy our model of expected values
+
+mytable<- xtabs(~dat$sex + dat$rank + dat$level) # table of observed values
+model1 <- loglm(~dat$sex + dat$rank + dat$level, mytable)
+mytable
 summary(model1)
 
 
@@ -160,6 +182,7 @@ summary(model3)
 
 Model 4: All two-way relationships *and the three-way* relationship
 ```{r}
+#saturated model
 model4 <- loglm(~dat$rank*dat$level*dat$sex, mytable)
 summary(model4)
 ```
