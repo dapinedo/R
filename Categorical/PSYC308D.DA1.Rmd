@@ -16,7 +16,7 @@ A set of researchers from a marketing company conducted a survey to investigate 
 While your advisor thinks there might be some interesting results that could come from this data for an upcoming conference presentation, she only wants a sample write-up of a Results and Discussion section to start based on the following proposed RQs. 
 
     Research Questions to Investigate:
-      *1:* Is there a relationship betwween sex and employment?
+      *1:* Is there a relationship between sex and employment?
       *2:* Is there a relationship between sex and education? 
       *3:* Is there a relationship between martial status and employment? 
 
