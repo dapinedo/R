@@ -18,7 +18,7 @@ While your advisor thinks there might be some interesting results that could com
     Research Questions to Investigate:
       *1:* Is there a relationship between sex and employment?
       *2:* Is there a relationship between sex and education? 
-      *3:* Is there a relationship between martial status and employment? 
+      *3:* Is there a relationship between marital status and employment? 
 
 **Conceptual Addition:**
 Following your analyses - please incorporate into the Discussion section of your write-up the following conceptual addition: 
@@ -38,7 +38,7 @@ Following your analyses - please incorporate into the Discussion section of your
 
 ```{r}
 library(pacman) #Package used to load all packages using p_load(); will install missing packages
-p_load(vcd, MASS, jmv, gmodels)
+p_load(vcd, MASS, jmv, gmodels, VIM)
 ```
 
 ```{r}
@@ -46,44 +46,64 @@ dat <- read.csv("https://www.dropbox.com/s/zhhyiegj8gyakuu/Reading.csv?dl=1")
 head(dat) # check to see if labels are needed. In this case they are not. See Chi2Demo.Rmd for how-to.
 ```
 
-Take a look at the data set,
+Subset and take a look at the data
 ```{r}
-# Run descriptives for categorical variables
-glimpse <- descriptives(data = dat, 
-                        vars = c('Sex', 'Employement', 'Education', 'Married', 'Race'), 
-                        freq = TRUE)
+# Subset to use only necessary variables
+myvars <- c("Sex", "Race", "Married.status", "Education", "Employement")
+dat.subset <- dat[myvars]
+
+# see what is missing
+
+glimpse <- descriptives(data = dat.subset, 
+                        vars = c('Sex', 'Employement', 'Education', 'Married.status', 'Race'))
 glimpse
 
-# First thing to note is the Row for "Missing" DATA --> Different N's and the line that indicates how many are missing shows there are missing cases in our sample of items to be tested
-# There are 44 missing total all from the "Race" category {no further analysis of missing values needed - see /Regression/Regression_DIagnostics for how-to}
-#Option: (1) delete list-wise
+# First thing to note is the Row for "Missing" cases
+# Option: delete list-wise
+```
+
+Check missing data for patterns
+```{r}
+#check the pattern of missing data
+VIM_plot <-aggr(dat.subset, 
+                 col=c('navyblue', 'yellow'), 
+                 numbers = TRUE, 
+                 prop = FALSE,
+                 sortVars = TRUE, 
+                 labels = names(dat.subset), 
+                 cex.axis = .7, 
+                 gap = 3, 
+                 ylab = c("Missing data", "Pattern"))
+
+#yellow bar chart is percentage missing from each variable
+#blue and yellow chart shows pattern of missing data
 ```
 
 Remove missing cases and view data again with **observed frequencies**
 ```{r}
 # Option: Listwise deletion of missing data. New dataset is named "dat.no.NA"
-dat.no.NA <- na.omit(dat)
+dat.no.NA <- na.omit(dat.subset)
 
 # check descriptives again
 # no missing cases
 glimpse.no.NA <- descriptives(data = dat.no.NA, 
-                              vars = c('Sex', 'Employement', 'Education', 'Married', 'Race'), 
+                              vars = c('Sex', 'Employement', 'Education', 'Married.status', 'Race'), 
                               freq = TRUE)
 glimpse.no.NA
 
 ```
 
-Assumptions
+Assumptions for test of independence
   - 1. Adequate expected cell counts
     - 5 or more in 2 x 2 or 5 or more in 80% of cells for larger table
     - Otherwise, Fisher's test
   - 2. Independence of Observations
-    - otherwise McNemar's test of dependent proportions
+    - Otherwise, McNemar's test of dependent proportions
     
 ## Chi-square Test of Independence
 H1: Is Sex dependent upon Employement? Is there a relationship between Sex and Employement? 
 H2: Is Sex dependent upon Education? Is there a relationship between Sex and Education? 
-H3: Is Married dependent upon Employement? Is there a relationship between Married and Employement? 
+H3: Is Married dependent upon Employement? Is there a relationship between Married.status and Employement? 
 
 Cramer's V - small = .1; medium = .3, large = .5; 
 indicates effect size of discrepancy between observed and expected scores
@@ -112,7 +132,7 @@ H2
 
 H3 <- jmv::contTables(dat = dat.no.NA,
                 rows = 'Employement',
-                cols = 'Married',
+                cols = 'Married.status',
                 exp = TRUE,
                 phiCra = TRUE)
 
