@@ -1,0 +1,111 @@
+---
+title: "Log Linear Models"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Instructions
+----------
+An analysis of admissions data at UC Berkely initially suggested a gender bias, such that men were admitted at a higher rate than women. However, a more detialed analysis reveals a three-way reationship between gender, admission decision, and department. It turns out that women applied to more selective departmets and in one department (least selective) the admit rate for women was actually higher than for men (the opposite of the initial result).
+
+These data are available in R, data = UCBAdmissions
+
+```{r}
+library(vcd)
+library(MASS)
+```
+
+
+##Initial analysis
+```{r}
+Gender.Admit <- xtabs(Freq ~ Admit + Gender, data=UCBAdmissions) 
+chisq.test(Gender.Admit)
+assocstats(Gender.Admit)
+Gender.Admit
+
+UCBAdmissions
+```
+##Log linear models
+```{r}
+
+model1 <- loglm( ~ Admit + Dept + Gender, data=UCBAdmissions)
+summary(model1)
+
+model2 <- loglm( ~ Admit*Dept + Gender, data=UCBAdmissions)
+summary(model2)
+
+model3 <- loglm( ~ Admit*Gender + Dept, data=UCBAdmissions)
+summary(model3)
+
+model4 <- loglm( ~ Admit + Dept*Gender, data = UCBAdmissions)
+summary(model4)
+
+model5 <- loglm( ~ Admit*Dept + Admit*Gender, data = UCBAdmissions)
+summary(model5)
+
+model6 <- loglm( ~ Admit*Dept + Dept*Gender, data = UCBAdmissions)
+summary(model6)
+
+model7 <- loglm( ~ Admit*Gender + Dept*Gender, data = UCBAdmissions)
+summary(model7)
+
+model8 <- loglm( ~ Admit*Gender + Dept*Gender + Admit*Dept, data = UCBAdmissions)
+summary(model8)
+
+model9 <- loglm( ~ Admit*Gender*Dept, data = UCBAdmissions)
+summary(model9)
+
+```
+
+##Compare models
+```{r}
+anova(model1, model2, model3, model4, model5, model6, model7, model8, model9)
+
+```
+
+## Proportions broken down by department 
+```{r}
+prop.table(UCBAdmissions[,,"A"], margin=2)
+prop.table(UCBAdmissions[,,"B"], margin=2)
+prop.table(UCBAdmissions[,,"C"], margin=2)
+prop.table(UCBAdmissions[,,"D"], margin=2)
+prop.table(UCBAdmissions[,,"E"], margin=2)
+prop.table(UCBAdmissions[,,"F"], margin=2)
+
+```
+
+## glm approach to get expected values, deviations, and odds 
+### this is a very good way to see how your model performs 
+```{r}
+
+mod1 <- glm(Freq ~ Admit + Gender + Dept, data = UCBAdmissions, family = poisson)
+summary(mod1)
+
+fittedmod1 <- as.data.frame(fitted(mod1))
+
+tab1 <- cbind(mod1$data, fittedmod1)
+tab1$Dev <- tab1$Freq - tab1$`fitted(mod1)`
+tab1
+
+exp(coef(mod1))
+1/exp(coef(mod1))
+```
+
+### Model 8
+```{r}
+mod8 <- glm(Freq ~ Admit*Gender + Admit*Dept + Gender*Dept, data = UCBAdmissions, family = poisson)
+summary(mod8)
+
+fittedmod8 <- as.data.frame(fitted(mod8))
+
+tab8 <- cbind(mod8$data, fittedmod8)
+tab8$Dev <- tab8$Freq - tab8$`fitted(mod8)`
+tab8
+
+exp(coef(mod8))
+1/exp(coef(mod8))
+```

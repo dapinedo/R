@@ -147,8 +147,18 @@ jmv::contTables(dat = dat,
 
 # What happens if we take this a step further...
 
+What if our research question asks: is there a three-way contingency (sex x rank x level)?
+df1 = # cells for sex - 1 = 2 - 1 = 1
+df2 = # cells for rank - 1 = 4 - 1 = 3
+df3 = # cells for level - 1 = 2 -1 = 1
+N = number of cells in table (2 x 4 x 2) - df1 - df2 - df3
+df = N - 1 = 10
+
 Three way contingency test require *log-linear modeling*.  
-Start with the independence model and end with the saturated model.  
+Start with the independence model and end with the saturated model. 
+
+**Evidence for model fit: non-significant chi-square value**
+- no discrepancy between observed and expected values under the null model
 
 Model 1, There are no relationships among the variables.
 
@@ -158,7 +168,9 @@ Model 1, There are no relationships among the variables.
 # Observed = mytable
 # Expected = loglm
 # Expected = Expected frequencies in 2 x 4 x 2 table if there are no relationships
+
 # Null hypothesis means that expected frequencies satisfy our model of expected values
+# Alternative Hypothesis means that difference between expected and observed frequencies is significant (indicates our model does not fit)
 
 mytable<- xtabs(~dat$sex + dat$rank + dat$level) # table of observed values
 model1 <- loglm(~dat$sex + dat$rank + dat$level, mytable)
@@ -182,7 +194,12 @@ summary(model3)
 
 Model 4: All two-way relationships *and the three-way* relationship
 ```{r}
-#saturated model
+#saturated model or "overfit model
+# this takes us one step past parsimony
+# this means that the three-way relationship does not add to the model
+
+# i.e. Chi-squared is zero
+# e.g., no degrees of freedom
 model4 <- loglm(~dat$rank*dat$level*dat$sex, mytable)
 summary(model4)
 ```
@@ -190,12 +207,15 @@ summary(model4)
 Compare Models
 ```{r}
 stats::anova(model1,model2,model3, model4)
+
+#Delta(Dev) is a chi-squared difference test between models
+#once difference is no longer significant, the first model is likely parsimonious fit
 ```
 
 The JMV way produces a cleaner output, but there are some drawbacks. Overall, it's good to know multiple ways but see which may be best for your analyses or purpose(s). For now, stick with loglm function.
 ```{r}
 # note the similarities between 'Deviance' values and the model comparison stats with the loglm output. 
-# this output is cleaner looking, but will give incorrect df for each model. 
+# the top table output is unknown - so look it up 
 
 jmv::logLinear(
   data = dat,
