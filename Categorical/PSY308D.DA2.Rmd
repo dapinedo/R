@@ -1,0 +1,226 @@
+---
+title: "PSY308d.DA2"
+author: "Pinedo"
+date: "April 9, 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+At a recent school board meeting, concerns were raised about alcohol, cigarette, and marijuana use among local high school students. After a heated discussion, two extreme views about alcohol and drugs emerged: a strict view and a lenient view. Advocates of the strict view called for a no tolerance policy because they believe that use of one substance will lead to use of other substances. For example, in their view, students who drink are also more likely to smoke cigarettes and use marijuana. Advocates of the lenient view disagreed and don't believe that the use of alcohol is related to the use of cigarettes or marijuana (or that the use of cigarettes is related to the use of marijuana).
+
+So, the board designed a survey and asked high school seniors whether they had ever used alcohol, cigarettes, or marijuana.
+
+The board has tasked you to examine the research questions below. They are interested in publishing what you find so they ask that you write up the results and discussion section to look at a sample of the report. 
+  
+**Research Questions to Investigate:**
+*RQ1:* Investigation of three relationships proposed:
+          (a) Is there a relationship between alcohol use and cigarette use? 
+          (b) Is there a relationship between alcohol use and marijuana use?
+          (c) Is there a relationship between cigarette use and marijuana use?
+          
+*RQ2:* Is there statistical support for the strict view (students who drink are also more likely to smoke cigarettes and use marijuana) and/or the lenient view (use of alcohol is NOT related to the use of cigarettes or marijuana + use of cigarettes is NOT related to the use of marijuana)?
+      
+*RQ3:* Which model best explains the results? (This can be strict view, lenient view, or a view in between the two)?
+    
+*_Please report all relevant statistics per APA format and write for a professional audience._*
+
+```{r}
+#Load in your data
+AMCtable <- array(data = c(911, 44, 538, 456, 3, 2, 43, 279), 
+                 dim = c(2,2,2), 
+                 dimnames = list("cigarette" = c("yes","no"),
+                                 "marijuana" = c("yes","no"),
+                                 "alcohol" = c("yes","no")))
+
+dat <- as.data.frame(as.table(AMCtable))
+dat
+```
+
+Load libraries
+```{r}
+library(pacman)
+p_load(vcd, vcdExtra, MASS, jmv)
+```
+
+Transform data
+```{r}
+# in order to run jmv analyses, must change contingency table to case form
+dat.case <- vcdExtra::expand.dft(dat)
+dim(dat)
+class(dat)
+dim(dat.case)
+class(dat.case)
+```
+
+Frequency analysis
+Assumptions
+```{r}
+# 2x2x2 table
+# independence of observations assumption met
+# adequate expected cell counts assumption met
+desc <- jmv::descriptives(data = dat.case, 
+                     vars = c('cigarette', 'marijuana', 'alcohol'), 
+                     freq = TRUE)
+desc
+```
+
+*RQ1: Tests of Independence*
+(a) Is there a relationship between alcohol use and cigarette use? YES
+```{r}
+jmv::contTables(dat = dat.case,
+                rows = 'alcohol',
+                cols = 'cigarette',
+                exp = TRUE,
+                phiCra = TRUE)
+```
+
+(b) Is there a relationship between alcohol use and marijuana use? YES
+```{r}
+jmv::contTables(dat = dat.case,
+                rows = 'alcohol',
+                cols = 'marijuana',
+                exp = TRUE,
+                phiCra = TRUE)
+```
+
+(c) Is there a relationship between cigarette use and marijuana use? YES
+```{r}
+jmv::contTables(dat = dat.case,
+                rows = 'cigarette',
+                cols = 'marijuana',
+                exp = TRUE,
+                phiCra = TRUE)
+```
+
+*RQ2:* 
+Is there statistical support for the strict view (loglinear model of three-way relationship is a good fit) 
+and/or 
+the lenient view (loglinear model of all two way relationships not a good fit)?
+
+Model1: null model - H0: all variables are orthogonal - NO
+```{r}
+# Null hypothesis means that expected frequencies satisfy our model of expected values
+# Alternative Hypothesis means that difference between expected and observed frequencies is significant (indicates our model does not fit)
+
+# Observed = mytable
+mytable<- xtabs(dat$Freq ~ dat$cigarette + dat$marijuana + dat$alcohol) # table of observed values
+mytable
+
+# Expected = loglm
+model1 <- loglm(~dat$cigarette + dat$marijuana + dat$alcohol, mytable)
+summary(model1)
+
+
+```
+
+Model 2: H0: *Each two-way* relationship in pairs are best model fit - NO
+```{r}
+model2a<- loglm(~dat$alcohol*dat$cigarette + dat$alcohol*dat$marijuana, mytable)
+summary(model2a)
+
+model2b<- loglm(~dat$alcohol*dat$cigarette + dat$cigarette*dat$marijuana, mytable) # - lowest chi-square
+summary(model2b)
+
+model2c<- loglm(~dat$alcohol*dat$marijuana + dat$cigarette*dat$marijuana, mytable)
+summary(model2c)
+```
+
+Model 3: H0: *All two-way* relationships are  best model fit
+i.e. alternative hypothesis is lenient model
+```{r}
+model3 <- loglm(~dat$alcohol*dat$cigarette + dat$alcohol*dat$marijuana + dat$cigarette*dat$marijuana, mytable)
+summary(model3)
+```
+
+Model 4: All two-way relationships *and the three-way* relationship
+i.e. strict model
+```{r}
+#saturated model or "overfit model
+# this takes us one step past parsimony
+# this means that the three-way relationship does not add to the model
+
+# i.e. Chi-squared is zero
+# e.g., no degrees of freedom
+model4 <- loglm(~dat$cigarette*dat$marijuana*dat$alcohol, mytable)
+summary(model4)
+```
+
+##Compare models
+```{r}
+stats::anova(model1, model2a, model2b, model2c, model3, model4)
+
+```
+
+JMV Model comparisons
+```{r}
+# note the similarities between 'Deviance' values and the model comparison stats with the loglm output. 
+# the top table output is unknown - so look it up 
+
+jmv::logLinear(
+  data = dat.case,
+  counts = NULL,
+  factors = c('cigarette', 'marijuana', 'alcohol'),
+  blocks = list(
+    list(
+        'cigarette', 'marijuana', 'alcohol'), # Model 1: null model
+    list(
+      c('alcohol', 'cigarette'),              # Model 2b: alcohol and marijuana are independent
+      c('cigarette', 'marijuana')),           # but alcohol/cigarette and cigarette/ marijuana are related
+    list(
+      c('alcohol', 'marijuana')),             # Model 3: all two-way relationships - best fit
+    list(
+      c('cigarette', 'marijuana', 'alcohol'))), # Model 4: saturated model
+  refLevels = list(
+    list(
+      var = 'cigarette',
+      ref = 'no'),
+    list(
+      var = 'marijuana',
+      ref = 'no'),
+    list(
+      var = 'alcohol',
+      ref = 'no')),
+  modelTest = TRUE)
+
+
+
+```
+
+Model performance - expected values, deviations, and odds
+glm model 
+```{r}
+dat[,-4] <- lapply(dat[,-4], relevel, ref = "no") # relevel reference group (intercept) to "no"
+
+mod1 <- glm(Freq ~ alcohol + marijuana + cigarette, data = dat, family = poisson) # orthogonal model
+mod3 <- glm(Freq ~ alcohol*cigarette + alcohol*marijuana + cigarette*marijuana, data = dat, family = poisson) # best fit model
+summary(mod3)
+
+fittedmod3 <- as.data.frame(fitted(mod3))
+
+tab3 <- cbind(mod3$data, fittedmod3)
+tab3$Dev <- tab3$Freq - tab3$`fitted(mod3)`
+tab3
+
+# odds someone used [X] using orthogonal model (Z to 1 ratio)
+exp(coef(mod1)[2]) 
+exp(coef(mod1)[3])
+exp(coef(mod1)[4])
+# for X:Y output Z
+# Student who used X have estimated odds of having tried Y that are Z times the estimated odds for students who did not use X.
+exp(coef(mod3)["alcoholyes:cigaretteyes"])
+exp(coef(mod3)["alcoholyes:marijuanayes"])
+exp(coef(mod3)["cigaretteyes:marijuanayes"])
+#1/exp(coef(mod3))
+```
+
+## Proportions broken down by alcohol use
+```{r}
+prop.table(as.table(AMCtable), margin = c(1,3))
+```
+from students who used cigarettes and alcohol, 62% used marijuana. Conversely, from students who did not use cigarettes or alcohol, 99% did not use marijuana.
+
+
+

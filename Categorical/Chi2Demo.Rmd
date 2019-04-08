@@ -26,6 +26,8 @@ Instructions
 ```{r}
 library(pacman) #Package used to load all packages using p_load(); will install missing packages
 p_load(vcd, MASS, jmv, gmodels)
+# jmv and gmodels used for chi-squared
+# vcd, MASS used for loglinear
 ```
 Load your data
 ```{r}

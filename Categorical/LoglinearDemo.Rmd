@@ -10,31 +10,37 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 Instructions
 ----------
-An analysis of admissions data at UC Berkely initially suggested a gender bias, such that men were admitted at a higher rate than women. However, a more detialed analysis reveals a three-way reationship between gender, admission decision, and department. It turns out that women applied to more selective departmets and in one department (least selective) the admit rate for women was actually higher than for men (the opposite of the initial result).
+An analysis of admissions data at UC Berkely initially suggested a gender bias, such that men were admitted at a higher rate than women. However, a more detailed analysis reveals a three-way relationship between gender, admission decision, and department. It turns out that women applied to more selective departments and in one department (least selective) the admit rate for women was actually higher than for men (the opposite of the initial result).
 
 These data are available in R, data = UCBAdmissions
 
 ```{r}
-library(vcd)
-library(MASS)
+library(pacman)
+p_load(vcd, MASS)
 ```
 
+Question: is there gender bias in this sample?
 
 ##Initial analysis
+Gender x Admit
 ```{r}
 Gender.Admit <- xtabs(Freq ~ Admit + Gender, data=UCBAdmissions) 
-chisq.test(Gender.Admit)
-assocstats(Gender.Admit)
+# Note that this data frame has an entire column for frequency data (this data frame is not setup for one observation per row) so a table needs to be formatted with Freq as dependent variable by Admit and Gender as table elements.
+chisq.test(Gender.Admit) # requires matrix or vector, contingency table (xtabs) matches
+assocstats(Gender.Admit) # requires contingency table (xtabs)
 Gender.Admit
 
 UCBAdmissions
 ```
 ##Log linear models
+This is a teaching tool that matches slide 24 of the 
 ```{r}
 
-model1 <- loglm( ~ Admit + Dept + Gender, data=UCBAdmissions)
+model1 <- loglm( ~ Admit + Dept + Gender, data=UCBAdmissions) # requires table (this dataset is of this type)
 summary(model1)
+```
 
+```{r}
 model2 <- loglm( ~ Admit*Dept + Gender, data=UCBAdmissions)
 summary(model2)
 
@@ -52,18 +58,21 @@ summary(model6)
 
 model7 <- loglm( ~ Admit*Gender + Dept*Gender, data = UCBAdmissions)
 summary(model7)
+```
 
+```{r}
 model8 <- loglm( ~ Admit*Gender + Dept*Gender + Admit*Dept, data = UCBAdmissions)
 summary(model8)
+```
 
+```{r}
 model9 <- loglm( ~ Admit*Gender*Dept, data = UCBAdmissions)
 summary(model9)
-
 ```
 
 ##Compare models
 ```{r}
-anova(model1, model2, model3, model4, model5, model6, model7, model8, model9)
+stats::anova(model1, model2, model3, model4, model5, model6, model7, model8, model9)
 
 ```
 
