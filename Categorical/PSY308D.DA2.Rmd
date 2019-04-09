@@ -138,7 +138,7 @@ summary(model3)
 Model 4: All two-way relationships *and the three-way* relationship
 i.e. strict model
 ```{r}
-#saturated model or "overfit model
+#saturated model or "overfit model""
 # this takes us one step past parsimony
 # this means that the three-way relationship does not add to the model
 

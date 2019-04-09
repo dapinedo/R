@@ -33,7 +33,7 @@ Gender.Admit
 UCBAdmissions
 ```
 ##Log linear models
-This is a teaching tool that matches slide 24 of the 
+This is a teaching tool that matches slide 24 of the PowerPoint
 ```{r}
 
 model1 <- loglm( ~ Admit + Dept + Gender, data=UCBAdmissions) # requires table (this dataset is of this type)
