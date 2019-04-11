@@ -31,6 +31,7 @@ BL <- read.csv("https://www.dropbox.com/s/hd43va8a7hjfj27/Diamond.csv?dl=1")
 ```{r}
 # Descriptive statistics
 # Including the binary outcome so we can see the frequencies (prints below Descriptives table)
+# baseline classification success is equal to the reference frequency for verdict (52)
 
 desc <- descriptives(data = BL, 
                      vars = c('verdict', 'danger', 'rehab', 'punish', 'gendet', 'specdet', 'incap'), 
@@ -42,6 +43,11 @@ desc <- descriptives(data = BL,
 desc
 
 ```
+
+Assumptions
+1. Independence of Observations
+2. Predictor Variables Normally Distributed
+3. Multicollinearity
 
 **Correlations**
 ```{r}
@@ -57,11 +63,11 @@ cortable
 
 p_load(popbio)
 logi.hist.plot(BL$danger, BL$verdict, boxp=FALSE, type="hist", col="gray", xlabel = "danger")
-logi.hist.plot(BL$rehab, BL$verdict, boxp=FALSE, type="hist", col="gray")
-logi.hist.plot(BL$punish, BL$verdict, boxp=FALSE, type="hist", col="gray")
-logi.hist.plot(BL$gendet, BL$verdict, boxp=FALSE, type="hist", col="gray")
-logi.hist.plot(BL$specdet, BL$verdict, boxp=FALSE, type="hist", col="gray")
-logi.hist.plot(BL$incap, BL$verdict, boxp=FALSE, type="hist", col="gray")
+logi.hist.plot(BL$rehab, BL$verdict, boxp=FALSE, type="hist", col="gray", xlabel = "rehab")
+logi.hist.plot(BL$punish, BL$verdict, boxp=FALSE, type="hist", col="gray", xlabel = "punish")
+logi.hist.plot(BL$gendet, BL$verdict, boxp=FALSE, type="hist", col="gray", xlabel = "gendet")
+logi.hist.plot(BL$specdet, BL$verdict, boxp=FALSE, type="hist", col="gray", xlabel = "specdet")
+logi.hist.plot(BL$incap, BL$verdict, boxp=FALSE, type="hist", col="gray", xlabel = "incap")
 
 ```
 
@@ -70,26 +76,36 @@ logi.hist.plot(BL$incap, BL$verdict, boxp=FALSE, type="hist", col="gray")
 ```{r}
 
 # Null model
+# Null deviance = Chi squared for the model
+# df = N - (# of parameters)
 model0 <- glm(BL$verdict ~ 1, family = binomial)
 summary(model0)
 
-model0.odds <- exp(coef(model0)) 
-model0.odds
-print("Odds")
+print("Logit")
+coef(model0)
 
-model0.probs <- model0.odds / (1 + model0.odds)
+model0.odds <- exp(coef(model0)) #converts coefficient to odds [P(outcome)/(1-P(outcome))]
+print("Odds")
+model0.odds
+
+
+model0.probs <- model0.odds / (1 + model0.odds) #
 print("Probabilities")
 model0.probs
 
+
 print("Columns = Observed, Rows = Predicted")
-print("Null model")
-ClassLog(model0, BL$verdict)
+print("Null model") 
+ClassLog(model0, BL$verdict) # classification success under the null model (baseline)
 ```
 
 ```{r}
 # Model with predictors specific to the defendent.
+# when odds ratio < 1 just flip (invert) the result(in relation to "no" instead of in relation to "yes")
+# AIC is used to compare non-nested models for fit (lower means better fit)
+# top chi-squared indicates the change of chi-squared vs the null model (Deviance + chi squared)
 
-model1.jmv <- logRegBin(
+model1.jmv <- jmv::logRegBin(
   data = BL,
   dep = verdict,
   covs = vars(danger, specdet, incap, rehab, punish, gendet),
@@ -112,9 +128,16 @@ model1.jmv
 ```
 
 ```{r}
-# Model with predictors about the criminal justice system. 
+# Model with predictors about the criminal justice system.
 
-model2.jmv <- logRegBin(
+#Multicollinearity
+
+#Tolerance = 1 - R squared --> for our purpose < .4 is bad
+#VIF = 1/Tolerance 
+#  Small VIF values indicates low correlation among variables under ideal conditions
+#Multicollinearity occurs when two or more predictors in the model are correlated and provide redundant information about the response. Multicollinearity was measured by variance inflation factors (VIF) and tolerance. If VIF value exceeding 4.0, or by tol- erance less than 0.2 then there is a problem with multicollinearity (Hair et al., 2010).
+
+model2.jmv <- jmv::logRegBin(
   data = BL,
   dep = verdict,
   covs = vars(danger, specdet, incap, rehab, punish, gendet),
@@ -140,7 +163,7 @@ model2.jmv
 ```{r}
 # Model with all predictors
 
-model3.jmv <- logRegBin(
+model3.jmv <- jmv::logRegBin(
   data = BL,
   dep = verdict,
   covs = vars(danger, specdet, incap, rehab, punish, gendet),
@@ -169,9 +192,9 @@ model3.jmv
 
 ```{r}
 # Model1 vs. Model3
-## This is a similar set up to multiple regression in terms of the code, so if you know you will be running both models, you can just use this code and have the model comparison stats as well. 
+# This is a similar set up to multiple regression in terms of the code, so if you know you will be running both models, you can just use this code and have the model comparison stats as well. 
 
-modelcomp.jmv <- logRegBin(
+modelcomp.jmv <- jmv::logRegBin(
   data = BL,
   dep = verdict,
   covs = vars(danger, specdet, incap, rehab, punish, gendet),
@@ -212,17 +235,19 @@ BL$incapC <- BL$incap - mean(BL$incap)
 **Re-run model with all predictors and run parsimonious model.** 
 ```{r}
 
+#remove not significant predictors
+
 finalmodel.jmv <- logRegBin(
   data = BL,
   dep = verdict,
   covs = vars(dangerC, specdetC, incapC, rehabC, punishC, gendetC),
   blocks = list(
     list(
-      'dangerC',
+      'dangerC', # significant predictors only
       'rehabC',
       'gendetC'),
     list(
-      'specdetC',
+      'specdetC', # full model
       'incapC',
       'punishC')),
   refLevels = list(
@@ -240,7 +265,6 @@ finalmodel.jmv
 
 # Use regression equation to calculate predicted logit, odds, and probability 
 ```{r}
-
 # Let D = danger, R = rehab, G = gendet
 D = 10
 R = 0
