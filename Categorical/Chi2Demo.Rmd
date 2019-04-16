@@ -116,7 +116,7 @@ We have a *new* effect size here (Cramer's V), what does it mean in the context 
 ```{r}
 # Chi-square = Sum[(Observed - Expected)^2/Expected]
 # Expected = [(# of row entries for cel)/(# total entries)] * (# of column entries for cel)
-# Expected means expected values for each category if there is no relationship between two categorical variables
+# Expected indicates expected values for each category if there is no relationship between two categorical variables
 # df = (# rows - 1) * (# columns - 1)
 # Cramer's V - small = .1; medium = .3, large = .5; discrepancy between observed and expected scores
 jmv::contTables(dat = dat,

@@ -2,7 +2,9 @@
 title: "PSY 308d DA3 Binary Logistic Regression"
 author: "Daniel Pinedo"
 date: "April 16, 2019"
-output: word_document
+output: 
+  pdf_document: 
+    latex_engine: xelatex
 ---
   
   <!-- LEAVE THIS HERE, DO NOT PUT ANY CODE ABOVE IT -->
@@ -30,11 +32,11 @@ Additionally, the HR manager is particularly worried that she is going to lose h
 
 
 ```{r}
-library(psych)
-library(jmv)
-library(aod)
-library(QuantPsyc)
-library(popbio)
+library(pacman)
+p_load(psych, jmv, aod, QuantPsyc, popbio)
+
+# Add summarytools css
+#st_css(bootstrap=FALSE)
 
 dat <- read.csv("https://www.dropbox.com/s/jej8t73qnelvijp/PSY.308d.DA3-4.csv?dl=1")
 head(dat)
@@ -63,6 +65,10 @@ desc
 # baseline classification success is equal to the reference frequency for Retention (No = 48%)
 # it also looks like Hours is bimodal - likely non-normal distribution
 ```
+
+**Summarytools goodies**
+library(summarytools)
+view(dfSummary(dat.subset), file = "C:\\Users\\p1n3d\\Downloads\\R.html")
 
 Assumptions
 1. Independence of Observations
