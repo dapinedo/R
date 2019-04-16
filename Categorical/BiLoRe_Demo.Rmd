@@ -2,8 +2,9 @@
 title: "Binary Logistic Regression"
 author: "Conway"
 output:
+  pdf_document: 
+    latex_engine: xelatex
   html_document: default
-  pdf_document: default
 ---
   
   <!-- LEAVE THIS HERE, DO NOT PUT ANY CODE ABOVE IT -->
@@ -31,7 +32,7 @@ BL <- read.csv("https://www.dropbox.com/s/hd43va8a7hjfj27/Diamond.csv?dl=1")
 ```{r}
 # Descriptive statistics
 # Including the binary outcome so we can see the frequencies (prints below Descriptives table)
-# baseline classification success is equal to the reference frequency for verdict (52)
+# baseline classification success is equal to the reference frequency for Retention (No = 2)
 
 desc <- descriptives(data = BL, 
                      vars = c('verdict', 'danger', 'rehab', 'punish', 'gendet', 'specdet', 'incap'), 
@@ -77,7 +78,7 @@ logi.hist.plot(BL$incap, BL$verdict, boxp=FALSE, type="hist", col="gray", xlabel
 
 # Null model
 # Null deviance = Chi squared for the model
-# df = N - (# of parameters)
+# df = N - (# of predictors) - 1
 model0 <- glm(BL$verdict ~ 1, family = binomial)
 summary(model0)
 
@@ -102,12 +103,16 @@ ClassLog(model0, BL$verdict) # classification success under the null model (base
 ```{r}
 # Model with predictors specific to the defendent.
 # when odds ratio < 1 just flip (invert) the result(in relation to "no" instead of in relation to "yes")
+
+# Deviance score is the chi-squared for this model
 # AIC is used to compare non-nested models for fit (lower means better fit)
 # top chi-squared indicates the change of chi-squared vs the null model (Deviance + chi squared)
+# top df score indicates the change of df vs the null model
+# df = N - (# of predictors) - 1
 
 model1.jmv <- jmv::logRegBin(
-  data = BL,
-  dep = verdict,
+  data = dat.subset,
+  dep = Re,
   covs = vars(danger, specdet, incap, rehab, punish, gendet),
   blocks = list(
     list(

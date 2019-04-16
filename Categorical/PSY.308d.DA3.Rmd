@@ -1,0 +1,256 @@
+---
+title: "PSY 308d DA3 Binary Logistic Regression"
+author: "Daniel Pinedo"
+date: "April 16, 2019"
+output: word_document
+---
+  
+  <!-- LEAVE THIS HERE, DO NOT PUT ANY CODE ABOVE IT -->
+```{r, echo=FALSE, results=FALSE, message=FALSE, cache=FALSE}
+library(knitr); opts_chunk$set(error=TRUE, cache=FALSE)
+```
+
+You have been hired as an Organizational Psychologist for a local restaurant. The Head of HR is concerned about high turnover amongst their servers. Specifically, she is interested in figuring out what predicts whether a server will stay at the restaurant for another year or not. Although a survey of her staff included responses of uncertainty of staying or not, HR *only* cares about those who are planning to stay or leave. 
+
+**Analyses:**
+After speaking with the managers, you think that the two best predictors will be number of overtime hours worked per week and amount earned in tips each week. You decide to survey the wait staff to see whether (a) tips, (b) overtime hours, or (c) both tips AND overtime hours should be used by the HR manager in predicting someone's retention status. 
+
+**Additional Discussion Question:**
+Additionally, the HR manager is particularly worried that she is going to lose her star waitress Trudy. Given that, on average, Trudy works 7 hours of overtime a week and makes $100 in tips, what would you tell the HR manager about the probability of Trudy staying for another year? *Please address this concern in your discussion section.*
+
+*Variables:* 
+1.	Hours - continuous, average overtime hours worked per week (in hours)
+2.	Tips - continuous, average amount of tips earned each week (in dollars)
+3.	Re (Retention)
+    a.	"Yes" (plans on staying at the restaurant for another year)
+    b.	"No" (does not plan on staying at the restaurant for another year)
+    c.	"border" (is unsure whether or not they will stay for another year)
+
+*TIP:* Please center your predictor variables for your main analyses and when using it to calculate the likelihood of Trudy staying!
+
+
+```{r}
+library(psych)
+library(jmv)
+library(aod)
+library(QuantPsyc)
+library(popbio)
+
+dat <- read.csv("https://www.dropbox.com/s/jej8t73qnelvijp/PSY.308d.DA3-4.csv?dl=1")
+head(dat)
+dim(dat)
+
+```
+
+Subset dataset and check for missing parameters
+```{r}
+#remove observations that are not "yes" or "no" for Retention variable
+dat.subset <- dat[which(dat$Re!='border'), ] # N=100 changes to N=69
+dat.subset <- droplevels(dat.subset) # change levels for Retention variable by dropping "border"
+
+#see what is missing
+#run descriptives
+desc <- descriptives(data = dat.subset, 
+                        vars = c('Re', 'Hours', 'Tips'),
+                        mode = TRUE,
+                        sd = TRUE, 
+                        skew = TRUE, 
+                        kurt = TRUE,
+                        freq = TRUE,
+                        hist = TRUE)
+desc
+
+# baseline classification success is equal to the reference frequency for Retention (No = 48%)
+# it also looks like Hours is bimodal - likely non-normal distribution
+```
+
+Assumptions
+1. Independence of Observations
+2. Predictor Variables Normally Distributed *(Hours is bimodal)*
+3. Multicollinearity
+
+**Correlations**
+```{r}
+# Correlations of continuous variables
+cortable <- corrMatrix(data = dat.subset, 
+                       vars = c('Hours', 'Tips'), 
+                       flag = TRUE)
+cortable
+```
+
+**Logistic Plots**
+```{r}
+
+#Transform binary outcome to integer for the plot to work
+dat.subset$Re.int[dat.subset$Re == "No"] <- 0
+dat.subset$Re.int[dat.subset$Re == "Yes"] <- 1
+
+#Center Predictors
+dat.subset$HoursC <- dat.subset$Hours - round(mean(dat.subset$Hours), digits = 2)
+dat.subset$TipsC <- dat.subset$Tips - round(mean(dat.subset$Tips), digits = 2)
+
+#Show Plots for centered predictors
+logi.hist.plot(dat.subset$TipsC, dat.subset$Re.int, boxp=FALSE, type="hist", col="gray", xlabel = "Tips Centered")
+  # when tips are above average, people tend to stay vs. below average they go
+logi.hist.plot(dat.subset$HoursC, dat.subset$Re.int, boxp=FALSE, type="hist", col="gray", xlabel = "Hours Centered")
+  # when OT hours are above average, people tend to stay vs. below they go (caveat: bimodal dsitribution so it is inconclusive)
+```
+
+**BiLoRe Models**
+Null model
+```{r}
+
+# Null deviance = Chi squared for the model
+# df = N - (# of parameters) - 1 [68]
+model0 <- glm(dat.subset$Re ~ 1, family = binomial)
+summary(model0)
+
+print("Logit")
+coef(model0)
+
+model0.odds <- exp(coef(model0)) #converts coefficient to odds [P(outcome)/(1-P(outcome))]
+print("Odds")
+model0.odds
+
+
+model0.probs <- model0.odds / (1 + model0.odds) #
+print("Probabilities")
+model0.probs
+
+
+print("Columns = Observed, Rows = Predicted")
+print("Null model") 
+ClassLog(model0, dat.subset$Re) # classification success under the null model (baseline)
+```
+
+Model 1 - Hours predicting Retention
+```{r}
+#Multicollinearity
+  #Tolerance = 1 - R squared --> for our purpose < .4 is bad
+  #VIF = 1/Tolerance 
+  #Small VIF values indicates low correlation among variables under ideal conditions
+  #Multicollinearity occurs when two or more predictors in the model are correlated and provide redundant information   about the response. Multicollinearity was measured by variance inflation factors (VIF) and tolerance. If VIF value   exceeding 4.0, or by tol- erance less than 0.2 then there is a problem with multicollinearity (Hair et al., 2010).
+
+# when odds ratio < 1 just flip (invert) the result(in relation to "no" instead of in relation to "yes")
+
+# Deviance score is the chi-squared for this model
+# AIC is used to compare non-nested models for fit (lower means better fit)
+# top chi-squared indicates the change of chi-squared vs the null model (Deviance + chi squared)
+# top df score indicates the change of df vs the null model
+# df = N - (# of predictors) - 1 [67]
+
+model1.jmv <- jmv::logRegBin( # Multicollinearity is not relevant for this answer
+  data = dat.subset,
+  dep = Re,
+  covs = vars(HoursC),
+  blocks = list(
+    list(
+      'HoursC')),
+  refLevels = list(
+    list(
+      var = 'Re',
+      ref = 'No')),
+  modelTest = TRUE,
+  OR = TRUE,
+  class = TRUE,
+  acc = TRUE,
+  collin = TRUE)
+
+model1.jmv
+```
+
+Model 2 - Tips predicting Retention
+```{r}
+#Multicollinearity
+  #Tolerance = 1 - R squared --> for our purpose < .4 is bad
+  #VIF = 1/Tolerance 
+  #Small VIF values indicates low correlation among variables under ideal conditions
+  #Multicollinearity occurs when two or more predictors in the model are correlated and provide redundant information   about the response. Multicollinearity was measured by variance inflation factors (VIF) and tolerance. If VIF value   exceeding 4.0, or by tol- erance less than 0.2 then there is a problem with multicollinearity (Hair et al., 2010).
+
+# when odds ratio < 1 just flip (invert) the result(in relation to "no" instead of in relation to "yes")
+
+# Deviance score is the chi-squared for this model
+# AIC is used to compare non-nested models for fit (lower means better fit)
+# top chi-squared indicates the change of chi-squared vs the null model (Deviance + chi squared)
+# top df score indicates the change of df vs the null model
+# df = N - (# of predictors) - 1 [67]
+
+model2.jmv <- jmv::logRegBin( # Multicollinearity is not relevant for this answer
+  data = dat.subset,
+  dep = Re,
+  covs = vars(TipsC),
+  blocks = list(
+    list(
+      'TipsC')),
+  refLevels = list(
+    list(
+      var = 'Re',
+      ref = 'No')),
+  modelTest = TRUE,
+  OR = TRUE,
+  class = TRUE,
+  acc = TRUE,
+  collin = TRUE)
+
+model2.jmv
+```
+
+Model 3 - Comparing Hours Model to Full Model
+```{r}
+#Multicollinearity
+  #Tolerance = 1 - R squared --> for our purpose < .4 is bad
+  #VIF = 1/Tolerance 
+  #Small VIF values indicates low correlation among variables under ideal conditions
+  #Multicollinearity occurs when two or more predictors in the model are correlated and provide redundant information   about the response. Multicollinearity was measured by variance inflation factors (VIF) and tolerance. If VIF value   exceeding 4.0, or by tol- erance less than 0.2 then there is a problem with multicollinearity (Hair et al., 2010).
+
+# when odds ratio < 1 just flip (invert) the result(in relation to "no" instead of in relation to "yes")
+
+# Deviance score is the chi-squared for this model
+# AIC is used to compare non-nested models for fit (lower means better fit)
+# top chi-squared indicates the change of chi-squared vs the null model (Deviance + chi squared)
+# top df score indicates the change of df vs the null model
+# df = N - (# of predictors) - 1 [66 for full model]
+
+model2.jmv <- jmv::logRegBin( # Multicollinearity is relevant for this answer
+  data = dat.subset,
+  dep = Re,
+  covs = vars(HoursC, TipsC),
+  blocks = list(
+    list(
+      'HoursC'),
+    list(
+      'TipsC')),
+  refLevels = list(
+    list(
+      var = 'Re',
+      ref = 'No')),
+  modelTest = TRUE,
+  OR = TRUE,
+  class = TRUE,
+  acc = TRUE,
+  collin = TRUE)
+
+model2.jmv
+```
+
+Use regression equation to calculate predicted logit, odds, and probability 
+```{r}
+#Discussion: star performer Trudy
+print("Given that Trudy works 7 hours of ovetime and makes $100 in tips, the odds she will remain for another year:")
+# Let OT = Overtime Hours, T = tips
+OT = 7
+T = 100
+
+print("Model - Full model")
+predlogit <- .17 + (2.54*OT) + (.03*T)
+predodds <- exp(predlogit)
+predprob <- predodds / (1 + predodds)
+
+print("Predicted Logit")
+predlogit
+print("Predicted Odds")
+predodds
+print("Predicted Probability")
+predprob
+
+```
