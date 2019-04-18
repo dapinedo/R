@@ -1,6 +1,8 @@
 ---
 title: "Chi Squared"
-output: html_document
+output: 
+  pdf_document: 
+    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}
