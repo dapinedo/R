@@ -155,7 +155,7 @@ What if our research question asks: is there a three-way contingency (sex x rank
 df1 = # cells for sex - 1 = 2 - 1 = 1
 df2 = # cells for rank - 1 = 4 - 1 = 3
 df3 = # cells for level - 1 = 2 -1 = 1
-N = number of cells in table (2 x 4 x 2) - df1 - df2 - df3
+N = number of cells in table (2 x 4 x 2) - df1 - df2 - df3 - 1
 df = N - 1 = 10
 
 Three way contingency test require *log-linear modeling*.  
