@@ -7,7 +7,7 @@ author: "Sir Stats McStatserson III"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-**Demo 1 - Independent t-test** 
+**Demo 1 - Independent t-test**
 
 A researcher wants to investigate the Imagined Contact Hypothesis using a replication on an online platform (Turner, Crisp, & Lambert, 2007). The study recruits individuals to either read a positive imaginative scenario of a disliked outgroup or a neutral one. Following, outgroup anxiety is measued using a 10-point Likert scale. The researcher is interested in figuring out if the results of the original study hold up - that imaginging positive contact with a negative outgroup reduces outgroup anxiety compared to a control group.
 
@@ -57,12 +57,12 @@ hist(dat$GrpAnx [dat$Condition== 'Positive'])
 
 # Mann-Whitney test (with Levene's)
 test <- ttestIS(data = dat, 
-                vars = 'GrpAnx', 
-                group = 'Condition', 
-                mann = TRUE, 
-                eqv = TRUE, 
-                meanDiff = TRUE, 
-                effectSize = TRUE)
+                vars = 'GrpAnx',      # DV
+                group = 'Condition',  # IV
+                mann = TRUE,          # Mann-Whitney U
+                eqv = TRUE,           # Levene's test
+                meanDiff = FALSE, 
+                effectSize = FALSE)   # Cohen's d
 test
 
 ```
