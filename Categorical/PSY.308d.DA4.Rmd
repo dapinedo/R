@@ -1,6 +1,7 @@
 ---
+author: "Daniel Pinedo"
 title: "PSY.308d.DA4"
-output: html_document
+output: word_document
 ---
 
 ```{r setup, include=FALSE}
@@ -139,9 +140,9 @@ Effect Size
 # http://yatani.jp/teaching/doku.php?id=hcistats:wilcoxonsigned
 # r = z/sqrt(N) where n is the total number of observations (cases x 2)
 
-# To get number of cases(N):
+# To get number of cases(n):
 n <- dim(dat)[1] # number of cases/rows
-print(paste("Number of cases/rows(N):", N))
+print(paste("Number of cases/rows(n):", n))
 
 # To get sum of ranks(W)
 W <- n*(n+1) / 2 # you can verify this by running Wilcoxon W in both directions and summing both scores
@@ -207,6 +208,10 @@ print(paste("r =", round(r,2)))
 **Study 2: Intervention**
 ```{r}
 dat2 <- read.csv("https://www.dropbox.com/s/78onrh7icd92cs4/PSY.308d.DA4_2.csv?dl=1")
+
+library(pacman)
+p_load(jmv, psych, car)
+
 ```
 
 McCormick & Co. was impressed with your pilot study - meal programs seem to be worthwhile. They have invested $10,000 in your research account to do a bigger study where you can recruit and pay participants, gain more supplies, and extend your findings. You decide to set-up three different meal plan programs: Full Day (3 meals per day), Two-A-Day (2 meals per day), and One-A-Day (1 meal per day), and measure the average calorie intake above the noted minimum of 1,200 calories per day for each participant at the end of a two-week period. Given that these are under-resourced participants, they are encouraged to consume above the minimum calorie intake recommended by the health board. 
@@ -214,3 +219,64 @@ McCormick & Co. was impressed with your pilot study - meal programs seem to be w
 *Research Question(s):*
 1. Is there a difference in the number of calories above the minimum consumed between the meal program conditions? 
 
+Assumptions:
+1. Independence of observations - pass
+2. Normal distribution of dependent variable by condition - fail
+3. Homogeneity of variance - pass
+
+```{r}
+
+# Descriptives by Team
+descriptives(data = dat2,
+             vars = 'Calories',
+             splitBy = 'Program',
+             sd = TRUE, 
+             min = TRUE,
+             max = TRUE,
+             skew = TRUE,
+             kurt = TRUE, 
+             hist = TRUE)
+
+hist(dat2$Calories [dat2$Program== 'One'])
+hist(dat2$Calories [dat2$Program== 'Two'])
+hist(dat2$Calories [dat2$Program== 'Full'])
+```
+
+```{r}
+
+# ANOVA with each Program on Calories (with Levene's Test) 
+INTaov <- jmv::ANOVA(data = dat2, 
+                     dep = 'Calories', 
+                     factors = c('Program'), 
+                     effectSize = 'partEta', 
+                     postHoc = c('Program'), 
+                     postHocCorr = 'tukey', 
+                     homo = TRUE)
+INTaov
+```
+
+```{r}
+
+# Kruskal-Wallis including pairwise comparisons (Dwass-Steel-Critchlow-Fligner)
+KW_INT_aov <- anovaNP(data = dat2, 
+                      dep = 'Calories', 
+                      group = c('Program'), 
+                      pairs = TRUE)
+KW_INT_aov
+```
+
+```{r}
+# Epsilon-squared estimate of effect size
+# .1 .3 .5 --- .2 .4 .6 are good estimates for small/med/large
+
+# EpiSq = (H)/((n^2-1)/(n+1))
+
+H <- KW_INT_aov$table$asDF[ , "chiSq"]
+print(paste("H =", round(H, 2)))
+
+N2 <- dim(dat2)[1]
+print(paste("N =", N2))
+
+EpiSq = (H)/((N2^2-1)/(N2+1))
+print(paste("EpiSq = ", round(H, 2), "/((", N2, "^2-1)/(", N2, "+1)) = ", round(EpiSq, 2), sep = ""))
+```
