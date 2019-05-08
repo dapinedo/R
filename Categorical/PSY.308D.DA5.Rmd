@@ -1,0 +1,294 @@
+---
+title: "PSY.308d.DA5"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Prompt**
+
+Parents with anxiety disorders tend to have children with anxiety disorders as well (see everything ever written by Bogels, Borelli, Wood, or Rapee). This has led some to hypothesize that anxiety is genetically transmitted. However, you think there might be something else going on. Parental overcontrol, the excess regulation of a child's emotion, cognition, and behavior is strongly related to child anxiety. You wonder if anxious parents are more overcontrolling, leading to child anxiety. You decided to conduct a study to figure this out. 
+
+*Variables:*
+Parent_Anx: 1-20 (higher scores indicating higher anxiety symptoms)
+Child_Anx: 1-20 (higher scores indicating higher anxiety symptoms)
+Parent_OC: 1-20 (higher scores indicating greater use of overcontrol)
+
+**Research Question:** Does parental overcontrol mediate the relationship between parent anxiety and child anxiety?
+
+**(1)** *General assignment:* Conduct the appropriate analysis using bootstrapping techniques. Report the proper assumptions and statistics in the results section. In the discussion section, provide a summary of what you found, discuss the implications, and give at least one limitation and future research direction. Don't forget to include a table for descriptives, correlations, and regression models.
+
+**(2)** *Conceptual component:* Conduct the same analysis, but use the Sobel test instead of bootstrapping to test the indirect effect. *Report the statistics in your results section.* Provide a summary of what of the findings were for this analysis and compare it to your bootstrapped analysis findings. If the two analyses found different outcomes, determine which results are more appropriate and justify your decision (Hint: What is a known issue with the Sobel test?). 
+
+#Prep
+
+```{r}
+library(pacman)
+p_load(psych, jmv, medmod, lavaan, multilevel)
+```
+
+#Read in your data
+
+```{r}
+datboot <- read.csv("https://www.dropbox.com/s/dsplwa2mppfhmu7/Psy.308d.DA5.csv?dl=1")
+```
+
+**Descriptives**
+
+```{r}
+
+desc <- descriptives(datboot, 
+                     vars = c('Parent_Anx', 'Child_Anx', 'Parent_OC'), 
+                     hist = TRUE, 
+                     sd = TRUE, 
+                     min = TRUE, 
+                     max = TRUE, 
+                     skew = TRUE, 
+                     kurt = TRUE)
+desc
+
+cat("\n")
+corr <- corrMatrix(datboot, 
+                   vars = c('Parent_Anx', 'Child_Anx', 'Parent_OC'), 
+                   flag = TRUE)
+corr
+
+```
+
+Assumptions:
+*Regression Diagnostics*
+1. Missing Data - **NONE**
+2. Univariate a. Normality **PASSED**, b. Linearity and c. Outliers
+3. Multivariate a. Normality **PASSED** and b.Outliers **REMOVED**
+4. Heteroscedsticity **PASSED**
+5. Multi-collinearity **EXPECTED**
+
+**2b. Univariate Linearity**
+```{r}
+# Scatterplots [Assumption 2b]
+
+# Y ~ X [path c]
+plot(datboot$Parent_Anx, datboot$Child_Anx, abline(lm(datboot$Child_Anx ~ datboot$Parent_Anx)))
+ 
+# M ~ X [path a]                                                                                                        
+plot(datboot$Parent_Anx, datboot$Parent_OC, abline(lm(datboot$Parent_Anx ~ datboot$Parent_OC)))
+
+# Y ~ M [path b]                                                                                                        
+plot(datboot$Parent_OC, datboot$Child_Anx, abline(lm(datboot$Child_Anx ~ datboot$Parent_OC)))
+
+
+```
+
+**2c. Univariate Outliers**
+```{r}
+#Identify outliers
+#scale() converts to z scores - "3" refers to standard deviations
+datboot[abs(scale(datboot$Parent_Anx)) > 3, ]
+datboot[abs(scale(datboot$Child_Anx)) > 3, ]
+datboot[abs(scale(datboot$Parent_OC)) > 3, ]
+#There are a total of 0 independent observations that contain outliers
+```
+
+**3a. Multivariate Normality**
+```{r}
+
+#look at residuals and the Q-Q plot for independent variables (should be no relationship)
+#Observe Leverage (Mahalanobis' Distance) + Discrepancy (= Influence; Cook's Distance)
+
+# Y ~ X + M
+model.multi_norm <- linReg(data = datboot, 
+                dep = 'Child_Anx', 
+                covs = c('Parent_Anx', 'Parent_OC'),
+                blocks = list(c('Parent_Anx', 'Parent_OC')), 
+                modelTest = TRUE, 
+                r2Adj = TRUE, 
+                stdEst = TRUE, 
+                ciStdEst = TRUE,
+                qqPlot = TRUE,  ##QQ plot
+                resPlots = TRUE) ##residuals plot 
+
+model.multi_norm
+
+#Alternate not using jvm library
+#model <- lm(model, data)
+#plot(model)
+
+```
+
+**3b. Multivariate Outliers**
+```{r}
+#Check and remove multivariate outliers based on Cook's distance (CD)
+#for Mahalanobis' Distance (leverage only), see /Regression/Regression_Diagnostics.Rmd for how-to
+#CD = Influence = Leverage + Discrepancy (Discrepancy = how much an observation deviates from the overall pattern of the model)
+
+#create model
+model.cook <- lm(datboot$Child_Anx ~ datboot$Parent_Anx + datboot$Parent_OC)
+model.cook
+summary(model.cook)
+
+#find cook's distance for that model
+datboot$cook <- cooks.distance(model.cook)
+
+#create the cutoff [> 4/N]
+cook.cutoff <- 4/nrow(datboot) 
+print(paste("Our Cook cutoff =", round(cook.cutoff, 3), "- anything above this value will be removed"))
+
+#plot it out
+plot(model.cook, which = 4, cook.levels = cook.cutoff)
+
+#Add a cutoff line
+abline(h = cook.cutoff, lty = 2) 
+
+#Show and remove all outliers above your cutoff line
+datboot.no.outliers <- datboot[!(datboot$cook) > cook.cutoff, ]
+
+print(paste("There were", nrow(datboot), "observations before removing multivariate outliers"))
+
+
+print(paste("We removed outlier observation #:", datboot[(datboot$cook) > cook.cutoff, 1], "with a Cook's distance =", round(datboot[(datboot$cook) > cook.cutoff, 5], 3)))
+
+print(paste("We now have", nrow(datboot.no.outliers), "total observations saved in the new dataset after removing", nrow(datboot[(datboot$cook) > cook.cutoff, ]),  "outliers"))
+
+
+#N is now 39 after removing 1 multivariate outlier observation(s)
+    #was 40 after removing 0 univariate outlier observation(s)
+    #was 40 after removing 0 observation(s) with missing parameters
+    #was 40 originally (total 1 observation(s) removed from orginal dataset - 3%)
+
+```
+
+**4. Heteroscedasticity**
+```{r}
+p_load(car)
+#Breusch-Pagan test 
+#H0 = no change in variance across residuals.
+model.breusch_pagan <- lm(datboot$Child_Anx ~ datboot$Parent_Anx + datboot$Parent_OC)
+ncvTest(model.breusch_pagan)
+
+#not significant = homoscedastic
+#If violated use Box-cox transformation [boxcox(model)] in library MASS
+
+```
+
+**5. Multi-collinearity**
+```{r}
+
+#Multicollinearity is expected in mediation
+
+model.multicoll <- linReg(data = datboot.no.outliers, 
+                 dep = 'Child_Anx', 
+                 cov = c('Parent_Anx', 'Parent_OC'),
+                 blocks = list(c('Parent_Anx', 'Parent_OC')), 
+                 modelTest = TRUE,
+                 r2Adj = TRUE,
+                 stdEst = TRUE,
+                 ciStdEst = TRUE, 
+                 collin = TRUE) #this line does the thing
+model.multicoll
+
+#Tolerance for all variables indicates low/no multicollinearity
+```
+
+*Mediation*
+1. Regression
+  a. Y ~ X
+  b. M ~ X
+  c. Y ~ X + M
+  
+2. No bootstrapping
+  a. Model
+  b. Sobel Test
+  
+3. Bootstrapping
+
+**1. Regression**
+a. Y ~ X
+```{r}
+model1 <- linReg(data = datboot.no.outliers, 
+                 dep = 'Child_Anx', 
+                 covs = 'Parent_Anx',
+                 blocks = list(c('Parent_Anx')), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE,
+                 ci = TRUE,
+                 ciWidth = 95)
+model1
+```
+
+b. M ~ X
+```{r}
+model2 <- linReg(data = datboot.no.outliers, 
+                 dep = 'Parent_OC',
+                 covs = 'Child_Anx',
+                 blocks = list(c('Child_Anx')), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE,
+                 ci = TRUE,
+                 ciWidth = 95)
+model2
+```
+
+c. Y ~ X + M
+```{r}
+model3 <- linReg(data = datboot.no.outliers, 
+                 dep = 'Child_Anx', 
+                 covs = c('Parent_Anx', 'Parent_OC'),
+                 blocks = list(c('Parent_Anx', 'Parent_OC')), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE,
+                 ci = TRUE, 
+                 ciWidth = 95)
+model3
+```
+
+**2. No bootstrapping**
+
+a. Model b. Sobel Test
+```{r}
+
+# (a * b) = (c - c') = Indirect Effect [i.e., amount of mediation]
+# Z  = Sobel test
+# a  = Path Estimate from X to M
+# b  = Path Estimate from M to Y
+# c  = Total Estimate (Direct Estimate + Indirect Estimate)
+# c' = Direct Estimate
+
+med <- medmod::med(datboot.no.outliers, 
+           dep = 'Child_Anx', 
+           pred = 'Parent_Anx', 
+           med = 'Parent_OC', 
+           pm = TRUE, 
+           ci = TRUE,
+           paths = TRUE,
+           label = TRUE,
+           estPlot = TRUE)
+med
+
+# Look at this in comparison to the indirect mediation estimate.
+# sobel(X, M, Y)
+cat("\n")
+sobel(datboot.no.outliers$Parent_Anx, datboot.no.outliers$Parent_OC, datboot.no.outliers$Child_Anx)
+
+```
+
+**3. Bootstrapping**
+```{r}
+
+boot <- medmod::med(datboot.no.outliers, 
+            dep = 'Child_Anx', 
+            pred = 'Parent_Anx', 
+            med = 'Parent_OC', 
+            estMethod = 'bootstrap', 
+            bootstrap = 1000, 
+            pm = TRUE,
+            ci = TRUE,
+            paths = TRUE,
+            label = TRUE,
+            estPlot = TRUE)
+
+boot
+
+# Check the z-values, SE, and p-values for pathways to see differences (X -> Y for this one). 
+```
