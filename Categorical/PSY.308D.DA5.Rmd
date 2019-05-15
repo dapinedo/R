@@ -1,6 +1,6 @@
 ---
 title: "PSY.308d.DA5"
-output: html_document
+output: word_document
 ---
 
 ```{r setup, include=FALSE}
@@ -58,7 +58,7 @@ corr
 ```
 
 Assumptions:
-*Regression Diagnostics*
+
 1. Missing Data - **NONE**
 2. Univariate a. Normality **PASSED**, b. Linearity and c. Outliers
 3. Multivariate a. Normality **PASSED** and b.Outliers **REMOVED**
@@ -164,7 +164,7 @@ print(paste("We now have", nrow(datboot.no.outliers), "total observations saved 
 p_load(car)
 #Breusch-Pagan test 
 #H0 = no change in variance across residuals.
-model.breusch_pagan <- lm(datboot$Child_Anx ~ datboot$Parent_Anx + datboot$Parent_OC)
+model.breusch_pagan <- lm(datboot.no.outliers$Child_Anx ~ datboot.no.outliers$Parent_Anx + datboot.no.outliers$Parent_OC)
 ncvTest(model.breusch_pagan)
 
 #not significant = homoscedastic
@@ -238,7 +238,7 @@ model3 <- linReg(data = datboot.no.outliers,
                  blocks = list(c('Parent_Anx', 'Parent_OC')), 
                  modelTest = TRUE, 
                  stdEst = TRUE,
-                 ci = TRUE, 
+                 ci = FALSE, 
                  ciWidth = 95)
 model3
 ```
@@ -260,7 +260,7 @@ med <- medmod::med(datboot.no.outliers,
            pred = 'Parent_Anx', 
            med = 'Parent_OC', 
            pm = TRUE, 
-           ci = TRUE,
+           ci = FALSE,
            paths = TRUE,
            label = TRUE,
            estPlot = TRUE)
