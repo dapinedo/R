@@ -2,7 +2,9 @@
 title: "PSY308d.DA1"
 author: "Daniel Pinedo"
 date: "April 2, 2019"
-output: word_document
+output: 
+  pdf_document: 
+    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}

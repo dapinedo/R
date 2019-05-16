@@ -1,6 +1,8 @@
 ---
 title: "PSY.308d.DA5"
-output: word_document
+output: 
+  pdf_document: 
+    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}

@@ -48,7 +48,7 @@ desc
 Assumptions
 1. Independence of Observations
 2. Predictor Variables Normally Distributed
-3. Multicollinearity
+3. Multicollinearity not violated
 
 **Correlations**
 ```{r}

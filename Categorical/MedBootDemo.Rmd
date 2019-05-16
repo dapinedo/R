@@ -1,6 +1,9 @@
 ---
 title: "Mediation with Bootstrapping"
 author: "Sir Stats McStatserson"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}

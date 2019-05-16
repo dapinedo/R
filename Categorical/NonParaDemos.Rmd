@@ -1,6 +1,9 @@
 ---
 title: "Non-Parametric Demos"
 author: "Sir Stats McStatserson III"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}
@@ -285,7 +288,7 @@ INTaov
 
 ```{r}
 
-# Kruskal-Wallis including pairwise comparisons (Dwass-Steel-Crtichlow-Fligner)
+# Kruskal-Wallis including pairwise comparisons (Dwass-Steel-Crichlow-Fligner)
 KW_INT_aov <- anovaNP(data = dat4, 
                       dep = 'Intent', 
                       group = c('Team'), 
