@@ -14,19 +14,8 @@ The goal of this script is to introduce applications of R for factor analysis. I
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-#load packages
-#install.packages("corpcor") 
-#install.packages("GPArotation")
-#install.packages("psych")
-#install.packages("ggplot2")
-#install.packages("foreign")
-#install.packages("tidyverse")
-library(corpcor) 
-library(GPArotation)
-library(psych)
-library(ggplot2)
-library(foreign)
-library(tidyverse)
+library(pacman)
+p_load(corpcor, GPArotation, psych, ggplot2, foreign, tidyverse)
 ```
 
 You may receive some warnings about packages that were developed under different versions of R. Check to see which packages you have installed and loaded by opening the Packages tab in the lower-right pane of RStudio.  A check in a box indicates that the package is loaded.
@@ -72,7 +61,10 @@ Next we can run some diagnostics on the correlation matrix in preparation for fa
 
 ```{r bartlett test}
 # arguments are the correlation matrix object and sample size n of the dataset
-wisc_bart = cortest.bartlett(wisc_cor, n = 175)
+# This tests the null hypothesis that the correlation matrix is an identity matrix
+#    where diagonal = 1 and everything else is null
+#    or where all correlations are = 0
+wisc_bart = cortest.bartlett(wisc_cor, n = nrow(wisc_data_1))
 wisc_bart
 ```
 
@@ -84,6 +76,7 @@ df = ( #vars * (#vars+1) ) / 2 = (10*11) / 2 = 55
 
 ```{r KMO test}
 # argument is the correlation matrix object
+# how many friendly other manifest variables does each manifest variable have for this dataset?
 KMO(wisc_cor)
 ```
 
@@ -95,12 +88,14 @@ If the determinant of a matrix is zero, that is an indication of ‘singularity�
 
 ```{r calculate determinant}
 # argument is the correlation matrix object
+# a determinant of zero indicates perfect multicollinearity
 det(wisc_cor)
 ```
 
 If the correlation is an identity matrix with all correlations equal to zero, then the determinant is equal to 1.00.  So, we do expect to have a small determinant, but just not zero.
 
-###Run Principal Components Analysis (PCA)  
+###Run Principal Components Analysis (PCA) 
+This assumes communalities are one
 
 ```{r PCA}
 # syntax format to run principal components analysis
@@ -208,7 +203,7 @@ resid_upper
 ```
 
 
-Now, let's calculate how many residuals are greater that +/- 0.05...
+Now, let's calculate how many residuals are greater than +/- 0.05...
 
 ```{r resid magnitude}
 # abs() calculates the absolute value for object in argument
@@ -250,6 +245,11 @@ wisc_cor_reproduced
 ###Factor Analysis (Common Factor Analysis, FA)
 
 Let’s use the 10 variable data set, 2 factor solution, oblique rotation, maximum likelihood extraction for our factor analysis.
+
+ROTATE
+--------
+varimax - force factors to be orthogonal
+oblique - factors may be correlated
 
 
 ```{r FA}
