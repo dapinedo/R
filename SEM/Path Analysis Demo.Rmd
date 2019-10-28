@@ -21,11 +21,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 dat <- read.csv('MedBootDemo.csv')
 
-library(psych)
-library(jmv)
-library(medmod)
-library(lavaan)
-library(multilevel)
+library(pacman)
+p_load(psych, jmv, medmod, lavaan, multilevel)
 
 ```
 
@@ -48,6 +45,15 @@ corr
 ```
 
 ### Regressions
+
+c: direct effect
+a*b: indirect effect
+Events ~ Email -------------> c
+Interest ~ Email -----------> a
+Events ~ Email + Interest --> a * b
+
+Sobel Test: H0:    a*b = 0
+            Ha: !(a*b) = 0
 
 ```{r}
 
@@ -87,6 +93,12 @@ boot
 sobel(dat$Email, dat$Interest, dat$Events)
 
 ```
+
+# Path model
+
+At minimum, need equations for all endogenous variables, e.g.
+'Events ~ Email + Interest' ---> Y ~ X + M
+Interest ~ Email ------------> M ~ X
 ```{r}
 
 # SEM model with direct and indirect effects
@@ -97,9 +109,10 @@ pathmodel1 <- ' # Direct effect
              Interest ~ a*Email
              Events ~ b*Interest
            # Indirect effect (a*b)
-             ab := a*b
+             indirect := a*b
            # Total effect
              total := c + (a*b)
+             direct := total - indirect
          '
 
 fit1 <- sem(pathmodel1, data = dat)
