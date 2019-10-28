@@ -1,0 +1,129 @@
+---
+title: "Mediation and Path Analysis Demo"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Mediation and Path Analysis 
+
+## A local college is hoping to understand what predicts how many events on average students will attend on campus per month. The board proproses that the best way to get higher attendance is to send a lot of e-mails. The more frequently that students are given information, the more they should attend. A student representative that sits in on board meetings believes there is more to the picture. While large weekly e-mail blasts may predict events attended on average, the interest a student has the event should explain how many events they attend. The board is looking to you to test these relationships. 
+
+### Variables:
+#### Email - average e-mails read per week by students.
+#### Interest - average amount of interest a student has for events listed in e-mails.
+#### Events - average amount of events attend by students per month.
+
+### Read data and load packages
+
+```{r}
+
+dat <- read.csv('MedBootDemo.csv')
+
+library(psych)
+library(jmv)
+library(medmod)
+library(lavaan)
+library(multilevel)
+
+```
+
+### Descriptives
+
+```{r}
+
+desc <- descriptives(dat, vars = c('Email', 'Interest', 'Events'), hist = TRUE, sd = TRUE, min = TRUE, max = TRUE, skew = TRUE, kurt = TRUE)
+desc
+
+```
+
+### Correlation matrix
+
+```{r}
+
+corr <- corrMatrix(dat, vars = c('Email', 'Interest', 'Events'), flag = TRUE)
+corr
+
+```
+
+### Regressions
+
+```{r}
+
+model1 <- lm(dat$Events ~ dat$Email)
+summary(model1)
+
+model2 <- lm(dat$Interest ~ dat$Email) 
+summary(model2)
+
+model3 <- lm(dat$Events ~ dat$Email + dat$Interest)
+summary(model3)
+
+```
+
+### Mediation model 
+
+```{r}
+
+med <- med(dat, dep = 'Events', pred = 'Email', med = 'Interest', pm = TRUE, paths = TRUE)
+med
+
+```
+
+### Mediation model - with bootstrapping
+
+```{r}
+
+boot <- med(dat, dep = 'Events', pred = 'Email', med = 'Interest', estMethod = 'bootstrap', bootstrap = 1000, pm = TRUE, paths = TRUE, ci = T)
+boot
+
+```
+
+### Sobel test
+
+```{r}
+
+sobel(dat$Email, dat$Interest, dat$Events)
+
+```
+```{r}
+
+# SEM model with direct and indirect effects
+
+pathmodel1 <- ' # Direct effect
+             Events ~ c*Email
+           # Mediator
+             Interest ~ a*Email
+             Events ~ b*Interest
+           # Indirect effect (a*b)
+             ab := a*b
+           # Total effect
+             total := c + (a*b)
+         '
+
+fit1 <- sem(pathmodel1, data = dat)
+summary(fit1, fit.measures = TRUE, standardized = TRUE)
+
+# SEM model with direct effect constrained to zero (full mediation)
+
+pathmodel2 <- ' # Direct effect
+             Events ~ 0*Email
+           # Mediator
+             Interest ~ a*Email
+             Events ~ b*Interest
+           # Indirect effect (a*b)
+             ab := a*b
+         '
+
+fit2 <- sem(pathmodel2, data = dat)
+summary(fit2, fit.measures = TRUE, standardized = TRUE)
+
+# Compare models
+anova(fit1, fit2)
+
+```
+
+
+
+
