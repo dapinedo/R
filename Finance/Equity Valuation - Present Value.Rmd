@@ -26,6 +26,14 @@ After-Tax Income
 ====================================
 [9] After-Tax Income                 # Net Income
 
+
+"Free Cash Flows" are cash flows after you have paid out
+     All your suppliers, employees, lenders, and government (taxes) and
+     Setting aside money for capital investments and additional working capital needs and
+     Net of new borrowings and debt repayments
+     No effect on firm's projected operations
+     No effect on firm's projected growth
+
 FCFF model forecasts free cash flows for equity and debt and uses WACC
 FCFE model forecasts free cash flows for equity accounting for debt and uses Cost of Capital
 
@@ -42,13 +50,6 @@ round(pv, 2)
 ```
 
 FCFE model
-
-"Free Cash Flows" are cash flows after you have paid out
-     All your suppliers, employees, lenders, and government (taxes) and
-     Setting aside money for capital investments and additional working capital needs and
-     Net of new borrowings and debt repayments
-     No effect on firm's projected operations
-     No effect on firm's projected growth
      
 Adjustments to Arrive to FCFE
 [9] After-Tax Income
