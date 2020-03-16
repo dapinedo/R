@@ -1,5 +1,5 @@
 ---
-title: "Equity Valuation"
+title: "Equity Valuation - Present Value"
 author: "Daniel Pinedo (from DataCamp course by Clifford Ang)"
 date: "3/15/2020"
 output: html_document
@@ -19,7 +19,7 @@ After-Tax Income
 [4] Less: Operating Expenses
 ====================================
 [5] Operating Income or EBIT         # Earnings Before Interest & Taxes
-[6] Less: Interest Expense           # Compensation to debt holders
+[6] Less: Interest Expense           # Compensation to debt holders (not included in unlevered model)
 ====================================
 [7] Pre-Tax Income                   
 [8] Less: Taxes                      # Payment to the government
@@ -34,7 +34,7 @@ After-Tax Income
      No effect on firm's projected operations
      No effect on firm's projected growth
 
-FCFF model forecasts free cash flows for equity and debt and uses WACC
+FCFF model (unlevered) forecasts free cash flows for equity and debt and uses WACC multiplier 
 FCFE model forecasts free cash flows for equity accounting for debt and uses Cost of Capital
 
 #Time Value of Money
