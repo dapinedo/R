@@ -29,10 +29,10 @@ After-Tax Income
 FCFF model forecasts free cash flows for equity and debt and uses WACC
 FCFE model forecasts free cash flows for equity accounting for debt and uses Cost of Capital
 
-Time Value of Money
+#Time Value of Money
 ```{r}
 # Present Value
-     # Calculate Present Value of $100 n year from now given 5% interest rate of return
+     # Calculate Present Value of $100 "n" year(s) from now given 5% interest rate of return
 n = 1
 r = .05
 
@@ -58,7 +58,48 @@ Adjustments to Arrive to FCFE
 ====================================
 [13] Free Cash Flow to Equity
 
- 
+#Terminal Value
+using perpetuity with growth model (PGM)
+```{r}
+#TV = {FCFE +1 year after growth period * (1 + Perpetuity Growth Rate[g])} / (Cost of Equity[k] - g)
+#or
+#TV = FCFE at end of growth period / (Cost of Equity[k] - g)
+
+```
+
+#Equity Value
+Summation of Present Value of the FCFE during the projection period + Present Value of the Terminal Value
+```{r}
+# Example: Suppose the FCFE for each of the first five years is $100 million. Assuming a cost of equity of 15%, the present value of each cash flow is:
+
+#PV of FCFE
+k_e <- 0.15 #cost of equity
+
+     #create data frame with 5 years of cash flows at $100 million
+cf <- rep(100, 5)
+cf <- data.frame(cf)
+
+     #create columns for period of 1 to 5, PV factor multiplied by cash flow 
+cf$period <- seq(1, 5, 1)
+cf$pv_factor <- 1 / (1 + k_e)^cf$period
+cf$pv <- cf$cf * cf$pv_factor
+cf
+
+pv_fcfe <- sum(cf$pv) #summation of pv column
+pv_fcfe
+
+#PV of terminal value
+tv_yr5 <- 858.333
+
+pv_tv <- tv_yr5 / (1 + k_e)^5
+pv_tv
+
+equity_value <- pv_fcfe + pv_tv
+equity_value
+
+```
+
+
 
 
 
