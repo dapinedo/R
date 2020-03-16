@@ -94,8 +94,15 @@ tv_yr5 <- 858.333
 pv_tv <- tv_yr5 / (1 + k_e)^5
 pv_tv
 
+#EQUITY VALUE
 equity_value <- pv_fcfe + pv_tv
 equity_value
+
+# To Convert to a Per Share Number
+# Assume 15 million shares outstanding
+shout <- 15
+equity_per_share <- equity_value / shout
+equity_per_share
 
 ```
 
