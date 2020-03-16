@@ -1,0 +1,71 @@
+---
+title: "Equity Valuation"
+author: "Daniel Pinedo (from DataCamp course by Clifford Ang)"
+date: "3/15/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Basics
+
+After-Tax Income
+[1] Revenues                         # Sales
+[2] Less: Cost of Goods Sold
+====================================
+[3] Gross Profit
+[4] Less: Operating Expenses
+====================================
+[5] Operating Income or EBIT         # Earnings Before Interest & Taxes
+[6] Less: Interest Expense           # Compensation to debt holders
+====================================
+[7] Pre-Tax Income                   
+[8] Less: Taxes                      # Payment to the government
+====================================
+[9] After-Tax Income                 # Net Income
+
+FCFF model forecasts free cash flows for equity and debt and uses WACC
+FCFE model forecasts free cash flows for equity accounting for debt and uses Cost of Capital
+
+Time Value of Money
+```{r}
+# Present Value
+     # Calculate Present Value of $100 n year from now given 5% interest rate of return
+n = 1
+r = .05
+
+pv <- 100/(1 + r)^n
+round(pv, 2)
+
+```
+
+FCFE model
+
+"Free Cash Flows" are cash flows after you have paid out
+     All your suppliers, employees, lenders, and government (taxes) and
+     Setting aside money for capital investments and additional working capital needs and
+     Net of new borrowings and debt repayments
+     No effect on firm's projected operations
+     No effect on firm's projected growth
+     
+Adjustments to Arrive to FCFE
+[9] After-Tax Income
+[10] Add: Depreciation and Amortization  # Non-cash charge. Cash spent at time of purchase
+[11] Less: Capital Expenditures          # Cash spent on capital investments
+[12] Less: Increases in Working Capital  # Cash spent on additional working capital needs
+====================================
+[13] Free Cash Flow to Equity
+
+ 
+
+
+
+
+
+
+     
+
+
+ 
