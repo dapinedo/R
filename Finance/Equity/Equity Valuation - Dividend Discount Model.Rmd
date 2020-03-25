@@ -1,0 +1,88 @@
+---
+title: "Equity Valuation - Dividend Discount Model"
+author: "Daniel Pinedo (from DataCamp course by Clifford Ang)"
+date: "3/24/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Single Stage Dividend Discount Model
+
+##1. Constant Dividend Stream
+
+```{r}
+#V = dividend per share{t+1} / k, where k = discount rate {or kp, cost of equity}
+```
+
+##2. Dividend with Constant Growth
+
+```{r}
+#V = dividend per share{t+1} / (k - g), where g = growth rate
+```
+
+#Two Stage Dividend Discount Model
+
+##1 No Dividends during first stage
+
+1st stage: No dividends for T years
+2nd stage: Expect firm to pay dividends beginning Year T + 1
+
+```{r}
+#V = 0 + [dividend per share{T+1}/(k−g)] ∗ [1/(1+k)^T]
+```
+
+##2 With different increasing dividends during first stage
+```{r}
+# V = 
+# Present Value of Discounted Dividend Cash Flows of first stage + 
+# [dividend per share{T+1}/(k−g)] ∗ [1/(1+k)^T] of second stage
+
+# Change scientific notation options
+options("scipen"=100, "digits"=4)
+
+# First Stage - Preferred dividend in Years 1 to 5
+  high_div <- 2.50
+  kp <- .1
+  
+  # Create vector of Year 1-5 dividends
+pref_cf <- rep(high_div, 5)
+
+  # Convert to data frame
+pref_df <- data.frame(pref_cf)
+
+  # Add discount periods
+pref_df$periods <- seq(1, 5, 1)
+
+  # Calculate discount factors
+pref_df$pv_factor <- 1/(kp)^pref_df$periods
+
+  # Calculate PV of dividends
+pref_df$pv_cf <- pref_df$pref_cf * pref_df$pv_factor
+pref_df
+
+  # Calculate value during high stage
+pref_value_high <- sum(pref_df$pv_cf) 
+pref_value_high
+
+# Second Stage
+  stated_value = 25
+  div_rate = .05
+
+  # Value of Preferred after first five years
+pref_value_yr5 <- (stated_value * div_rate) / kp
+pref_value_yr5
+
+  # Value discounted to present
+pref_value_low <- pref_value_yr5 / (1+kp)^5
+pref_value_low
+
+# Calculate total value of the preferred stock
+pref_value_total <- pref_value_high + pref_value_low
+pref_value_total
+
+#set scientific notation back to defaults
+options("scipen"=0, "digits"=7)
+```
