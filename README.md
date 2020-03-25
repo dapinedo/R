@@ -6,7 +6,9 @@
 3. [Categorical and Non-Parametric Analysis](https://github.com/dapinedo/R/tree/master/Statistics/Categorical)
 4. [Factor Analysis](https://github.com/dapinedo/R/tree/master/Statistics/Factor)
 5. [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/Statistics/SEM)
-6. [Network Analysis](https://github.com/dapinedo/R/tree/master/Statistics/Networks)
 
 #### Finance
-7. [Equity Valuation](https://github.com/dapinedo/R/tree/master/Finance/Equity)
+6. [Equity Valuation](https://github.com/dapinedo/R/tree/master/Finance/Equity)
+
+#### Other
+7. [Network Analysis](https://github.com/dapinedo/R/tree/master/Networks)
