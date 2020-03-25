@@ -34,8 +34,8 @@ After-Tax Income
      No effect on firm's projected operations
      No effect on firm's projected growth
 
-FCFF model (unlevered) forecasts free cash flows for equity and debt and uses WACC multiplier 
-FCFE model forecasts free cash flows for equity accounting for debt and uses Cost of Capital
+FCFF model (unlevered) forecasts free cash flows for equity and debt and uses WACC multiplier
+FCFE model forecasts free cash flows for equity accounting for debt and uses Cost of Equity / Capital
 
 #Time Value of Money
 ```{r}
@@ -49,10 +49,18 @@ round(pv, 2)
 
 ```
 
-FCFE model
+Calculating FCFF model (unlevered)
+     1. EBIT * (1-Tax Rate) + Non-Cash Expenses – Changes in Operating Assets & Liabilities – CapEx
+     2. Cash Flow from Operations + Tax Adjusted Interest Expense – CapEx
+     3. Net Income + Tax Adjusted Interest Expense + Non-Cash Expenses – Changes in Operating Assets & Liabilities – CapEx 
+
+
+Calculating FCFE model (levered)
+     1. Net Income + Net Debt Issued (Repaid) + Non-Cash Charges – Changes in Operating Assets & Liabilities – CapEx 
+     2. Cash Flow from Operations – CapEx + Net Debt Issued (Repaid)
      
-Adjustments to Arrive to FCFE
-[9] After-Tax Income
+Adjustments to Arrive to FCFE (Using #1 above)
+[9] After-Tax Income                     # Net Income 
 [10] Add: Depreciation and Amortization  # Non-cash charge. Cash spent at time of purchase
 [11] Less: Capital Expenditures          # Cash spent on capital investments
 [12] Less: Increases in Working Capital  # Cash spent on additional working capital needs
@@ -60,7 +68,7 @@ Adjustments to Arrive to FCFE
 [13] Free Cash Flow to Equity
 
 #Terminal Value
-using perpetuity with growth model (PGM)
+using perpetuity with growth model (PGM) using FCFE
 ```{r}
 #TV = {FCFE +1 year after growth period * (1 + Perpetuity Growth Rate[g])} / (Cost of Equity[k] - g)
 #or
