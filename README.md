@@ -1,12 +1,12 @@
 # R
 
-#### Statistics Topics
-1. [T Tests & ANOVA](https://github.com/dapinedo/R/tree/master/ANOVA)
-2. [Multiple Regression](https://github.com/dapinedo/R/tree/master/Regression)
-3. [Categorical and Non-Parametric Analysis](https://github.com/dapinedo/R/tree/master/Categorical)
-4. [Factor Analysis](https://github.com/dapinedo/R/tree/master/Factor)
-5. [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/SEM)
-6. [Network Analysis](https://github.com/dapinedo/R/tree/master/Networks)
+#### Statistics
+1. [T Tests & ANOVA](https://github.com/dapinedo/R/tree/master/Statistics/ANOVA)
+2. [Multiple Regression](https://github.com/dapinedo/R/tree/master/Statistics/Regression)
+3. [Categorical and Non-Parametric Analysis](https://github.com/dapinedo/R/tree/master/Statistics/Categorical)
+4. [Factor Analysis](https://github.com/dapinedo/R/tree/master/Statistics/Factor)
+5. [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/Statistics/SEM)
+6. [Network Analysis](https://github.com/dapinedo/R/tree/master/Statistics/Networks)
 
-#### Other Topics
-7. [Finance](https://github.com/dapinedo/R/tree/master/Finance)
+#### Finance
+7. [Equity Valuation](https://github.com/dapinedo/R/tree/master/Finance/Equity)
