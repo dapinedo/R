@@ -1,0 +1,56 @@
+---
+title: "Importing Data - Downloading Data"
+author: "Daniel Pinedo (from DataCamp course by Joshua Ulrich)"
+date: "3/31/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Load packages
+```{r}
+library(pacman)
+p_load(quantmod, Quandl)
+
+```
+
+#quantmod::getSymbols()
+```{r}
+# data sources include: 
+# yahoo (japan as well), google, FRED (st. louis fed), oanda, av (alpha vantage), csv, mysql, sqlite, rdata, rds [saveRDS()]
+
+#stock example
+getSymbols(Symbols = "LUV", src = "yahoo") #auto.assign = TRUE or env = !NULL by default
+str(LUV) #structure command - imports xts type object
+head(LUV)
+
+#currency example
+quantmod::oanda.currencies
+getSymbols("GBP/CAD", from = Sys.Date() - 190, to = Sys.Date(), src = "oanda")
+str(GBPCAD)
+head(GBPCAD)
+
+#economics example
+getSymbols(Symbols = "UNRATE", src = "FRED")
+str(UNRATE)
+head(UNRATE)
+
+```
+
+#Quandl::Quandl()
+```{r}
+# can import to various formats as argument "type = ":
+#"raw" = dataframe [DEFAULT]
+#"ts" = stats package
+#"timeSeries" = timeseries package in R metrics suite
+#"zoo", "xts"
+GDP <- Quandl(code = "FRED/GDP", type = "raw") # format is "datasource/instrument"
+str(GDP)
+head(GDP)
+
+# for more info see: https://www.rdocumentation.org/packages/Quandl/versions/2.10.0
+```
+
+
