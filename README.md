@@ -10,5 +10,5 @@
 #### Finance
 6. [Equity Valuation](https://github.com/dapinedo/R/tree/master/Finance/Equity)
 
-#### Other
+#### Networks
 7. [Correlational Network Analysis](https://github.com/dapinedo/R/tree/master/Networks/Correlational)
