@@ -1,0 +1,152 @@
+---
+title: "Data Taming with dplyr"
+author: "Daniel Pinedo"
+date: "6/10/2020"
+output: html_document
+---
+
+#please reuse the code in this file as you see fit. NOTE: Although the data from this dataset is de-identified, it is for personal use only and not to be disseminated
+
+#the goal of this coding example is to provide the most elegant (i.e. less code) and parsimonous (i.e. most direct) solution. If you find a better solution given these two principles, please share!
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Initialize Document (interpreted using R v4.0.1)
+```{r echo = FALSE, message = FALSE}
+
+library(pacman) 
+# ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ 
+# | | | | | | | | | | | | | | | | | | | | | | | | | | | 
+# YOU ONLY NEED TO INSTALL THE LIBRARY ABOVE
+# ALL OTHERS LOADED BELOW WILL LOAD DYNAMICALLY USING pacman::p_load
+pacman::p_load(readxl, writexl, dplyr, ggplot2, ggpubr, Hmisc)
+```
+
+#Prompt
+You are about to embark on a people analytics project that is attempting to predict performance factors in recruiting for an organization. Before you get to do a fun regression, you need to pull data from three different spreadsheets, remove N/A values, and reduce the number of categories related to recruitment type to fit into one categorical variable. Below is one way you can do this using default R commands, 'dplyr' (part of the tidyverse) for data manipulation, and 'Hmisc' for taking a look at your dataset. A frequency analysis is completed for demographic variables using 'dplyr' and visualized with histograms using 'ggplot2.'
+
+
+##import all the data, merge into one dataframe, and remove N/A observations
+-NOTE: in order for this to work, each separate Excel sheet or file needs to have one common reference column, in this case it is 'Employee.ID'
+```{r}
+
+#import data
+intervalratio <- readxl::read_excel(path = 'Session_2.xlsx', sheet = "IntervalRatio")
+categorical <- readxl::read_excel(path = 'Session_2.xlsx', sheet = "Categorical")
+demographics <- readxl::read_excel(path = 'Session_2.xlsx', sheet = "Demographics")
+head(intervalratio)
+head(categorical)
+head(demographics)
+
+
+#merge all dataframes starting with demographics and using 'Employee.ID as a reference.
+dataset  <- demographics %>% 
+     dplyr::full_join(categorical, by = "Employee.ID") %>%
+     dplyr::full_join(intervalratio, by = "Employee.ID")
+Hmisc::describe(dataset) #this one is great for getting a better look at your dataset. You may also use psych::describe although it is most useful for determining skew/kurtosis information for interval/ratio data
+
+# We see based on 'Hmisc::describe()' that 'Motivation' is missing 3 total observations out of 192. Since there are 3 total missing cases only we will delete list/row-wise instead of imputing missing interval/ratio values. 
+
+# If you want a more thorough N/A analysis to check for patterns in missing data, use 'mice' functions such as md.pattern() and mice_plot()
+
+#delete listwise rows with any NA values
+dataset.no.NA <- na.omit(dataset)
+nrow(dataset.no.NA) #we had 192, now we have 189
+View(dataset.no.NA)
+
+#manually remove observations for Employee.ID #3 and #128 (see Motivation scores in 'dataset.no.NA' to understand why. Also, see Hmisc::describe(dataset.no.NA)).
+dataset.manualremove <- subset(dataset.no.NA, Employee.ID!=3 & Employee.ID!=128)
+View(dataset.manualremove)
+```
+
+
+##Use mutate() in dplyr to change binary categories into multiple categories
+```{r}
+
+#Fixing case mismatch
+dataset.casematch <- dataset.manualremove %>% mutate_at(c("Career.Fair", "Campus.Recruiting", "External.Recruiter"), toupper)
+View(dataset.casematch)
+
+#combine referral types (i.e. create a column of name 'Referral.Type') from multiple binary categories into one category
+#Referral.Type is the new column we create using the mutate() function
+dataset.casematch <- dplyr::mutate(
+              dataset.casematch, 
+              Referral.Type = if_else(Career.Fair == "Y", "Career", 
+                             if_else(Campus.Recruiting == "Y", "Campus",    
+                             if_else(External.Recruiter == "Y", "External", "Other")))
+              )
+
+#Referral.Type is assigned using a conditional statement, here it is presented as a nested if_else() loop. Here we are saying that for each value of Career.Fair, if the value is 'Y', then we assign the value to Referral Type to be 'Career,' otherwise/else we check if Campus.Recruiting is 'Y,' if it is we assign the value 'Campus,' otherwise/else we check if External.Recruiter is 'Y,' if it is we assign the value 'External,' otherwise we are out of categories so any remainders are classified as 'Other.' 
+
+```
+
+
+##I don't like the way Referral.Type got stuck at the end of my dataframe. Can I move it closer to the other demographic and categorical variables?
+- Yes, yes you can
+```{r}
+
+#use dplyr::select() with c() to choose which columns to include and in what order, respectively.
+dataset_final <- dataset.casematch %>% 
+    dplyr::select(c(Employee.ID, 
+             Gender, 
+             Age,
+             US.Citizen,
+             #Career.Fair,
+             #Campus.Recruiting,
+             #External.Recruiter,
+             Referral.Type,
+             College.GPA,
+             Learning.Aptitude,
+             Motivation))
+View(dataset_final)
+
+#write the final file!
+write_xlsx(dataset_final, 'dataset_final.xlsx')
+
+```
+
+##Use pipes with various functions in library 'dplyr' for frequency analysis
+```{r message = FALSE}
+
+# a pipe allows you to complete multiple operations at the same time. 
+# NOTE: You may only use pipes when using functions from the library 'dplyr'
+# pipes take the output from one function and feed it to the first argument of the next function.
+# correct nomenclature for reading pipes (i.e. '%>%'):
+#      age_count is assigned by ... dataframe piped to group_by(Age) piped to summarize with Frequency counts.
+
+#count tables
+age_count <- dataset_final %>%
+  dplyr::group_by(Age) %>%
+  dplyr::summarize(Frequency = n())
+age_count
+
+gender_count <- dataset_final %>%
+  dplyr::group_by(Gender) %>%
+  dplyr::summarize(Frequency = n())
+gender_count
+
+citizen_count <- dataset_final %>%
+  dplyr::group_by(US.Citizen) %>%
+  dplyr::summarize(Frequency = n())
+citizen_count
+
+#Age histogram with count table
+#stat = "identity" changes the default bar behavior from mapping to one variable only ("bin") to mapping with the y value aesthetic (if you don't change default behavior, there is an error due to there being two variables in the plot)
+#label = "Frequency" adds a numeric value to the bar graph
+#vjust = -0.3 moves the numeric value lower and closer to the bar graph
+ggplot(age_count, aes(x = Age, y = Frequency)) +
+  geom_bar(fill = "#0073C2FF", stat = "identity") +
+  geom_text(aes(label = Frequency), vjust = -0.3)
+
+#Age Histogram overlayed by Gender with dotted mean lines
+ggpubr::gghistogram(dataset_final, x = "Age", bins = 16,
+   add = "mean", rug = TRUE,
+   color = "Gender", fill = "Gender",
+   palette = c("#0073C2FF", "#FC4E07"))
+
+#computer nerds love hexadecimal colors! see https://htmlcolorcodes.com/color-chart/
+
+```
+
