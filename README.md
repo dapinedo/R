@@ -1,7 +1,7 @@
 # R
 
 #### Data
-1. [Taming/Wrangling](https://github.com/dapinedo/R/tree/master/Finance/Taming)
+1. [Taming/Wrangling](https://github.com/dapinedo/R/tree/master/Taming)
 
 #### Finance
 2. [Equity Valuation](https://github.com/dapinedo/R/tree/master/Finance/Equity)
