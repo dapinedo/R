@@ -1,6 +1,6 @@
 # R
 
-#### Data
+#### Data Wrangling
 1. [Taming/Wrangling](https://github.com/dapinedo/R/tree/master/Taming)
 
 #### Finance
@@ -15,4 +15,7 @@
 6. [Categorical and Non-Parametric Analysis](https://github.com/dapinedo/R/tree/master/Statistics/Categorical)
 7. [Factor Analysis](https://github.com/dapinedo/R/tree/master/Statistics/Factor)
 8. [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/Statistics/SEM)
+
+#### Other
+9. [DataCamp Certifications](https://github.com/dapinedo/R/tree/master/DataCamp)
 
