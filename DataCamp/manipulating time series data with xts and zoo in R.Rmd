@@ -138,6 +138,26 @@ We'll get into more detail on subsetting xts objects in a later chapter. For now
 
 For this exercise you'll create two time series using two different time classes. You will then subset each object using the other object's index.
 ```{r}
+# Create dates
+dates <- as.Date("2016-01-01") + 0:4
 
+# Create ts_a
+ts_a <- xts(x = 1:5, order.by = dates)
+
+# Create ts_b
+ts_b <- xts(x = 1:5, order.by = as.POSIXct(dates))
+
+# Extract the rows of ts_a using the index of ts_b
+ts_a[index(ts_b)]
+
+# Extract the rows of ts_b using the index of ts_a
+ts_b[index(ts_a)]
 
 ```
+
+The versatile structure of xts objects makes subsetting them very intuitive.
+
+**Importing, exporting and converting time series**
+___
+
+___
