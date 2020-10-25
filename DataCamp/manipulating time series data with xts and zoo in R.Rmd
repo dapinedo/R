@@ -40,37 +40,37 @@ ___
 It is best to think of xts objects as normal R matrices, but with special powers. These powers let you manipulate your data as a function of time, as your data is now self-aware of when it exists in time. Before we can start to exploit these powers, it will be helpful to see how xts objects relate to their base-R relatives.
 
 In this exercise, you will get a feel for xts and how it behaves like a matrix object. The xts object ex_matrix and matrix object core have been pre-loaded for you.
-```{r}
+```
 # Load xts
-#library(xts)
+library(xts)
 
 # View the structure of ex_matrix
-#str(ex_matrix)
+str(ex_matrix)
 
 # Extract the 3rd observation of the 2nd column of ex_matrix
-#ex_matrix[3, 2]
+ex_matrix[3, 2]
 
 # Extract the 3rd observation of the 2nd column of core 
-#core[3, 2]
+core[3, 2]
 
 ######################################################
-## View the structure of ex_matrix
-#str(ex_matrix)
-#An 'xts' object on 2016-06-01/2016-06-03 containing:
-#  Data: num [1:3, 1:2] 1 1 1 2 2 2
-#  Indexed by objects of class: [Date] TZ: UTC
-#  xts Attributes:  
-#List of 1
-# $ createdOn: POSIXct[1:1], format: "2020-10-24 18:20:48"
-#
-# Extract the 3rd observation of the 2nd column of ex_matrix
-#ex_matrix[3, 2]
-#           [,1]
-#2016-06-03    2
-#
-# Extract the 3rd observation of the 2nd column of core 
-#core[3, 2]
-#[1] 2
+ View the structure of ex_matrix
+str(ex_matrix)
+An 'xts' object on 2016-06-01/2016-06-03 containing:
+  Data: num [1:3, 1:2] 1 1 1 2 2 2
+  Indexed by objects of class: [Date] TZ: UTC
+  xts Attributes:  
+List of 1
+ $ createdOn: POSIXct[1:1], format: "2020-10-24 18:20:48"
+
+ Extract the 3rd observation of the 2nd column of ex_matrix
+ex_matrix[3, 2]
+           [,1]
+2016-06-03    2
+
+ Extract the 3rd observation of the 2nd column of core 
+core[3, 2]
+[1] 2
 ######################################################
 
 ```
@@ -158,6 +158,668 @@ ts_b[index(ts_a)]
 The versatile structure of xts objects makes subsetting them very intuitive.
 
 **Importing, exporting and converting time series**
+___
+
+**Converting xts objects**
+It is often necessary to convert between classes when working with time series data in R. Conversion can be required for many reasons, but typically you'll be looking to use a function that may not be time series aware or you may want to use a particular aspect of xts with something that doesn't necessarily need to be a full time series.
+
+Luckily, it is quite easy to convert back and forth using the standard as.* style functionality provided in R (for example, as.POSIXct() or as.matrix()).
+
+xts provides methods to convert all of the major objects you are likely to come across. Suitable native R types like matrix, data.frame, and ts are supported, as well as contributed ones such as timeSeries, fts and of course zoo. as.xts() is the workhorse function to do the conversions to xts, and similar functions will provide the reverse behavior.
+
+To get a feel for moving data between classes, let's try a few examples using the Australian population ts object from R named austres.
+```{r}
+# Convert austres to an xts object called au
+au <- as.xts(austres)
+
+# Then convert your xts object (au) into a matrix am
+am <- as.matrix(au)
+
+# Inspect the head of am
+head(am)
+
+# Convert the original austres into a matrix am2
+am2 <- as.matrix(austres)
+
+# Inspect the head of am2
+head(am2)
+
+```
+
+Converting objects to and from the xts class is critical for manipulating time series data and couldn't be easier than with the as.xts() command.
+
+**Importing data**
+You can now convert data to xts using as.xts(). However, in most real world applications you will often need to read raw data from files on disk or the web. This can be challenging without knowing the right commands.
+
+In the first part of this exercise, you will start by reading a csv file from disk using the base-R read.csv. After you read the data, the next step is to convert it to xts. Here you will be required to use the xts() constructor as well as deal with converting non-standard dates into something that xts understands.
+
+In part two of this exercise, you will read the same data into a zoo object using read.zoo and then convert the zoo object into an xts object.
+
+The data in this exercise are quite simple, but will require some effort to properly import and clean. The full name of the file you will be working with has been saved as the value of tmp_file. On disk, the data look like:
+
+a,b
+1/02/2015, 1, 3
+2/03/2015, 2, 4
+```
+# Create dat by reading tmp_file
+dat <- read.csv(tmp_file)
+
+# Convert dat into xts
+xts(dat, order.by = as.Date(rownames(dat), "%m/%d/%Y"))
+
+# Read tmp_file using read.zoo and as.xts
+dat_zoo <- read.zoo(tmp_file, index.column = 0, sep = ",", format = "%m/%d/%Y")
+
+# Read tmp_file using read.zoo and as.xts
+dat_xts <- as.xts(dat_zoo)
+
+```
+
+You just successfully generated xts objects from raw data. That's quite an accomplishment!
+
+**Exporting xts objects**
+Now that you can read raw data into xts and zoo objects, it is only natural that you learn how to reverse the process.
+
+There are two main use cases for exporting xts objects. First, you may require an object to persist across sessions for use in later analysis. In this case, it is almost always best to use saveRDS() and readRDS() to serialize single R objects.
+
+Alternatively, you may find yourself needing to share the results of your analysis with others, often expecting the data to be consumed by processes unaware of both R and xts. Most of us would prefer not to think of this horrible fate for our data, but the real world mandates that we at least understand how this works.
+
+One of the best ways to write an xts object from R is to use the zoo function write.zoo(). In this exercise you'll take your temporary data and write it to disk using write.zoo().
+```
+# Convert sunspots to xts using as.xts().
+sunspots_xts <- as.xts(sunspots)
+
+# Get the temporary file name
+tmp <- tempfile()
+
+# Write the xts object using zoo to tmp 
+write.zoo(sunspots_xts, sep = ",", file = tmp)
+
+# Read the tmp file. FUN = as.yearmon converts strings such as Jan 1749 into a proper time class
+sun <- read.zoo(tmp, sep = ",", FUN = as.yearmon)
+
+# Convert sun into xts. Save this as sun_xts
+sun_xts <- as.xts(sun)
+```
+
+You've now mastered the basics of generating and exporting xts objects. Proceed to the next chapter to explore how to use these objects!
+
+**Introducing time based queries**
+___
+- ISO 8601:2004
+  - international standard for date and time
+  - left to right from most to least significant digit
+  - "YYYY-MM-DDTHH:MM:SS" format
+    - year only is OK
+- xts support of ISO 8601:2004
+  - one and two sided intervals "2004" & "2001/2015"
+  - truncated representation "201402/03"
+  - time support "2014-02-22 08:30:00"
+  - repeating intervals "T08:00/T09:900"
+___
+
+**Querying for dates**
+One of the most powerful aspects of working with time series in xts is the ability to quickly and efficiently specify dates and time ranges for subsetting.
+
+Date ranges can be extracted from xts objects by simply specifying the period(s) you want using special character strings in your subset.
+
+```
+A["20090825"]       ## Aug 25, 2009
+A["201203/201212"]  ## Mar to Dec 2012
+A["/201601"]        ## Up to and including January 2016
+```
+
+For this exercise you will create a simple but very common query. Extract a range of dates using the ISO-8601 feature of xts. After successfully extracting a full year, you will then create a subset of your new object with specific start and end dates using this same notation.
+
+Let's find some time!
+```
+# Select all of 2016 from x
+x_2016 <- x["2016"]
+
+# Select January 1, 2016 to March 22, 2016
+jan_march <- x["2016/2016-03-22"]
+
+# Verify that jan_march contains 82 rows
+82 == length(jan_march)
+
+######################################################
+[1] TRUE
+######################################################
+```
+
+Subsetting a range is a useful way to get a snapshot of a larger time series object.
+
+**Extracting recurring intraday intervals**
+The most common time series data "in the wild" is daily. On occasion, you may find yourself working with **intraday data**, which contains both dates and times. In this case it is sometimes necessary to view only a subset of time for each day over multiple days. Using `xts`, you can slice days easily by using special notation in the `i =` argument to the single bracket extraction (i.e. `[i, j]`).
+
+As you learned in the previous exercise, the trick to this is to not specify explicit dates, but rather to use the special **T/T** notation designed for intraday repeating intervals.
+
+```
+# Intraday times for all days
+NYSE["T09:30/T16:00"] 
+```
+In this exercise, you will extract recurring morning hours from the time series `irreg`, which holds irregular data from the month of January 2010. Remember, you can always use the R console to experiment with `irreg` or to view the help pages with `?xts`.
+
+```
+# Extract all data between 8AM and 10AM
+morn_2010 <- irreg["T08:00/T10:00"]
+
+# Extract the observations for January 13th, 2010
+morn_2010["2010-01-13"]
+
+######################################################
+                    [,1]
+2010-01-13 08:07:00   41
+2010-01-13 09:28:00   42
+######################################################
+```
+
+Precision subsetting is a useful tool for exploring time series data.
+
+**Alternative extraction techniques**
+___
+- row selection with time
+  - integer indexing
+    - `x[c(1, 2, 3), ]`
+  - logical vectors
+    - `x[index(x) > "2016-08-20"]`
+  - date objects (Date, POSIXct, etc.)
+    ```
+    dates <- as.POSIXct(c("2016-06-25", "2016-06-27"))
+    x[dates]
+    ```
+- modifying time series
+  - same flexibility as subsetting
+    - ISO 8601, integers, logicals, and date objects
+  - `which.i = TRUE` creates an integer vector corresponding to times
+    ```
+    index <- x["2007-06-26/2007-06-28", which.i = TRUE]
+    index
+    ```
+    `2 3 4`
+- key behaviors
+  - all subsets preserve matrix (`drop = FALSE`)
+  - order is preserved
+  - binary search and memcpy are faster than base R!
+  - index and xts attributes are preserved
+___
+
+**Row selection with time objects**
+Often you may need to subset an existing time series with a set of Dates, or time-based objects. These might be from `as.Date()`, `as.POSIXct()`, or a variety of other classes. In this exercise you'll explore how, given an `xts` object `x`, it is possible to extract relevant observations using a vector of dates in brackets.
+
+The objects `x` and `dates` have been pre-loaded in your workspace.
+
+```
+# Subset x using the vector dates
+x[dates]
+
+######################################################
+           [,1]
+2016-06-04    3
+2016-06-08    7
+######################################################
+
+# Subset x using dates as POSIXct
+x[as.POSIXct(dates)]
+
+######################################################
+           [,1]
+2016-06-04    3
+2016-06-08    7
+######################################################
+```
+
+Subsetting using a vector of dates is another skill that will serve you well when working with xts objects.
+
+**Update and replace elements**
+Replacing values in `xts` objects is just as easy as extracting them. You can use either ISO-8601 strings, date objects, logicals, or integers to locate the rows you want to replace. One reason you may want to do this would be to replace known intervals or observations with `NA`, say due to a malfunctioning sensor on a particular day or a set of outliers given a holiday.
+
+For individual observations located sporadically throughout your data dates, integers or logical vectors are a great choice. For continuous blocks of time, ISO-8601 is the preferred method.
+
+In this exercise, you'll continue using the vector `dates` from the previous exercise to modify your `x` object. Both are already loaded in your workspace.
+
+```
+# Replace the values in x contained in the dates vector with NA
+x[dates] <- NA
+
+# Replace all values in x for dates starting June 9, 2016 with 0
+x["2016-06-09/"] <- 0
+
+# Verify that the value in x for June 11, 2016 is now indeed 0
+x["2016-06-11"]
+
+######################################################
+           [,1]
+2016-06-11    0
+######################################################
+
+```
+
+As you can see, there is no shortage of methods for subsetting xts objects.
+
+**Methods to find periods in your data**
+___
+- finding times of interest
+  - R uses `head()` and `tail` to look at the start or end of a series
+  - xts implements 2 similar functions with respect to time
+    - uses a flexible notion of time
+    - i.e. "last 3 days" or "first 6 weeks"
+  - these are the `first()` and `last()` functions
+___
+
+**Find the first or last period of time**
+Sometimes you need to locate data by *relative* time. Something that is easier said than put into code. This is equivalent to requesting the head or tail of a series, but instead of using an absolute offset, you describe a relative position in time. A simple example would be something like the *last 3 weeks* of a series, or the *first day of current month*.
+
+Without a time aware object, this gets quite complicated very quickly. Luckily, `xts` has the necessary prerequisites built in for you to use with very little learning required. Using the **first()** and **last()** functions it is actually quite easy!
+
+For this exercise, you'll extract relative observations from a data set called `temps`, a time series of summer temperature data from Chicago, IL, USA.
+```
+# Create lastweek using the last 1 week of temps
+lastweek <- last(temps, "1 week")
+
+# Print the last 2 observations in lastweek
+last(lastweek, 2)
+
+######################################################
+           Temp.Max Temp.Mean Temp.Min
+2016-07-15       75        72       60
+2016-07-16       79        69       60
+######################################################
+
+# Extract all but the first two days of lastweek
+first(lastweek, "-2 days")
+
+######################################################
+           Temp.Max Temp.Mean Temp.Min
+2016-07-13       86        78       68
+2016-07-14       89        80       68
+2016-07-15       75        72       60
+2016-07-16       79        69       60
+######################################################
+```
+
+Relative subsetting with `first()` and `last()` can be a valuable way to look at the most recent data in your xts object.
+
+**Combining first and last**
+Now that you have seen how to extract the first or last chunk of a time series using natural looking language, it is only a matter of time before you need to get a bit more complex.
+
+In this exercise, you'll extract a very specific subset of observations by linking together multiple calls to `first()` and `last()`.
+
+```
+# Last 3 days of first week
+last(first(Temps, '1 week'), '3 days') 
+```
+You will reconfigure the example above using the `temps` data from the previous exercise. The trick to using such a complex command is to work from the inside function, out.
+```
+# Extract the first three days of the second week of temps
+first(last(first(temps, "2 weeks"), "1 week"), "3 days")
+
+######################################################
+           Temp.Max Temp.Mean Temp.Min
+2016-07-04       80        76       69
+2016-07-05       90        79       68
+2016-07-06       89        79       70
+######################################################
+```
+
+Subsetting with `first()` and `last()` can get complicated quickly!
+
+**Math operations using xts**
+___
+- key features
+  - xts is naturally a matrix
+  - math operations are on the **intersection** of times
+    - only these intersections will be used
+  - sometimes it is necessary to drop the xts class
+    - argument `drop = TRUE`, `coredata()` or `as.numeric()`
+  - special handling required for **union** of dates
+- out of box ops (+,-, *, /)
+- operations on the union
+  - it may be necessary to use all observations
+___
+
+**Matrix arithmetic - add, subtract, multiply, and divide in time!**
+`xts` objects respect time. By design when you perform any binary operation using two `xts` objects, these objects are first aligned using the intersection of the indexes. This may be surprising when first encountered.
+
+The reason for this is that you want to preserve the point-in-time aspect of your data, assuring that you don't introduce accidental look ahead (or look behind!) bias into your calculations.
+
+What this means in practice is that you will sometimes be tasked with handling this behavior if you want to preserve the dimensions of your data.
+
+Your options include:
+
+  - Use `coredata()` or `as.numeric()` (drop one to a matrix or vector).
+  - Manually shift index values - i.e. use `lag()`.
+  - Reindex your data (before or after the calculation).
+  
+In this exercise, you'll look at the normal behavior, as well as an example using the first option. For now you will use two small objects `a` and `b`. Examine these objects in the console before you start.
+```{r}
+a <- xts(x = rep(1, 3), order.by = as.Date("2015-01-24") + 0:2)
+names(a) <- "a"
+a
+cat("----", "\n")
+
+b <- xts(x = 2, order.by = as.Date("2015-01-24"))
+names(b) <- "b"
+b
+cat("----", "\n")
+
+# Add a and b
+cat("a + b", "\n")
+a + b
+cat("----", "\n")
+
+# Add a with the numeric value of b
+cat("a + as.numeric(b)", "\n")
+a + as.numeric(b)
+
+```
+
+As you can see, adding two xts objects returns only the dates common to both. Adding a numeric to an xts object is a bit more intuitive.
+
+**Math with non-overlapping indexes**
+The previous exercise illustrated the ins and outs of doing basic math with xts objects. At this point you are aware that `xts` respects time and will only return the intersection of times when doing various mathematical operations.
+
+We alluded to another way to handle this behavior in the last exercise. Namely, re-indexing your data before an operation. This makes it possible to preserve the dimensions of your data by leveraging the same mechanism that `xts` uses internally in its own `Ops` method (the code dispatched when you call `+` or similar).
+
+The third way involves modifying the two series you want by assuring you have some union of dates - the dates you require in your final output. To do this you will need a few functions that won't be dealt with in depth until Chapter 3, but are very useful here.
+
+`merge(b, index(a))`
+
+Don't worry if you aren't yet familiar with `merge()`. This exercise may be easier if you just follow along with the instructions.
+```{r}
+a
+cat("----", "\n")
+
+b
+cat("----", "\n")
+
+# Add a to b, and fill all missing rows of b with 0
+cat("a + merge(b, index(a), fill = 0)", "\n")
+a + merge(b, index(a), fill = 0)
+cat("----", "\n")
+
+# Add a to b and fill NAs with the last observation
+cat("a + merge(b, index(a), fill = na.locf)", "\n")
+a + merge(b, index(a), fill = na.locf)
+```
+
+Math with xts objects isn't too difficult once you understand the basics.
+
+**Merging time series**
+___
+- introducing merge()
+  - combine series by **column**
+  - `cbind()` and `merge()`
+  - Database style joins on index (i.e. by time)
+    - inner, outer, left, and right joins
+  - fill argument handles missingness
+- introducing rbind()
+  - combine series by **row**
+  - rows are inserted in time order
+  - all rows in `rbind()` must have a time
+  - the number of columns must match
+___
+
+**Combining xts by column with merge**
+`xts` makes it easy to join data by column and row using a few different functions. All results will be correctly ordered in time, regardless of original frequencies or date class. One of the most important functions to accomplish this is merge(). It takes one or more series and joins them by column. It's also possible to combine a series with a vector of dates. This is especially useful for normalizing observations to a fixed calendar.
+
+`merge()` takes three key arguments which we will emphasize here. First is the `...`, which lets you pass in an arbitrary number of objects to combine. The second argument is `join`, which specifies how to join the series - accepting arguments such as `inner` or `left`. This is similar to a relational database join, only here, the *index* is what we join on. The final argument for this exercise is `fill`. This keyword specifies what to do with the new values in a series if there is missingness introduced as a result of the merge.
+
+```
+# Basic argument use
+merge(a, b, join = "right", fill = 9999)
+```
+
+For this exercise, you will explore some of the different join types to get a feel for using `merge()`. The objects `a` and `b` have been pre-loaded into your workspace.
+```
+>
+a
+                    a
+2016-06-05 -1.2070657
+2016-06-08  0.2774292
+2016-06-09  1.0844412
+2016-06-13 -2.3456977
+
+>
+b
+                    b
+2016-06-05  0.4291247
+2016-06-06  0.5060559
+2016-06-08 -0.5747400
+2016-06-09 -0.5466319
+
+# Perform an inner join of a and b
+merge(a, b, join = "inner")
+
+######################################################
+                    a          b
+2016-06-05 -1.2070657  0.4291247
+2016-06-08  0.2774292 -0.5747400
+2016-06-09  1.0844412 -0.5466319
+######################################################
+
+# Perform a left-join of a and b, fill missing values with 0
+merge(a, b, join = "left", fill = 0)
+
+######################################################
+                    a          b
+2016-06-05 -1.2070657  0.4291247
+2016-06-08  0.2774292 -0.5747400
+2016-06-09  1.0844412 -0.5466319
+2016-06-13 -2.3456977  0.0000000
+######################################################
+
+```
+
+Merging xts objects by column comes in handy when preparing data for time series analysis.
+
+**Combining xts by row with rbind**
+Now that you have merged data by column, you will be happy to know it's just as easy to add new rows to your data.
+
+`xts` provides its own S3 method to the base `rbind()` generic function. The `xts` **rbind** function is much simpler than `merge()`. The only argument that matters is `...`, which takes an arbitrary number of objects to bind. What *is* different is that rbind requires a time series, since we need to have timestamps for R to know where to insert new data.
+
+For this exercise you will update your `temps` data with three new observations. One will be before the series started and two will be after. Pay attention to your function call, does order matter?
+
+In your workspace, the objects `temps`, `temps_june30`, `temps_july17` and `temps_july18` are already loaded.
+```
+# Row bind temps_june30 to temps, assign this to temps2
+temps2 <- rbind(temps, temps_june30)
+
+# Row bind temps_july17 and temps_july18 to temps2, call this temps3
+temps3 <- rbind(temps2, temps_july17, temps_july18)
+```
+
+ Because xts objects are ordered by their time index, the order of arguments in xts's `rbind()` command is unimportant.
+ 
+ **Handling missingness**
+ ___
+ - fill NAs with last observation
+  - l.o.c.f. means "last observation carried forward"
+  ```
+  na.locf(object, na.rm = TRUE, fromLast = FALSE, maxgap = Inf)
+  ```
+- other NA options
+  - replace NAs
+  ```
+  na.fill(object, fill, ...)
+  ```
+  - remove NAs
+  ```
+  na.trim(object, ...) #beginning or end
+  na.omit(object, ...) #all
+  ```
+  - interpolate NAs
+  ```
+  na.approx(object, ...)
+  ```
+    - uses index spacing to linearly approximate the missing values
+ ___
+ 
+**Fill missing values using last or previous observation**
+As you've encountered already, it's not uncommon to find yourself with missing values (i.e. `NA`s) in your time series. This may be the result of a data omission or some mathematical or merge operation you do on your data.
+
+The `xts` package leverages the power of `zoo` for help with this. `zoo` provides a variety of missing data handling functions which are usable by `xts`.
+
+In this exercise you will use the most basic of these, **na.locf()**. This function takes the last observation carried forward approach. In most circumstances this is the correct thing to do. It both preserves the last known value and prevents any look-ahead bias from entering into the data.
+
+You can also apply *next observation carried backward* by setting fromLast = TRUE.
+
+```
+# Last obs. carried forward
+na.locf(x)                
+
+# Next obs. carried backward
+na.locf(x, fromLast = TRUE) 
+```
+
+```
+# Fill missing values in temps using the last observation
+temps_last <- na.locf(temps)
+
+# Fill missing values in temps using the next observation
+temps_next <- na.locf(temps, fromLast = TRUE)
+```
+
+As you can see, the `na.locf()` command is useful for replacing missing values in xts objects.
+
+**NA interpolation using na.approx()**
+On occasion, a simple carry forward approach to missingness isn't appropriate. It may be that a series is missing an observation due to a higher frequency sampling than the generating process. You might also encounter an observation that is in error, yet expected to be somewhere *between* the values of its neighboring observations.
+
+These are scenarios where interpolation is useful. `zoo` provides a powerful tool to do this. Based on simple linear interpolation between points, implemented with **na.approx()** the data points are approximated using the distance between the *index* values. In other words, the estimated value is linear *in time*.
+
+For this exercise, you'll use a smaller `xts` version of the Box and Jenkin's **AirPassengers** data set that ships with R. We've removed a few months of data to illustrate various fill techniques.
+
+One takeaway, aside from getting a feel for the functions, is to see how various fill techniques impact your data, and especially how it will impact your understanding of it.
+
+Caveat Emptor!
+
+The `AirPassengers` data set is available in your workspace as `AirPass`.
+```
+# Interpolate NAs using linear approximation
+na.approx(AirPass)
+```
+
+Linear interpolation is a straightforward way to account for missingness, although it is up to you to determine its applicability.
+
+**Lags and differences**
+___
+- Seasonality and stationarity
+  - seasonality is a repeating pattern
+  - stationarity refers to some bound of the series
+  - these patterns are often compared
+  - how to get around a misalignment of the series?
+- Lagging a time series
+  - used to align time series for comparisons
+  - `lag()` will shift observations in time
+  ```
+  lag(x, k = 1, na.pad = TRUE, ...)
+  ```
+  - `k` controls the number of lags
+  - `na.pad` controls NA introduction
+  - with xts, **positive** `k` shifts values forward (baseR and zoo have oppostive behavior!!)
+- Differencing series
+  - convert levels to changes (i.e. deltas)
+  ```
+  diff(x, lag = 1, differences = 1,
+    arithmetic = TRUE,
+    log = FALSE,
+    na.pad = TRUE, ...)
+  ```
+  - `log` controls which observations
+  - `arithmetic` vs. `log` calculations
+___
+
+**Combine a leading and lagging time series**
+Another common modification for time series is the ability to lag a series. Also known as a backshift operation, it's typically shown in literature using $L^k$ notation, indicating a transformation in time $L^kX=X_{t−k}$. This lets you see observations like yesterday's value in the context of today.
+
+Both `zoo` and `xts` implement this behavior, and in fact extend it from the `ts` original in R. There are two major differences between `xts` and `zoo` implementations that you need to be aware of. One is the *direction* of the lag for a given `k`. The second is how *missingness* is handled afterwards.
+
+For historical reasons in R, `zoo` uses a convention for the sign of `k` in which negative values indicate `lags` and positive values indicate *leads*. That is, in `zoo` `lag(x, k = 1)` will shift future values one step back in time. This is inconsistent with the vast majority of the time series literature, but is consistent with behavior in base R. `xts` implements the exact opposite, namely for a positive `k`, the series will shift the last value in time one period forward; this is consistent with intuition, but quite different than `zoo`.
+
+In this exercise, you will construct a single `xts` object with three columns. The first column is data one day ahead, the second column is the original data, and the third column is the one day behind - all using `xts`. A simple `xts` object, `x`, has been loaded into your workspace.
+
+```
+# Your final object
+cbind(lead_x, x, lag_x)
+```
+
+```{r}
+x <- xts(x = seq(5, length = 5), order.by = as.Date("2020-10-20") + 0:4)
+names(x) <- "x"
+x
+cat("----", "\n")
+
+# Create a leading object called lead_x
+lead_x <- lag(x, k = -1)
+names(lead_x) <- "lead_x"
+
+# Create a lagging object called lag_x
+lag_x  <- lag(x, k = 1)
+names(lag_x) <- "lag_x"
+
+# Merge your three series together and assign to z
+z <- merge(lead_x, x, lag_x)
+z
+```
+
+Generating leads and lags can help you visualize trends in your time series data over time.
+
+**Calculate a difference of a series using diff*()**
+Another common operation on time series, typically on those that are non-stationary, is to take a **difference** of the series. The number of differences to take of a series is an application of recursively calling the difference function *n* times.
+
+A simple way to view a single (or "first order") difference is to see it as `x(t) - x(t-k)` where `k` is the number of lags to go back. Higher order differences are simply the reapplication of a difference to each prior result.
+
+In R, the difference operator for `xts` is made available using the **diff()** command. This function takes two arguments of note. The first is the `lag`, which is the number of periods, and the second is differences, which is the order of the difference (e.g. how many times `diff()` is called).
+
+```
+# These are the same
+diff(x, differences = 2)
+diff(diff(x))
+```
+In this exercise, you will reuse the `AirPass` data from earlier in this chapter, though this time you will use the full series from 1948 to 1960.
+```
+# Calculate the first difference of AirPass using lag and subtraction
+diff_by_hand <- AirPass - lag(AirPass)
+
+# Use merge to compare the first parts of diff_by_hand and diff(AirPass)
+merge(head(diff_by_hand), head(diff(AirPass)))
+
+######################################################
+           passengers passengers.1
+1949-01-01         NA           NA
+1949-02-01          6            6
+1949-03-01         14           14
+1949-04-01         -3           -3
+1949-05-01         -8           -8
+1949-06-01         14           14
+######################################################
+
+# Calculate the first order 12 month difference of AirPass
+diff(AirPass, lag = 12, differences = 1)
+
+######################################################
+           passengers
+1949-01-01         NA
+1949-02-01         NA
+...
+1950-01-01          3
+1950-02-01          8
+...
+1952-01-01         26
+1952-02-01         30
+...
+1954-02-01         -8
+1954-03-01         -1
+...
+1954-06-01         21
+1954-07-01         38
+1954-08-01         21
+######################################################
+```
+
+As you can see, differencing your series is only one step more complex than generating lags and leads.
+
+**Apply functions by time**
 ___
 
 ___
