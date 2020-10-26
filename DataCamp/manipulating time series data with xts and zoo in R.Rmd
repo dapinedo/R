@@ -821,5 +821,592 @@ As you can see, differencing your series is only one step more complex than gene
 
 **Apply functions by time**
 ___
+- Topics
+  - applying functions on discrete periods or intervals
+  - two main approaches
+    - `period.apply()`
+    - `split`
+- Apply by period
+  ```
+  period.apply(x, INDEX, FUN, ...)
+  ```
+  - `period.apply()` extends R's apply functions to time
+  - pass an object `x` to be modified
+  - `INDEX` is the vector of **end points** of a period
+  - `FUN` is the function to apply
+  - additional arguments are passed to `FUN` (if needed)
+- Finding endpoints
+  ```
+  endpoints(x, on = "years")
+  ```
+  - defined as the index of the last observation per interval
+  - intervals are defined with the on argument
+    - uses "days, "years," "quarters," etc.
+  - *always** starts on 0 and ends on the last observation
+___
 
+**Find intervals by time in xts**
+One of the benefits to working with time series objects is how easy it is to apply functions by time.
+
+The main function in `xts` to facilitate this is [endpoints()](https://www.rdocumentation.org/packages/xts/topics/endpoints). It takes a time series (or a vector of times) and returns the locations of the last observations in each interval.
+
+For example, the code below locates the last observation of each year for the `AirPass` data set.
+
+```
+endpoints(AirPass, on = "years")
+[1] 0 12 24 36 48 60 72 84 96 108 120 132 144
+```
+The argument `on` supports a variety of periods, including `"years"`, `"quarters"`, `"months"`, as well as intraday intervals such as `"hours"`, and `"minutes"`. What is returned is a vector starting with 0 and ending with the extent (last row) of your data.
+
+In addition to each period, you can find the $K_{th}$ period by utilizing the `k` argument. For example, setting the arguments of your `endpoints()` call to `on = "weeks", k = 2`, would generate the final day of every other week in your data. Note that the last value returned will *always* be the length of your input data, even if it doesn't correspond to a skipped interval.
+
+In this exercise you'll use `endpoints()` to find two sets of endpoints for the daily `temps` data.
+```
+# Locate the weeks
+endpoints(temps, on = "weeks")
+
+######################################################
+[1]  0  3 10 16
+######################################################
+
+# Locate every two weeks
+endpoints(temps, on = "weeks", k = 2)
+
+######################################################
+[1]  0 10 16
+######################################################
+```
+
+As you'll see in the next exercise, locating endpoints can help speed the process of aggregating time series data.
+
+**Apply a function by time period(s)**
+At this point you know how to locate the end of periods using `endpoints()`. You may be wondering what it is you do with these values.
+
+In the most simple case you can subset your object to get the last values. In certain cases this may be useful. For example, to identify the last known value of a sensor during the hour or get the value of the USD/JPY exchange rate at the start of the day. For most series, you will want to apply a function to the values *between* endpoints. In essence, use the base function `apply()`, but used on a window of time.
+
+To do this easily, `xts` provides the period.apply() command, which takes a time series, an index of *endpoints*, and a function.
+
+```
+period.apply(x, INDEX, FUN, ...)
+```
+In this exercise you'll practice using **period.apply()** by taking the weekly mean of your `temps` data. You'll also look at one of the shortcut functions that does the same thing with slightly different syntax.
+```
+# Calculate the weekly endpoints
+ep <- endpoints(temps, on = "weeks")
+
+# Now calculate the weekly mean and display the results
+period.apply(temps[, "Temp.Mean"], INDEX = ep, FUN = mean)
+
+######################################################
+          Temp.Mean
+2016-07-03  67.66667
+2016-07-10  76.71429
+2016-07-16  77.00000
+######################################################
+```
+
+The `period.apply()` command allows you to easily calculate complex qualities of your time series data.
+
+**Using lapply() and split() to apply functions on intervals**
+Along the same lines as the previous exercise, `xts` gives you an additional mechanism to dive into periods of your data. Often it is useful to physically *split* your data into disjoint chunks by time and perform some calculation on these periods.
+
+For this exercise you'll make use of the `xts` **split()** command to chunk your data by time. The `split()` function creates a list containing an element for each split. The `f` argument in `split()` is a character string describing the period to split by (i.e. `"months"`, `"years"`, etc.).
+
+Here you will follow the same process you followed in the previous exercise. However, this time you will manually split your data first, and then apply the `mean()` function to each chunk. The function `lapply()` is used for the most efficient calculations. In cases where you don't want to return a time series, this proves to be very intuitive and effective.
+```
+# Split temps by week
+temps_weekly <- split(temps, f = "weeks")
+
+# Create a list of weekly means, temps_avg, and print this list
+temps_avg <- lapply(X = temps_weekly, FUN = mean)
+temps_avg
+
+######################################################
+[[1]]
+[1] 67.66667
+
+[[2]]
+[1] 77.04762
+
+[[3]]
+[1] 76.38889
+######################################################
+```
+
+As you can see, `period.apply()` is similar to using a combination of `split()` and `lapply()`.
+
+**Selection by endpoints vs. split-lapply-rbind**
+By now you have seen that even in `xts` there is more than one way to accomplish a task. In this exercise we'll highlight this explicitly by tackling the same challenge using two different methods. When you are on your own, you will likely find situations where one or the other will be more intuitive, but for now you should make sure you are able to do both.
+
+Starting with the same daily series `temps`, the challenge will be to find the last observation in each week.
+
+Note that these functions will always find the dates that are in the closed interval [start of period, end of period] even if there is no observation at the exact start or end. `xts` represents irregular time series, so it is perfectly valid to have *holes* in the data where one might expect an observation.
+
+Using the slides and video examples as a reference, find the last observation for each week in our `temps` data.
+```
+# Use the proper combination of split, lapply and rbind
+temps_1 <- do.call(rbind, lapply(split(temps, "weeks"), function(w) last(w, n = "1 day")))
+
+# Create last_day_of_weeks using endpoints()
+last_day_of_weeks <- endpoints(temps, "weeks")
+
+# Subset temps using last_day_of_weeks 
+temps_2 <- temps[last_day_of_weeks]
+
+```
+
+It never hurts to know multiple methods for selecting certain points in your time series.
+
+**Converting periodicity**
+___
+- Time series aggregation
+  - useful to convert a univariate series to range bars
+    - OHLC: Open, High, Low, and Close
+  - summary of a particular period
+    - starting, maximum, minimum, and ending value
+- Aggregate using xts
+  ```
+  to.period(x,
+            period = "months",
+            k = 1,
+            indexAt,
+            name = NULL,
+            OHLC = TRUE,
+            ...)
+  ```
+  - `period` controls aggregation period
+  - `name` string renames column roots
+  - `indexAt` allows for index alignment (default is end of index)
+___
+
+**Convert univariate series to OHLC data**
+Aggregating time series can be a frustrating task. For example, in financial series it is common to find Open-High-Low-Close data (or **OHLC**) calculated over some repeating and regular interval.
+
+Also known as *range* bars, aggregating a series based on some regular window can make analysis easier amongst series that have varying frequencies. A weekly economic series and a daily stock series can be compared more easily if the daily is converted to weekly.
+
+In this exercise, you'll convert from a univariate series into OHLC series, and then convert your final OHLC series back into a univariate series using the `xts` function **to.period()**. This function takes a time-series, `x`, and a string for the `period` (i.e. `months`, `days`, etc.), in addition to a number of other optional arguments.
+
+```
+to.period(x,
+          period = "months", 
+          k = 1, 
+          indexAt, 
+          name=NULL,
+          OHLC = TRUE,
+          ...)
+```
+
+You will use a new data set for this exercise, `usd_eur`, a daily USD/EUR exchange rate from 1999 to August 2016, which has been loaded into your workspace.
+```
+# Convert usd_eur to weekly and assign to usd_eur_weekly
+usd_eur_weekly <- to.period(usd_eur, period = "weeks")
+
+# Convert usd_eur to monthly and assign to usd_eur_monthly
+usd_eur_monthly <- to.period(usd_eur, period = "months")
+
+# Convert usd_eur to yearly univariate and assign to usd_eur_yearly
+usd_eur_yearly <- to.period(usd_eur, period = "years", OHLC = FALSE)
+```
+
+Aggregating over time and converting from univariate to OHLC (and vice-versa) are useful skills for time series analysis, especially with financial data.
+
+**Convert a series to a lower frequency**
+Besides converting univariate time series to OHLC series, `to.period()` also lets you convert OHLC to lower regularized frequency - something like subsampling your data.
+
+Depending on the chosen frequency, the index class of your data may be coerced to something more appropriate to the new data. For example, when using the shortcut function `to.quarterly()`, `xts` will convert your index to the **yearqtr** class to make periods more obvious.
+
+We can override this behavior by using the `indexAt` argument. Specifically, using `firstof` would give you the time from the beginning of the period. In addition, you can change the base name of each column by supplying a string to the argument `name`.
+
+For this exercise we'll introduce a new dataset, the **edhec** hedge fund index data from the **PerformanceAnalytics** package.
+
+In this exercise you will use the Equity Market Neutral time series from the `edhec` data, which we've assigned to `eq_mkt`.
+```
+# Convert eq_mkt to quarterly OHLC
+mkt_quarterly <- to.period(eq_mkt, period = "quarters")
+
+# Convert eq_mkt to quarterly using shortcut function
+mkt_quarterly2 <- to.quarterly(eq_mkt, name = "edhec_equity", indexAt = "firstof")
+```
+
+Commands such as `to.quarterly()` provide a convenient shortcut for precisely converting your time series to a lower frequency.
+
+**Rolling functions**
+___
+- Rolling windows
+  - Discrete -> `lapply()`, `split()`
+  - Continuous -> `rollapply()`
+- Discrete rolling windows
+  - `split()` to break up by period
+  - `lapply()` **cumulative** functions
+    - `cumsum()`, `cumprod()`, `cummin()`, `cummax()`
+- Continuous rolling windows
+  ```
+  rollapply( data, width, FUN, ...,
+            by = 1, by.column = TRUE,
+            fill = if (na.pad) NA,
+            na.pad = TRUE, partial = TRUE,
+            align = c("right", "center", "left"))
+  ```
+  - `data` is your xts object
+  - `width` is the window size
+  - `FUN` is your function to apply
+  - can add additional arguments to your function
+___
+
+**Calculate basic rolling value of series by month**
+One common aggregation you may want to apply involves doing a calculation within the context of a period, but returning the interim results for each observation of the period.
+
+For example, you may want to calculate a running month-to-date cumulative sum of a series. This would be relevant when looking at monthly performance of a mutual fund you are interested in investing in.
+
+For this exercise, you'll calculate the cumulative annual return using the `edhec` fund data from the last exercise. To do this, you'll follow the `split()`-`lapply()`-`rbind()` pattern demonstrated below:
+
+```
+x_split <- split(x, f = "months")
+x_list <- lapply(x_split, cummax)
+x_list_rbind <- do.call(rbind, x_list)
+```
+
+Note the last call uses R's somewhat strange `do.call(rbind, ...)` syntax, which allows you to pass a list to `rbind` instead of passing each object one at a time. This is a handy shortcut for your R toolkit.
+```
+# Split edhec into years
+edhec_years <- split(edhec, f = "years")
+
+# Use lapply to calculate the cumsum for each year in edhec_years
+edhec_ytd <- lapply(edhec_years, FUN = cumsum)
+
+# Use do.call to rbind the results
+edhec_xts <- do.call(rbind, edhec_ytd)
+```
+
+The **split-lapply-rbind** syntax may seem complicated, but it is a powerful way to manipulate your time series data.
+
+**Calculate the rolling standard deviation of a time series**
+Another common requirement when working with time series data is to apply a function on a rolling window of data. `xts` provides this facility through the intuitively named `zoo` function **rollapply()**.
+
+This function takes a time series object `x`, a window size `width`, and a function `FUN` to apply to each rolling period. The `width` argument can be tricky; a number supplied to the width argument specifies the number of observations in a window. For instance, to take the rolling 10-day max of a series, you would type the following:
+
+```
+rollapply(x, width = 10, FUN = max, na.rm = TRUE)
+```
+
+Note that the above would only take the 10-day max of a series with daily observations. If the series had monthly observations, it would take the *10-month max*. Also note that you can pass additional arguments (i.e. `na.rm` to the `max` function) just like you would with `apply()`.
+```
+# Use rollapply to calculate the rolling 3 period sd of eq_mkt
+eq_sd <- rollapply(eq_mkt, 3, sd)
+```
+
+Rolling values are a useful metric in time series data. Now that you are familiar with the core features of the xts package, the final chapter will explore a few more advanced topics using xts.
+
+**Index, attributes, and time zones**
+___
+- What is the index?
+  - Raw seconds since 1970-01-01 UTC
+  - `tclass` or `indexClass`: attribute for extraction
+  - `tzone` or `indexTZ`: attribute for time zones
+  - `indexFormat`: optional display preferences
+- Understanding TZ
+  - describe time offset from UTC (a.k.a. Greenwich Mean Time)
+  - always set your time zone to avoid surprises!
+  ```
+  Sys.setenv(TZ = "America/Chicago")
+  Sys.setenv(TZ = "UTC")
+  ```
+  - know your time zones
+  ```
+  help(OlsonNames)    #Great read!
+  ```
+___
+
+**Class attributes - tclass, tzone, and tformat**
+`xts` objects are somewhat tricky when it comes to time. Internally, we have now seen that the index attribute is really a vector of numeric values corresponding to the seconds since the UNIX epoch (1970-01-01).
+
+How these values are displayed on printing and how they are returned to the user when using the `index()` function is dependent on a few key internal attributes.
+
+The information that controls this behavior can be viewed and even changed through a set of accessor functions detailed here:
+
+  * The index class using [indexClass()](https://www.rdocumentation.org/packages/xts/topics/indexClass) (e.g. from Date to chron)
+  * The time zone using [indexTZ()](https://www.rdocumentation.org/packages/xts/topics/indexTZ) (e.g. from America/Chicago to Europe/London)
+  * The time format to be displayed via `indexFormat()` (e.g. YYYY-MM-DD)
+  
+In this exercise, you will practice each of these functions and view the results of your changes. To do so, you'll once again use the `temps` data that has been pre-loaded into your workspace.
+```
+# View the first three indexes of temps
+index(temps)[1:3]
+
+######################################################
+[1] "2016-06-30 20:00:00 EDT" "2016-07-01 20:00:00 EDT"
+[3] "2016-07-02 20:00:00 EDT"
+######################################################
+
+# Get the index class of temps
+indexClass(temps)
+
+######################################################
+Warning message: 'indexClass' is deprecated.
+Use 'tclass' instead.
+See help("Deprecated") and help("xts-deprecated").
+
+[1] "POSIXct" "POSIXt"
+######################################################
+
+# Get the timezone of temps
+indexTZ(temps)
+
+######################################################
+Warning message: 'indexTZ' is deprecated.
+Use 'tzone' instead.
+See help("Deprecated") and help("xts-deprecated").
+
+[1] "America/New_York"
+######################################################
+
+# Change the format of the time display
+indexFormat(temps) <- "%b-%d-%Y"
+
+# View the new format
+head(temps)
+
+######################################################
+Warning message: timezone of object (America/New_York) is different than current timezone (GMT).
+
+            Temp.Max Temp.Mean Temp.Min
+Jun-30-2016       74        69       60
+Jul-01-2016       78        66       56
+Jul-02-2016       79        68       59
+Jul-03-2016       80        76       69
+Jul-04-2016       90        79       68
+Jul-05-2016       89        79       70
+######################################################
+```
+
+These commands allow you to quickly and easily modify the internal characteristics of your xts object.
+
+**Time Zones (and why you should care!)**
+One of the trickiest parts to working with time series in general is dealing with time zones. `xts` provides a simple way to leverage time zones on a per-series basis. While R provides time zone support in native classes `POSIXct` and `POSIXlt`, `xts` extends this power to the entire object, allowing you to have multiple time zones across various objects.
+
+Some internal operation system functions require a time zone to do date math. If a time zone isn't explicitly set, one is chosen for you! Be careful to *always* set a time zone in your environment to prevent errors when working with dates and times.
+
+`xts` provides the function **tzone()**, which allows you to extract or set time zones.
+
+```
+tzone(x) <- "Time_Zone"
+```
+
+In this exercise you will work with an object called `times` to practice constructing your own `xts` objects with custom time zones.
+```
+######################################################
+>
+times
+ [1] "2020-10-26 01:18:00 GMT" "2020-10-26 01:19:40 GMT"
+ [3] "2020-10-26 01:21:20 GMT" "2020-10-26 01:23:00 GMT"
+ [5] "2020-10-26 01:24:40 GMT" "2020-10-26 01:26:20 GMT"
+ [7] "2020-10-26 01:28:00 GMT" "2020-10-26 01:29:40 GMT"
+ [9] "2020-10-26 01:31:20 GMT" "2020-10-26 01:33:00 GMT"
+######################################################
+ 
+# Construct times_xts with tzone set to America/Chicago
+times_xts <- xts(1:10, order.by = times, tzone = "America/Chicago")
+
+# Change the time zone of times_xts to Asia/Hong_Kong
+tzone(times_xts) <- "Asia/Hong_Kong"
+  
+# Extract the current time zone of times_xts
+tzone(times_xts)
+
+######################################################
+[1] "Asia/Hong_Kong"
+######################################################
+```
+
+ As you can see, manipulating time zones in xts is relatively straightforward.
+ 
+ **Periods, periodicity and timestamps**
+ ___
+ - Final topics
+  - find the time an object covers
+  - find periods within your object
+  - account for duplicates and false precision
+- periodicity()
+  - identifies the regularity of data
+  - answers what type of data is present
+  - less useful for irregular timestamps
+  - summary measure of the index
+- counting periods
+  - estimate number of periods (e.g. days, weeks)
+  - irregular series equals irregular counting
+  - counts periods greater than periodicity
+- broken down time with .index*
+  - time expressed as POSIXlt components
+    - sec, min, hour, mday, mon, year, wday, yday, isdst
+- modifying timsstamps
+  - use align.time() to round time stamps to another period
+  ```
+  align.time(x, n = 60)   # n is in seconds
+  ```
+  - useful to remove observations of duplicate timestamps
+  ```
+  make.index.unique(x,
+                    eps = 1e-06,
+                    drop = TRUE,
+                    fromLast = FALSE, ...)
+  ```
+ ___
+ 
+**Determining periodicity**
+The idea of periodicity is pretty simple: With what regularity does your data repeat? For stock market data, you might have hourly prices or maybe daily open-high-low-close bars. For macroeconomic series, it might be monthly or weekly survey numbers.
+
+`xts` provides a handy tool to discover this regularity in your data by estimating the frequency of the observations - what we are referring to as *periodicity* - using the [periodicity()](https://www.rdocumentation.org/packages/xts/topics/periodicity) command
+
+In this exercise, you'll try this out on a few sample data sets. In real life you might find yourself doing this as a first step to understanding your data before diving in for further analysis.
+```
+# Calculate the periodicity of temps
+periodicity(temps)
+
+######################################################
+Daily periodicity from 2016-07-01 to 2016-07-16
+######################################################
+
+# Calculate the periodicity of edhec
+periodicity(edhec)
+
+######################################################
+Monthly periodicity from 1997-01-31 to 2009-08-31
+######################################################
+
+# Convert edhec to yearly
+edhec_yearly <- to.yearly(edhec)
+
+# Calculate the periodicity of edhec_yearly
+periodicity(edhec_yearly)
+
+######################################################
+Yearly periodicity from 1997-12-31 to 2009-08-31
+######################################################
+```
+
+The `periodicity()` command combined with the `to.period()` set of commands gives you a simple way to manipulate your time series data.
+
+**Find the number of periods in your data**
+Often it is handy to know not just the range of your time series index, but also how many discrete *irregular* periods your time series data covers. You shouldn't be surprised to learn that `xts` provides a set of functions to do just that!
+
+If you have a time series, it is now easy to see how many days, weeks or years your data contains. To do so, simply use the function **ndays()** and its shortcut functions `nmonths()`, `nquarters()`, and so forth, making counting *irregular* periods easy.
+```
+# Count the months
+nmonths(edhec)
+
+######################################################
+[1] 152
+######################################################
+
+# Count the quarters
+nquarters(edhec)
+
+######################################################
+[1] 51
+######################################################
+
+# Count the years
+nyears(edhec)
+
+######################################################
+[1] 13
+######################################################
+```
+
+You're getting the hang of these advanced topics pretty quickly.
+
+**Secret index tools**
+`xts` uses a very special attribute called `index` to provide time support to your objects. For performance and design reasons, the index is stored in a special way. This means that regardless of the *class* of your index (e.g. `Date` or `yearmon`) everything internally looks the same to `xts`. The raw index is actually a simple vector of fractional seconds since the UNIX epoch.
+
+Normally you want to access the times you stored. `index()` does this magically for you by using your `indexClass`. To get to the raw vector of the index, you can use `.index()`. Note the critical dot before the function name.
+
+More useful than extracting raw seconds is the ability to extract time components similar to the **POSIXlt** class, which closely mirrors the underlying POSIX internal compiled structure **tm**. This functionality is provided by a handful of commands such as `.indexday()`, `.indexmon()`, `.indexyear()`, and more.
+
+In this exercise, you'll take a look at the weekend weather in our pre-loaded `temps` data using the **.indexwday()** command. Note that the values range from 0-6, with **Sunday equal to 0**. Recall that you can use a logical vector to extract elements of an `xts` object.
+```
+# Explore underlying units of temps in two commands: .index() and .indexwday()
+.index(temps)
+.indexwday(temps)
+
+######################################################
+.index(temps)
+ [1] 1467331200 1467417600 1467504000 1467590400 1467676800 1467763200
+ [7] 1467849600 1467936000 1468022400 1468108800 1468195200 1468281600
+[13] 1468368000 1468454400 1468540800 1468627200
+
+attr(,"tzone")
+[1] ""
+attr(,"tclass")
+[1] "POSIXct" "POSIXt" 
+
+.indexwday(temps)
+ [1] 5 6 0 1 2 3 4 5 6 0 1 2 3 4 5 6
+######################################################
+
+# Create an index of weekend days using which()
+index <- which(.indexwday(temps) == 0 | .indexwday(temps) == 6)
+
+# Select the index
+temps[index]
+
+######################################################
+          Temp.Max Temp.Mean Temp.Min
+2016-07-02       78        66       56
+2016-07-03       79        68       59
+2016-07-09       81        73       67
+2016-07-10       83        72       64
+2016-07-16       79        69       60
+######################################################
+```
+
+As you can see, these index commands have a variety of applications when it comes to subsetting your time series data.
+
+**Modifying timestamps**
+Most time series we've seen have been daily or lower frequency. Depending on your field, you might encounter higher frequency data - think intraday trading intervals, or sensor data from medical equipment.
+
+In these situations, there are two functions in `xts` that are handy to know.
+
+If you find that you have observations with identical timestamps, it might be useful to perturb or remove these times to allow for uniqueness. `xts` provides the function **make.index.unique()** for just this purpose. The `eps` argument, short for epsilon or small change, controls how much identical times should be perturbed, and `drop = TRUE` lets you just remove duplicate observations entirely.
+
+On other occasions you might find your timestamps a bit *too* precise. In these instances it might be better to round up to some fixed interval, for example an observation may occur at any point in an hour, but you want to record the latest *as of* the beginning of the next hour. For this situation, the **align.time()** command will do what you need, setting the `n` argument to the number of seconds you'd like to round to.
+
+```
+make.index.unique(x, eps = 1e-4)  # Perturb
+make.index.unique(x, drop = TRUE) # Drop duplicates
+align.time(x, n = 60) # Round to the minute
+```
+
+In this exercise, you'll try the three use cases on an `xts` object called `z`.
+```
+######################################################
+>
+z
+                            [,1]
+2020-10-27 21:31:15 -1.539950042
+2020-10-28 06:22:20 -0.928567035
+2020-10-28 06:22:20 -0.928567035
+2020-10-29 08:55:51 -0.294720447
+2020-10-30 13:44:53 -0.005767173
+2020-10-31 21:47:46  2.404653389
+2020-11-01 04:50:25  0.763593461
+2020-11-02 21:33:36 -0.799009249
+2020-11-02 21:33:36 -0.799009249
+2020-11-03 22:40:14 -1.147657009
+2020-11-04 15:51:28 -0.289461574
+2020-11-05 15:05:50 -0.299215118
+######################################################
+
+# Make z have unique timestamps
+z_unique <- make.index.unique(z, eps = 1e-4)
+
+# Remove duplicate times in z
+z_dup <- make.index.unique(z, drop = TRUE)
+
+# Round observations in z to the next hour
+z_round <- align.time(z, n = 3600)
+```
+
+These final commands should round out your xts knowledge and give you the complete tools to manipulate time series data in R.
+
+**Congratulations!**
 ___
