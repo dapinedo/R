@@ -1,0 +1,29 @@
+---
+title: "time series analysis in R"
+author: "Daniel Pinedo"
+date: "10/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Welcome to the course!**
+* Introduction
+  + Time Series: A sequence of data in chronological order.
+  + Data is commonly recorded sequentially, over time.
+  + Time series data is everywhere
+* Time series data
+  + Time series data is dated or time stamped in R
+  + `print(Time_Series)`
+* Time series plots
+  + `plot(Time_Series)`
+  + time is indexed on horizontal axis
+  + observations in time from first on left to last on right
+  + line connects neighboring observations
+* Basic time series models
+  + White Noise (WN)
+  + Random Walk (RW)
+  + Autoregression (AR)
+  + Simple Moving Average (MA)
