@@ -16,12 +16,10 @@
 - [Factor Analysis](https://github.com/dapinedo/R/tree/master/Statistics/Factor)
 - [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/Statistics/SEM)
 
+## DataCamp
 #### Time Series
 1. [manipulating time series data with xts and zoo in R](https://htmlpreview.github.io/?https://github.com/odenipinedo/R/blob/master/DataCamp/html/manipulating-time-series-data-with-xts-and-zoo-in-R.html)
 2. [time series analysis in R](https://htmlpreview.github.io/?https://github.com/odenipinedo/R/blob/master/DataCamp/html/time-series-analysis-in-R.html)
 
-## DataCamp
 #### Other
-
-- [Raw Data](https://github.com/dapinedo/R/tree/master/DataCamp)
-- [R](https://github.com/dapinedo/R/tree/master/R.Rmd)
+- [All RMarkdown Files](https://github.com/dapinedo/R/tree/master/DataCamp)
