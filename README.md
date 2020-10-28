@@ -1,20 +1,17 @@
 # R
 ## Claremont Graduate University
 #### Data Wrangling
-- [Taming/Wrangling](https://github.com/dapinedo/R/tree/master/Taming)
-
-#### Finance
-- [Equity Valuation](https://github.com/dapinedo/R/tree/master/Finance/Equity)
+- [Taming/Wrangling](https://github.com/dapinedo/R/tree/master/CGU/Taming)
 
 #### Networks
-- [Correlational Network Analysis](https://github.com/dapinedo/R/tree/master/Networks/Correlational)
+- [Correlational Network Analysis](https://github.com/dapinedo/R/tree/master/CGU/Networks/Correlational)
 
 #### Psych Stats
-- [T Tests & ANOVA](https://github.com/dapinedo/R/tree/master/Statistics/ANOVA)
-- [Multiple Regression](https://github.com/dapinedo/R/tree/master/Statistics/Regression)
-- [Categorical and Non-Parametric Analysis](https://github.com/dapinedo/R/tree/master/Statistics/Categorical)
-- [Factor Analysis](https://github.com/dapinedo/R/tree/master/Statistics/Factor)
-- [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/Statistics/SEM)
+- [T Tests & ANOVA](https://github.com/dapinedo/R/tree/master/CGU/Statistics/ANOVA)
+- [Multiple Regression](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Regression)
+- [Categorical and Non-Parametric Analysis](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Categorical)
+- [Factor Analysis](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Factor)
+- [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/CGU/Statistics/SEM)
 
 ## DataCamp
 #### Time Series
