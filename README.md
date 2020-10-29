@@ -1,12 +1,12 @@
 <table>
   
   <tr>
-    <td colspan="2" style="text-align:center">
-      
-# R
-
-___
-___
+    <td colspan="2">
+      <header style="text-align:center"> 
+        <h1>
+        R
+        </h1>
+      </header>
 
     </td>
   </tr>
