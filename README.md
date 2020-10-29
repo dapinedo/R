@@ -1,12 +1,10 @@
-table td, table td * {
-    vertical-align: top;
-}
+
 
 <table>
   
   <tr>
-    <td colspan="2"></td>
-      <header style="text-align:center"> 
+    <td colspan="2" style="text-align:center">R</td>
+      <header> 
         <h1>
         R
         </h1>
