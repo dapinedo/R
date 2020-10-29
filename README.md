@@ -19,8 +19,8 @@ ___
 
 ## DataCamp
 #### Time Series
-1. [manipulating time series data with xts and zoo in R](https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R){:target="_blank"}
-2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R){:target="_blank"}
+1. [manipulating time series data with xts and zoo in R](https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R) {:target="_blank"}
+2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R) {:target="_blank"}
 
 #### Other
 - [All RMarkdown Files](https://github.com/dapinedo/R/tree/master/DataCamp)
