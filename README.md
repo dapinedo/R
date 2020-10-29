@@ -1,16 +1,6 @@
 
 
 <table>
-  
-  <tr>
-    <td colspan="2"></td>
-      <header> 
-        <h1>
-        R
-        </h1>
-      </header>
-  </tr>
-
   <tr style="vertical-align:top">
     <td>
       
@@ -37,13 +27,6 @@
 
 #### Time Series
 1. [manipulating time series data with xts and zoo in R](https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R)
-2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R)
-2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R)
-2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R)
-2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R)
-2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R)
-2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R)
-2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R)
 2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R)
 
 #### Other
