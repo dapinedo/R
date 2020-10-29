@@ -3,7 +3,7 @@
 <table>
   
   <tr>
-    <td colspan="2" style="text-align:center">R</td>
+    <td colspan="2"></td>
       <header> 
         <h1>
         R
@@ -11,8 +11,8 @@
       </header>
   </tr>
 
-  <tr>
-    <td style="vertical-align:top">
+  <tr style="vertical-align:top">
+    <td>
       
 ## Claremont Graduate University
       
