@@ -1,7 +1,7 @@
 <table>
   
   <tr>
-    <td colspan="2">
+    <td colspan="2" style="text-align:center">
       
 # R
 
