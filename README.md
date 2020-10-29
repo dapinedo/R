@@ -4,7 +4,7 @@
   <tr style="vertical-align:top">
     <td>
       
-## Claremont Graduate University
+## Claremont Graduate University | fuck | you
       
 #### Data Wrangling
 - [Taming/Wrangling](https://github.com/dapinedo/R/tree/master/CGU/Taming)
