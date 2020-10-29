@@ -1,9 +1,3 @@
-
-
-<table>
-  <tr style="vertical-align:top">
-    <td>
-      
 ## Claremont Graduate University
       
 #### Data Wrangling
@@ -19,10 +13,8 @@
 - [Factor Analysis](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Factor)
 - [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/CGU/Statistics/SEM)
 
-    </td>
+___
 
-    <td vlign="top">
-  
 ## DataCamp
 
 #### Time Series
@@ -31,9 +23,5 @@
 
 #### Other
 - [All RMarkdown Files](https://github.com/dapinedo/R/tree/master/DataCamp)
-
-    </td>  
-  </tr>
-</table>
 
 <!-- comment -->
