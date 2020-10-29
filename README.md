@@ -5,14 +5,12 @@ table td, table td * {
 <table>
   
   <tr>
-    <td colspan="2">
+    <td colspan="2"></td>
       <header style="text-align:center"> 
         <h1>
         R
         </h1>
       </header>
-
-    </td>
   </tr>
 
   <tr>
