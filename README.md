@@ -8,11 +8,11 @@
 ___
 ___
 
-
+    </td>
   </tr>
 
   <tr>
-    <td>
+    <td style="vertical-align:top">
       
 ## Claremont Graduate University
       
@@ -31,7 +31,7 @@ ___
 
     </td>
 
-    <td>
+    <td style="vertical-align:top">
   
 ## DataCamp
 
