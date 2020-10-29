@@ -21,7 +21,7 @@
 
     </td>
 
-    <td style="vertical-align:top">
+    <td vlign="top">
   
 ## DataCamp
 
