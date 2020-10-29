@@ -1,3 +1,7 @@
+table td, table td * {
+    vertical-align: top;
+}
+
 <table>
   
   <tr>
