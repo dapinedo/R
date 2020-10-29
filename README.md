@@ -1,6 +1,15 @@
+<table>
+  
+  <tr>
+    <td colspan="2">
 # R
 ___
 ___
+    </td>
+  </tr>
+
+  <tr>
+    <td>
 ## Claremont Graduate University
 #### Data Wrangling
 - [Taming/Wrangling](https://github.com/dapinedo/R/tree/master/CGU/Taming)
@@ -15,8 +24,9 @@ ___
 - [Factor Analysis](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Factor)
 - [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/CGU/Statistics/SEM)
 
-___
+    </td>
 
+    <td>
 ## DataCamp
 #### Time Series
 1. [manipulating time series data with xts and zoo in R](https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R)
@@ -25,15 +35,10 @@ ___
 #### Other
 - [All RMarkdown Files](https://github.com/dapinedo/R/tree/master/DataCamp)
 
-<!-- 
-This table will be used later as this page fills up and needs columns.
-<table>
-  <tr>
-    <td>One</td>
-    <td>Two</td>
+    </td>
+  
   </tr>
-  <tr>
-    <td colspan="2">Three</td>
-  </tr>
+
 </table>
--->
+
+<!-- comment -->
