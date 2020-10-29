@@ -224,3 +224,96 @@ plot(AR)
 ```
 
 The `arima.sim()` command is a very useful way to quickly simulate time series data.
+
+**AR and MA models**
+
+Identifying model types
+
+![](_images/32.png)
+
+**Estimation**
+
+- Estimation for time series is similar to using least squares for regression
+- Estimates are obtained numerically using ideas of Gauss and Newton
+
+![](_images/33.png)
+
+![](_images/34.png)
+
+**Fitting an AR(1) model**
+
+Recall that you use the ACF and PACF pair to help identify the orders $p$ and $q$ of an ARMA model. 
+
+In this exercise, you will generate data from the AR(1) model,
+
+$X_t=.9X_{t−1}+W_t$,
+
+look at the simulated data and the sample ACF and PACF pair to determine the order. Then, you will fit the model and compare the estimated parameters to the true parameters.
+
+Throughout this course, you will be using `sarima()` from the [astsa](https://www.rdocumentation.org/packages/astsa/versions/1.6/) package to easily fit models to data. The command produces a residual diagnostic graphic that can be ignored until diagnostics is discussed later in the chapter.
+
+```{r}
+# Generate 100 observations from the AR(1) model
+x <- arima.sim(model = list(order = c(1, 0, 0), ar = .9), n = 100)
+
+# Plot the generated data  
+plot(x)
+
+# Plot the sample P/ACF pair
+astsa::acf2(x)
+
+# Fit an AR(1) to the data and examine the t-table
+astsa::sarima(x, p = 1, d = 0, q = 0)
+
+```
+
+As you can see, the `sarima()` command provides extensive output to understand the results of your model fit. What do you glean from this output?
+
+**Fitting an AR(2) model**
+
+For this exercise, we generated data from the AR(2) model,
+
+$X_t=1.5X_{t−1}−.75X_{t−2}+W_t$
+
+Look at the simulated dataand the sample ACF and PACF pair to determine the model order. Then fit the model and compare the estimated parameters to the true parameters.
+
+```{r}
+x <- arima.sim(model = list(order = c(2, 0, 0), ar = c(1.5, -.75)), n = 200)
+
+# Plot x
+plot(x)
+
+# Plot the sample P/ACF of x
+astsa::acf2(x)
+
+# Fit an AR(2) to the data and examine the t-table
+astsa::sarima(x, p = 2, d = 0, q = 0)
+```
+
+As you can see from the t-table output, the estimates produced by the `sarima()` command are close to the true parameters.
+
+**Fitting an MA(1) model**
+
+In this exercise, we generated data from an MA(1) model,
+
+$X_t=W_t−.8W_{t−1}$
+
+Look at the simulated data and the sample ACF and PACF to determine the order based on the table given in the first exercise. Then fit the model.
+
+Recall that for pure MA(q) models, the theoretical ACF will cut off at lag q while the PACF will tail off.
+
+```{r}
+x <- arima.sim(model = list(order = c(0, 0, 1), ma = -.8), n = 100)
+
+# Plot x
+plot(x)
+
+# Plot the sample P/ACF of x
+acf2(x)
+
+# Fit an MA(1) to the data and examine the t-table
+sarima(x, p = 0, d = 0, q = 1)
+```
+
+Once again, the parameter estimates produced by `sarima()` come quite close to the input specified when the data was created (-.8)
+
