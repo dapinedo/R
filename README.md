@@ -2,7 +2,9 @@
   
   <tr>
     <td colspan="2">
+      
 # R
+
 ___
 ___
     </td>
@@ -10,7 +12,9 @@ ___
 
   <tr>
     <td>
+      
 ## Claremont Graduate University
+      
 #### Data Wrangling
 - [Taming/Wrangling](https://github.com/dapinedo/R/tree/master/CGU/Taming)
 
@@ -27,7 +31,9 @@ ___
     </td>
 
     <td>
+  
 ## DataCamp
+
 #### Time Series
 1. [manipulating time series data with xts and zoo in R](https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R)
 2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R)
