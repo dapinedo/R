@@ -1,6 +1,5 @@
 # R
 ___
-___
 
 ## Claremont Graduate University
       
