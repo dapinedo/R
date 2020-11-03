@@ -23,6 +23,7 @@ ___
 #### Time Series
 1. [manipulating time series data with xts and zoo in R](https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R)
 2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R)
+3. [ARIMA Models in R](https://rpubs.com/odenipinedo/ARIMA-Models-in-R)
 
 #### Other
 - [All RMarkdown Files](https://github.com/dapinedo/R/tree/master/DataCamp)
