@@ -664,3 +664,578 @@ Although this plot doesn't depict any strong relationships between visibility or
 
 **Handling missingness**
 
+**Fill NAs with last observation**
+
+- Last observation carried forward (LOCF)
+- Next observation carried backward (NOCB)
+
+**Linear interpolation**
+
+**Exploring economic data**
+
+Now that you've explored weather and flight patterns in Boston, your client has asked you to step back and prepare some economic data. You've gathered some data on the US economy, including gross domestic product (GDP) and unemployment in the US in general and the state of Massachusetts (home to Boston) in particular.
+
+As always, your first step in manipulating time series data should be to convert your data to the [xts](https://www.rdocumentation.org/packages/xts/versions/0.9-7/topics/xts) class. In this exercise, you'll examine and encode time series data on US GDP, which is available in your workspace as `gdp`.
+
+```
+# Get a summary of your GDP data
+summary(gdp)
+```
+```
+     date      gdp_billions    
+ 1947 Q1:  1   Min.   :  243.1  
+ 1947 Q2:  1   1st Qu.:  708.8  
+ 1947 Q3:  1   Median : 3167.3  
+ 1947 Q4:  1   Mean   : 6186.6  
+ 1948 Q1:  1   3rd Qu.:11497.9  
+ 1948 Q2:  1   Max.   :18651.2  
+ (Other):273   NA's   :80       
+```
+```
+# Convert GDP date column to time object
+gdp$date <- as.yearqtr(gdp$date)
+
+# Convert GDP data to xts
+gdp_xts <- as.xts(gdp[, -1], order.by = gdp$date)
+
+# Plot GDP data over time
+plot.xts(gdp_xts)
+```
+
+![](_images/151.png)
+
+Your plot shows fairly consistent GDP growth in the United States. However, it looks like you are missing quite a bit of data! One of your interns must have fallen asleep on the keyboard. In the next few exercises, you'll practice some techniques for handling missing data.
+
+**Replace missing data - I**
+
+As you discovered in the previous exercise, your quarterly GDP data appear to be missing several observations. In fact, your call to `summary()` in the previous exercise revealed **80** missing data points!
+
+As you may recall from the first xts course, xts and zoo provide a variety of functions to handle missing data.
+
+The simplest technique is the [na.locf()](https://www.rdocumentation.org/packages/imputeTS/versions/1.7/topics/na.locf) command, which carries forward the last observation before the missing data (hence, "**l**ast **o**bservation **c**arried **f**orward", or `locf`). This approach is often the most appropriate way to handle missingness, especially when you have reasons to be conservative about growth in your data.
+
+A similar approach works in the opposite direction by taking the first observation *after* the missing value and carrying it backward ("**n**ext **o**bservation **c**arried **b**ackward", or `nocb`). This technique can also be done using the `na.locf()` command by setting the `fromLast` argument to `TRUE`.
+
+Which method is best depends on the type of data you are working with and your preconceived notions about how the data changes over time.
+
+```
+# Fill NAs in gdp_xts with the last observation carried forward
+gdp_locf <- na.locf(gdp_xts)
+
+# Fill NAs in gdp_xts with the next observation carried backward 
+gdp_nocb <- na.locf(gdp_xts, fromLast = TRUE)
+
+# Produce a plot for each of your new xts objects
+par(mfrow = c(2,1))
+plot.xts(gdp_locf, major.format = "%Y")
+plot.xts(gdp_nocb, major.format = "%Y")
+```
+![](_images/152.png)
+```
+# Query for GDP in 1993 in both gdp_locf and gdp_nocb
+gdp_locf["1993"]
+gdp_nocb["1993"]
+```
+```
+gdp_locf["1993"]
+          [,1]
+1993 Q1 5890.8
+1993 Q2 5890.8
+1993 Q3 5890.8
+1993 Q4 5890.8
+gdp_nocb["1993"]
+          [,1]
+1993 Q1 7545.3
+1993 Q2 7545.3
+1993 Q3 7545.3
+1993 Q4 7545.3
+```
+
+You've filled in the missing values in your GDP data. As you can see, the `locf` and `nocb` techniques sometimes produce drastically different values, especially when you have long spells of missing data. In the next exercise, you'll practice a third technique for handling missingness: linear interpolation.
+
+**Replace missing data - II**
+
+Like most aspects of time series data manipulation, there are many ways to handle missingness. As you discovered in the previous exercise, both the `locf` and `nocb` approach require you to make certain assumptions about growth patterns in your data. While `locf` is more conservative and `nocb` is a more aggressive, both generate step-wise growth from missing data.
+
+But what if you have reason to expect linear growth in your data? In this case, it may be more useful to use **linear interpolation**, which generates new values between the data on either end of the missing value weighted according to time.
+
+In this exercise, you'll fill the missing values in your `gdp_xts` data using the [na.approx()](https://www.rdocumentation.org/packages/zoo/versions/1.7-13/topics/na.approx) command, which uses interpolation to estimate linear values in time.
+
+```
+# Fill NAs in gdp_xts using linear approximation
+gdp_approx <- na.approx(gdp_xts)
+
+# Plot your new xts object
+plot.xts(gdp_approx, major.format = "%Y")
+```
+![](_images/153.png)
+```
+# Query for GDP in 1993 in gdp_approx
+gdp_approx["1993"]
+
+```
+```
+           [,1]
+1993 Q1 6883.500
+1993 Q2 6966.225
+1993 Q3 7048.950
+1993 Q4 7131.675
+```
+
+Although the values you generate may not be 100% accurate, linear interpolation provides a realistic overall picture of GDP growth from the 1940s through the 2010s. Ultimately, which technique you should use depends on the trends you see in the data you have as well as your preconceived notions about the data.
+
+**Lagging and differencing**
+
+**Lagging**
+
+- `lag()` offsets observations in time
+
+```
+lag(unemployment, k = 1, ...)
+```
+
+![](_images/154.png)
+
+**Differencing**
+
+- `diff()` measures chan between periods
+
+```
+diff(unemployment, lag = 1, ...)
+```
+
+![](_images/155.png)
+
+**Exploring unemployment data**
+
+Now that you've reviewed the basic steps for handling missing data, you can more easily examine and clean new time series data on the fly.
+
+In this exercise, you'll gain a bit more practice by exploring, cleaning, and plotting data on unemployment, both in the United States in general and in Massachusetts (MA) in particular. An xts object containing this data, `unemployment` is available in your workspace.
+
+```
+# View a summary of your unemployment data
+summary(unemployment)
+```
+```
+    Index            us               ma        
+ Min.   :1976   Min.   : 3.800   Min.   : 2.100  
+ 1st Qu.:1986   1st Qu.: 5.300   1st Qu.: 4.300  
+ Median :1996   Median : 6.000   Median : 5.500  
+ Mean   :1996   Mean   : 6.365   Mean   : 5.612  
+ 3rd Qu.:2006   3rd Qu.: 7.300   3rd Qu.: 6.800  
+ Max.   :2016   Max.   :10.800   Max.   :11.600  
+                NA's   :73       NA's   :20      
+```
+```
+# Use na.approx to remove missing values in unemployment data
+unemployment <- na.approx(unemployment)
+
+# Plot new unemployment data
+plot.zoo(unemployment, plot.type = "single", lty = lty)
+legend("topright", lty = lty, legend = labels, bg = "white")
+```
+
+![](_images/156.png)
+
+Now that you have complete unemployment data, your next step is to generate some useful moving indicators.
+
+**Lagging unemployment**
+
+Given that economic trends may take some time to influence tourism, it may be helpful to lag your unemployment data before proceeding with analysis.
+
+Generating a lag in xts is straightforward with the `lag()` command, which requires that you specify the data being lagged (the `x` argument) and a `k` value to determine the direction and scale of the lag.
+
+Be careful to keep your formatting consistent. Base R and the zoo package require that you specify a lag with a *negative* value, so that a lag of 1 is expressed using `"-1"` (and a lead of 1 is counterintuitively expressed using `"1"`). By contrast, the xts package specifies lags using a *positive* value, so that a lag of 1 is expressed using `"1"` (and a lead of 1 is expressed using `"-1"`).
+
+```
+# Create a one month lag of US unemployment
+us_monthlag <- lag(unemployment$us, k = 1)
+
+# Create a one year lag of US unemployment
+us_yearlag <- lag(unemployment$us, k = 12)
+
+# Merge your original data with your new lags 
+unemployment_lags <- merge(unemployment, us_monthlag, us_yearlag)
+
+# View the first 15 rows of unemployment_lags
+head(unemployment_lags, n = 15)
+```
+```
+           us    ma us.1 us.2
+Jan 1976 7.90 11.60   NA   NA
+Feb 1976 7.70 11.25 7.90   NA
+Mar 1976 7.60 10.90 7.70   NA
+Apr 1976 7.70 10.15 7.60   NA
+May 1976 7.40  9.40 7.70   NA
+Jun 1976 7.60  9.80 7.40   NA
+Jul 1976 7.60  9.70 7.60   NA
+Aug 1976 7.60  9.00 7.60   NA
+Sep 1976 7.60  9.00 7.60   NA
+Oct 1976 7.70  8.30 7.60   NA
+Nov 1976 7.80  8.30 7.70   NA
+Dec 1976 7.65  8.20 7.80   NA
+Jan 1977 7.50  9.50 7.65  7.9
+Feb 1977 7.60  9.20 7.50  7.7
+Mar 1977 7.40  8.80 7.60  7.6
+```
+
+When it comes to time series analysis, many of the theoretical processes you'll investigate take some time to have an effect. Including lags in your analysis is an easy way to account for this. However, as you may have noticed in your call to `head()`, lags generated through this process are not intuitively labelled in your data.
+
+**Differencing unemployment**
+
+In addition to adding lags to your data, you may find it helpful to generate a **difference** of the series.
+
+To calculate a difference, simply use the [diff()](https://www.rdocumentation.org/packages/xts/versions/0.9-7/topics/diff.xts) command. This command requires you to specify the original data object, the number of lags (`lag`), and the order of the difference (`differences`).
+
+In this exercise, you'll expand your `unemployment` data in a different direction by adding a few useful difference measures.
+
+```
+# Generate monthly difference in unemployment
+unemployment$us_monthlydiff <- diff(unemployment$us, lag = 1, differences = 1)
+
+# Generate yearly difference in unemployment
+unemployment$us_yearlydiff <- diff(unemployment$us, lag = 12, differences = 1)
+
+# Plot US unemployment and yearly difference
+par(mfrow = c(2,1))
+plot.xts(unemployment$us)
+plot.xts(unemployment$us_yearlydiff, type = "h")
+```
+
+![](_images/157.png)
+
+While lags are useful in time series analysis, differencing provides a very intuitive way to visualize growth trends over time. Both types of indicators are easy to produce using commands in xts and zoo.
+
+**Rolling functions**
+
+**Discrete windows**
+
+- split the data according to period
+- apply function within period
+- bind new data into xts object
+
+**Rolling windows**
+
+- `rollapply()`
+
+**Add a discrete rolling sum to GDP data**
+
+While it helps to know the amount of change from one period to the next, you may want to know the total change since the beginning of the year. To generate this type of indicator, you can use the **split-lapply-rbind pattern**. This process is similar to the process used to generate monthly temperature averages in the previous chapter.
+
+In this exercise, you'll return to the `gdp` data used earlier in the chapter. In addition to static GDP values in each quarter, you'd like to generate a measure of GDP change from one quarter to the next (using `diff()`) as well as a rolling sum of year-to-date GDP change (using `split()`, `lapply()` and `rbind()`.
+
+```
+# Add a quarterly difference in gdp
+gdp$quarterly_diff <- diff(gdp$gdp, lag = 1, differences = 1)
+
+# Split gdp$quarterly_diff into years
+gdpchange_years <- split(gdp$quarterly_diff, f = "years")
+
+# Use lapply to calculate the cumsum each year
+gdpchange_ytd <- lapply(gdpchange_years, FUN = cumsum)
+
+# Use do.call to rbind the results
+gdpchange_xts <- do.call(rbind, gdpchange_ytd)
+
+# Plot cumulative year-to-date change in GDP
+plot.xts(gdpchange_xts, type = "h")
+```
+
+![](_images/158.png)
+
+The **split-lapply-rbind pattern** is complicated but allows you to develop useful and precise indicators across your time series data. In the plot above, each bar shows cumulative GDP growth since the beginning of that year. Some additional manipulation would give you a percentage of year-to-date GDP growth - a common indicator in economic analysis!
+
+**Add a continuous rolling average to unemployment data**
+
+In addition to discrete measures such as year-to-date sums, you may be interested in adding a rolling sum or average to your time series data.
+
+To do so, let's return to your monthly `unemployment` data. While you may be interested in static levels of unemployment in any given month, a broader picture of the economic environment might call for rolling indicators over several months.
+
+To do this, you'll use the [rollapply()](https://www.rdocumentation.org/packages/zoo/versions/1.7-13/topics/rollapply) command, which takes a time series object, a window size `width`, and a `FUN` argument to apply to each rolling window.
+
+```
+# Use rollapply to calculate the rolling yearly average US unemployment
+unemployment$year_avg <- rollapply(unemployment$us, width = 12, FUN = mean)
+
+# Plot both columns of US unemployment data
+lty = [2, 1]
+lwd = [1, 2]
+plot.zoo(unemployment[, c("us", "year_avg")], plot.type = "single", lty = lty, lwd = lwd)
+```
+
+![](_images/159.png)
+
+Your rolling average helps smooth out some of the short term changes in unemployment from month to month and provides a broader picture of the health of the US economy.
+
+**Manipulating MA unemployment data**
+
+Now that you've added some lags, differences, and rolling values to your GDP and US unemployment data, it's time to take these skills back to your assignment.
+
+Remember that your client wants information relevant to the Boston tourism industry. In addition to data on the US economy in general, it may help to prepare some relevant indicators for your Massachusetts economic data.
+
+In this exercise, you'll use your time series data manipulation skills to generate: a one-year lag, a six-month first order difference, a six-month rolling average, and a one-year rolling maximum in the MA unemployment rate. Your client is waiting!
+
+```
+# Add a one-year lag of MA unemployment
+unemployment$ma_yearlag <- lag(unemployment$ma, k = 12)
+
+# Add a six-month difference of MA unemployment
+unemployment$ma_sixmonthdiff <- diff(unemployment$ma, lag = 6, differences = 1)
+
+# Add a six-month rolling average of MA unemployment
+unemployment$ma_sixmonthavg <- rollapply(unemployment$ma, width = 6, FUN = mean)
+  
+# Add a yearly rolling maximum of MA unemployment
+unemployment$ma_yearmax <- rollapply(unemployment$ma, width = 12, FUN = max)
+
+# View the last year of unemployment data
+tail(unemployment, n = 12)
+```
+```
+         us  ma ma_yearlag ma_sixmonthdiff ma_sixmonthavg ma_yearmax
+Jan 2015 5.7 5.8       6.80           -0.20       5.375000       6.50
+Feb 2015 5.5 5.5       6.50           -0.35       5.316667       6.20
+Mar 2015 5.5 5.2       6.20           -0.50       5.233333       6.00
+Apr 2015 5.4 4.7       5.50           -0.30       5.183333       6.00
+May 2015 5.5 4.9       5.50           -0.10       5.166667       6.00
+Jun 2015 5.3 5.2       6.00            0.30       5.216667       6.00
+Jul 2015 5.3 5.2       6.00           -0.60       5.116667       5.85
+Aug 2015 5.1 4.7       5.85           -0.80       4.983333       5.80
+Sep 2015 5.1 4.9       5.70           -0.30       4.933333       5.80
+Oct 2015 5.0 4.5       5.00           -0.20       4.900000       5.80
+Nov 2015 5.0 4.5       5.00           -0.40       4.833333       5.80
+Dec 2015 5.0 4.6       4.90           -0.60       4.733333       5.80
+```
+
+You've mastered the xts and zoo commands for calculating a variety of useful values in your time series data, from simple lags and differences to more complex rolling indicators.
+
+**Advanced features of xts**
+
+**Finding endpoints**
+
+- `endpoints()` indexes last observation per interval
+
+**Apply by period**
+
+- `period.apply()` extends apply function over time
+
+**Sports data**
+
+- Boston sports games, 2010 through 2015
+
+**Encoding and plotting Red Sox data**
+
+After exploring and manipulating data on flights, weather, and the economy, your client wants to cover all the bases. Naturally, they'd like you to collect data on Boston's major sports teams: the Boston Red Sox (baseball), the New England Patriots (football), the Boston Bruins (hockey), and the Boston Celtics (basketball). In this chapter, you'll prepare data on the schedule and outcome of all games involving these teams from 2010 through 2015. It's a perfect opportunity to gain further practice manipulating time series data!
+
+As a start, you've compiled data on games played by the Boston Red Sox from 2010 through 2015. In this exercise, you'll explore the data, encode it to xts, and plot some trends over time. The `redsox` data frame is available in your workspace.
+
+```
+# View summary information about your redsox data
+summary(redsox)
+```
+```
+    date            boston_score    opponent_score      homegame        mlb   
+ Length:972         Min.   : 0.000   Min.   : 0.000   Min.   :0.0   Min.   :1  
+ Class :character   1st Qu.: 2.000   1st Qu.: 2.000   1st Qu.:0.0   1st Qu.:1  
+ Mode  :character   Median : 4.000   Median : 4.000   Median :0.5   Median :1  
+                    Mean   : 4.796   Mean   : 4.538   Mean   :0.5   Mean   :1  
+                    3rd Qu.: 7.000   3rd Qu.: 6.000   3rd Qu.:1.0   3rd Qu.:1  
+                    Max.   :22.000   Max.   :20.000   Max.   :1.0   Max.   :1  
+      nfl         nhl         nba        season    
+ Min.   :0   Min.   :0   Min.   :0   Min.   :2010  
+ 1st Qu.:0   1st Qu.:0   1st Qu.:0   1st Qu.:2011  
+ Median :0   Median :0   Median :0   Median :2012  
+ Mean   :0   Mean   :0   Mean   :0   Mean   :2012  
+ 3rd Qu.:0   3rd Qu.:0   3rd Qu.:0   3rd Qu.:2014  
+ Max.   :0   Max.   :0   Max.   :0   Max.   :2015 
+```
+```
+# Convert the date column to a time-based format
+redsox$date <- as.Date(redsox$date)
+
+# Convert your red sox data to xts
+redsox_xts <- as.xts(redsox[,-1], order.by = redsox$date)
+
+# Plot the Red Sox score and the opponent score over time
+plot.zoo(redsox_xts[, c("boston_score", "opponent_score")])
+```
+
+![](_images/160.png)
+
+You've converted your Red Sox data to xts and generated plots showing scores over time. You can clearly see the games clustered into seasons. However, these plots are difficult to interpret. Ideally, you want to visualize Red Sox wins using a clear metric and perhaps provide some indicator of how the team is doing over time. To do that, you'll need to do some math!
+
+**Calculate a closing average**
+
+Now that you've explored some trends in your Red Sox data, you want to produce some useful indicators. In this exercise, you'll calculate the team's win/loss average at the end of each season. In financial terms, you can think of this as the team's value at the *close* of the season.
+
+To calculate a closing win/loss average, you'll need to combine a few of the commands used in previous chapters.
+
+First, you'll identify wins based on the score of each game. You can do this using a simple `ifelse()` command and the knowledge that the Red Sox win each game in which they score more points than the opposing team.
+
+Second, you'll identify the date of the last game in each season using [endpoints()](https://www.rdocumentation.org/packages/xts/versions/0.9-7/topics/endpoints). This command identifies the last date in your object within certain periods.
+
+Finally, to calculate the closing win/loss average each season, simply use [period.apply()](https://www.rdocumentation.org/packages/xts/versions/0.9-7/topics/period.apply) on the `win_loss` column of your data, specifying the `close` dates as the index, and `mean` as the function.
+
+The `redsox_xts` object is available in your workspace.
+
+```
+# Generate a new variable coding for red sox wins
+redsox_xts$win_loss <- ifelse(redsox_xts$boston_score > redsox_xts$opponent_score, 1, 0)
+
+# Identify the date of the last game each season
+close <- endpoints(redsox_xts, on = "years")
+
+# Calculate average win/loss record at the end of each season
+period.apply(redsox_xts[, "win_loss"], close, mean)
+```
+```
+            win_loss
+2010-10-03 0.5493827
+2011-09-28 0.5555556
+2012-10-03 0.4259259
+2013-09-29 0.5987654
+2014-09-28 0.4382716
+2015-10-04 0.4814815
+```
+
+The combination of `endpoints()` and `period.apply()` allows you to easily develop indicators as of the end of a period. In this case, you can see the Red Sox had a very strong season in 2013 (avg = 0.599) and a weak season in 2014 (avg = 0.438).
+
+**Calculate and plot a seasonal average**
+
+In the previous exercise you used `endpoints()` and `period.apply()` to quickly calculate the win/loss average for the Boston Red Sox at the end of each season. But what if you need to know the cumulative average *throughout* each season? Statisticians and sports fans alike often rely on this average to compare a team with its rivals.
+
+To calculate a cumulative average in each season, you'll need to return to the **split-lapply-rbind** formula practiced in Chapter Three. First, you'll split the data by season, then you'll apply a cumulative mean function to the `win_loss` column in each season, then you'll bind the values back into an xts object.
+
+A custom `cummean()` function, which generates a cumulative sum and divides by the number of values included in the sum, has been generated for you. The `redsox_xts` data, including the `win_loss` column, is available in your workspace.
+
+```
+cummean <- function(x) {
+  cumsum(x) / seq_along(x)
+}
+
+# Split redsox_xts win_loss data into years 
+redsox_seasons <- split(redsox_xts$win_loss, f = "years")
+
+# Use lapply to calculate the cumulative mean for each season
+redsox_ytd <- lapply(redsox_seasons, cummean)
+
+# Use do.call to rbind the results
+redsox_winloss <- do.call(rbind, redsox_ytd)
+
+# Plot the win_loss average for the 2013 season
+plot.xts(redsox_winloss["2013"], ylim = c(0, 1))
+```
+
+![](_images/161.png)
+
+Your plot shows the cumulative win/loss average after each game in the 2013 season! Because each value is a cumulative average within the season, it makes sense that the value is extremely volatile at the beginning of the season, when each win or loss makes a bigger difference.
+
+**Calculate and plot a rolling average**
+
+The final baseball indicator you'd like to generate is the **L10**, or the moving win/loss average from the previous ten games. While the cumulative win/loss average tells you how the team is doing overall, the L10 indicator provides a more specific picture of the team's recent performance. Beyond the world of sports, this measure is comparable to a financial indicator focused on *recent* portfolio performance.
+
+To generate a rolling win/loss average, return to the `rollapply()` command used in the previous chapter. In this case, you'll want to apply the `mean` function to the last 10 games played by the Red Sox at any given time during the 2013 season.
+
+The `redsox_xts` object, including the `win_loss` column, is available in your workspace.
+
+```
+# Select only the 2013 season
+redsox_2013 <- redsox_xts["2013"]
+
+# Use rollapply to generate the last ten average
+lastten_2013 <- rollapply(redsox_2013$win_loss, width = 10, FUN = mean)
+
+# Plot the last ten average during the 2013 season
+plot.xts(lastten_2013, ylim = c(0, 1))
+```
+
+![](_images/162.png)
+
+You've now used your time series data manipulation skills to generate a closing average, a cumulative average, and a rolling average from basic sports scores. These types of indicators have diverse applications, whether you're a baseball fan or a portfolio analyst.
+
+**Indexing commands in xts**
+
+**Extracting the index**
+
+- `.index()` extracts row time index
+
+**Extract weekend games**
+
+After calculating some useful indicators from your Red Sox data, it's time to step back and explore data from other Boston sports teams. Specifically, you've collected additional data on the New England Patriots (football), the Boston Bruins (hockey), and the Boston Celtics (basketball). Data for these teams, along with your `redsox` data, have been merged into a single xts object, `sports`, which now contains data on all games played by Boston-area sports teams from 2010 through 2015.
+
+Before conducting further analysis, you want to refine your data into a few potentially useful subsets. In particular, it may be helpful to focus exclusively on *weekend* games involving Boston sports teams.
+
+To identify games based on the day of the week, you should use the `.indexwday()` command, which tells you the *day of the week* of each observation in your xts object. These values range from 0-6, with Sunday equal to 0 and Saturday equal to 6.
+
+```
+# Extract the day of the week of each observation
+weekday <- .indexwday(sports)
+head(weekday)
+```
+```
+[1] 0 2 3 5 6 0
+```
+```
+# Generate an index of weekend dates
+weekend <- which(.indexwday(sports) == 0 | .indexwday(sports) == 6)
+
+# Subset only weekend games
+weekend_games <- sports[weekend]
+head(weekend_games)
+```
+```
+          boston_score opponent_score homegame mlb nfl nhl nba season
+2010-04-04            9              7        1   1   0   0   0   2010
+2010-04-10            8              3        0   1   0   0   0   2010
+2010-04-11            8              6        0   1   0   0   0   2010
+2010-04-17            5              6        1   1   0   0   0   2010
+2010-04-18            1              7        1   1   0   0   0   2010
+2010-04-24            7              6        1   1   0   0   0   2010
+           sports_type win_loss
+2010-04-04           1        1
+2010-04-10           1        1
+2010-04-11           1        1
+2010-04-17           1        0
+2010-04-18           1        0
+2010-04-24           1        1
+```
+
+The advanced xts indexing commands make a seemingly difficult task extremely simple. You now have an xts object containing data on all weekend games involving Boston sports teams from 2010 through 2015.
+
+**Calculate a rolling average across all sports**
+
+Now that you've mastered subsetting your data to include only weekend games, your client would like you to take a different approach. Perhaps Boston's tourism industry receives a boost when local sports teams win more games *at home*.
+
+Instead of focusing on weekend games, you are tasked with generating a rolling win/loss average focused on games *played in Boston*. To produce this indicator, you'll return to the `rollapply()` command used above, this time applying your calculation to all Boston-area sports teams but subsetting to include only games played at home.
+
+```
+# Generate a subset of sports data with only homegames
+homegames <- sports[sports$homegame == 1]
+
+# Calculate the win/loss average of the last 20 home games
+homegames$win_loss_20 <- rollapply(homegames$win_loss, width = 20, FUN = mean)
+
+# Calculate the win/loss average of the last 100 home games
+homegames$win_loss_100 <- rollapply(homegames$win_loss, width = 100, FUN = mean)
+
+# Use plot.xts to generate
+lty = [3, 1]
+lwd = [1, 2]
+plot.zoo(homegames[, c("win_loss_20", "win_loss_100")], plot.type = "single", lty = lty, lwd = lwd)
+```
+
+![](_images/163.png)
+
+Your plot shows the general success of Boston sports teams when playing at home both in the short term (20 games) and the long term (100 games). It looks like Boston teams did very well at home in 2014!
+
+**Congratulations**
+
+**Time series data**
+
+- Flight data
+- Weather patterns
+- Economic data
+- Sports scores
+- Portfolio returns
+- Commodity prices
+- User data
