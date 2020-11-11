@@ -1,6 +1,5 @@
 # R
 ___
-
 ## Claremont Graduate University
       
 #### Data Wrangling
@@ -15,13 +14,23 @@ ___
 - [Categorical and Non-Parametric Analysis](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Categorical)
 - [Factor Analysis](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Factor)
 - [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/CGU/Statistics/SEM)
-
 ___
-
 ## DataCamp
 
+#### Analyzing Genomic Data in R
+
+#### Data Scientist with R
+
 #### Epidemiology
-1. Survival Analysis in R
+1. survival analysis in R
+2. designing and analyzing clinical trials in R
+3. spatial statistics in R
+
+#### Machine Learning Scientist with R
+
+#### R Programmer
+
+#### Statistician with R
 
 #### Time Series
 1. [manipulating time series data with xts and zoo in R](https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R)
@@ -31,8 +40,12 @@ ___
 5. [visualizing time series data in R](https://rpubs.com/odenipinedo/visualizing-time-series-data-in-R)
 6. [case studies - manipulating time series data in R](https://rpubs.com/odenipinedo/case-studies-manipulating-time-series-data-in-R)
 -  [Certificate](https://www.datacamp.com/statement-of-accomplishment/track/bc62af00e2dd28e937de0070de19a98aa4afca1c)
+___
+#### RMarkdown
+- [All .Rmd Files](https://github.com/dapinedo/R/tree/master/DataCamp)
 
 #### Other
-- [All RMarkdown Files](https://github.com/dapinedo/R/tree/master/DataCamp)
+- visualizing geospatial data in R
+- foundations of probability in R
 
 <!-- comment -->
