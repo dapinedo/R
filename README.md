@@ -26,6 +26,8 @@ ___
 3. [ARIMA Models in R](https://rpubs.com/odenipinedo/ARIMA-Models-in-R)
 4. [forecasting in R](https://rpubs.com/odenipinedo/forecasting-in-R)
 5. [visualizing time series data in R](https://rpubs.com/odenipinedo/visualizing-time-series-data-in-R)
+6. [case studies - manipulating time series data in R](https://rpubs.com/odenipinedo/case-studies-manipulating-time-series-data-in-R)
+-  [Certificate](https://www.datacamp.com/statement-of-accomplishment/track/bc62af00e2dd28e937de0070de19a98aa4afca1c)
 
 #### Other
 - [All RMarkdown Files](https://github.com/dapinedo/R/tree/master/DataCamp)
