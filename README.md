@@ -20,6 +20,9 @@ ___
 
 ## DataCamp
 
+#### Epidemiology
+1. Survival Analysis in R
+
 #### Time Series
 1. [manipulating time series data with xts and zoo in R](https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R)
 2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R)
