@@ -1,0 +1,45 @@
+---
+title: "survival analysis in R"
+author: "DataCamp - Heidi Seibold"
+date: "11/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**The term "survival analysis**
+
+- aka time-to-event data analysis
+
+![](_images/164.png)
+
+**What we will discuss in this course**
+
+- duration times
+  - death
+  - unemployment
+  - delivery of a letter
+  - cab pickup wait times
+
+**Data sets we will be using**
+
+**GBSG2**: time to death of 686 breast cancer patients
+
+```
+data(GBSG2, package = "TH.data")
+```
+
+**UnempDur**: time to re-employment of 3343 unemployed patients
+
+```
+data(UnempDur, package = "Ecdat")
+```
+
+*Pro Tip*: to learn about a dataset in R, use the `help` function
+
+```
+help(UnempDur, package = "Ecdat")
+```
+
