@@ -43,7 +43,7 @@ ___
 ___
 #### RMarkdown
 - [All .Rmd Files](https://github.com/dapinedo/R/tree/master/DataCamp)
-
+___
 #### Other
 - visualizing geospatial data in R
 - foundations of probability in R
