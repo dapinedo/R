@@ -31,6 +31,10 @@ ___
 #### R Programmer
 
 #### Statistician with R
+- foundations of probability in R
+
+#### Urban Planning
+- visualizing geospatial data in R
 
 #### Time Series
 1. [manipulating time series data with xts and zoo in R](https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R)
@@ -43,9 +47,5 @@ ___
 ___
 #### RMarkdown
 - [All .Rmd Files](https://github.com/dapinedo/R/tree/master/DataCamp)
-___
-#### Other
-- visualizing geospatial data in R
-- foundations of probability in R
 
 <!-- comment -->
