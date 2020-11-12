@@ -28,6 +28,8 @@ ___
 
 #### Machine Learning Scientist with R
 
+#### Network Analysis with R
+
 #### R Programmer
 
 #### Statistician with R
