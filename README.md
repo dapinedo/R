@@ -24,7 +24,6 @@ ___
 #### Epidemiology
 1. survival analysis in R
 2. designing and analyzing clinical trials in R
-3. spatial statistics in R
 
 #### Machine Learning Scientist with R
 
@@ -32,11 +31,15 @@ ___
 
 #### R Programmer
 
+#### Spatial Data with R
+1. visualizing geospatial data in R
+2. spatial analysis with sf and raster in R
+3. spatial statistics in R
+4. interactive maps with leaflet in R
+- Certificate
+
 #### Statistician with R
 - foundations of probability in R
-
-#### Urban Planning
-- visualizing geospatial data in R
 
 #### Time Series
 1. [manipulating time series data with xts and zoo in R](https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R)
