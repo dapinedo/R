@@ -43,3 +43,229 @@ data(UnempDur, package = "Ecdat")
 help(UnempDur, package = "Ecdat")
 ```
 
+```{r}
+# Check out the help page for this dataset
+help(GBSG2, package = "TH.data")
+
+# Load the data
+data(GBSG2, package = "TH.data")
+
+# Look at the summary of the dataset
+summary(GBSG2)
+```
+
+If you forget the information on the help page, you can always go back to it later.
+
+**Why learn survival methods?**
+
+- Times are always **positive**
+- Different **measures** are of interest
+- **Censoring** almost always an issue
+  - right
+  - left
+  - interval
+  
+![](_images/165.png)
+
+![](_images/166.png)
+
+**Digging into the GBSG2 dataset 1**
+
+In the previous exercise, we learned about the `GBSG2` dataset. Let's dig a bit deeper into it to understand the variables we will use in the following.
+
+The `cens` variable contains values that indicate whether or not a person in the study has died. In this exercise, you'll explore these censored values.
+
+```{r}
+# Count censored and uncensored data
+num_cens <- table(GBSG2$cens)
+num_cens
+
+# Create barplot of censored and uncensored data
+barplot(num_cens)
+
+# Use help() to look at cens
+help(GBSG2, package = "TH.data")
+```
+
+The convention is that the censoring indicator is 1 if the event of interest happened.
+
+**Using the Surv() function for GBSG2**
+
+In the video, we learned about the `Surv()` function, which generates a `Surv` object. Let's look a little deeper into what a `Surv` object actually is. We will use the `GBSG2` data again.
+
+The `survival` package and `GBSG2` data are loaded for you in this exercise.
+
+```{r}
+library(pacman)
+p_load(survival)
+
+# Create Surv-Object
+sobj <- Surv(GBSG2$time, GBSG2$cens)
+
+# Look at 10 first elements
+sobj[1:10]
+
+# Look at summary
+summary(sobj)
+
+# Look at structure
+str(sobj)
+```
+
+The `Surv` object allows us to specify that time and cens belong together. Notice that the elements of the object have a `+` symbol if they are censored observations.
+
+**The UnempDur dataset**
+
+The `UnempDur` dataset contains information on how long people stay unemployed. In this case, the event (finding a job) is something positive. This information is stored in the `censor1` variable, which has a value of `1` if an individual was re-employed at a full-time job. The `spell` variable indicates the length of time an individual was unemployed in number of two-week intervals.
+
+In this exercise, you'll explore these censored values and create a `Surv` object, just as you did in the previous exercises with the `GBSG2` dataset.
+
+```{r}
+# Load the UnempDur data
+p_load(Ecdat)
+help(UnempDur, package = "Ecdat")
+data(UnempDur, package = "Ecdat")
+
+# Count censored and uncensored data
+cens_employ_ft <- table(UnempDur$censor1)
+cens_employ_ft
+
+# Create barplot of censored and uncensored data
+barplot(cens_employ_ft)
+
+# Create Surv-Object
+sobj <- Surv(UnempDur$spell, UnempDur$censor1)
+
+# Look at 10 first elements
+sobj[1:10]
+```
+
+Notice again that the elements of the `Surv` object use a `+` symbol to indicate if they are censored observations. If you are unaware of what the censored observations represent, take a look at the documentation using the `help()` function.
+
+**Measures used in survival analysis**
+
+**Survival analysis questions**
+
+- What is the probability that a breast cancer patient survives longer than 5 years?
+- What is the typical waiting time for a cab?
+- Out of 100 unemployed people, how many do we expect to have a job again after 2 months?
+
+![](_images/167.png)
+
+- where $F(t)$ is the cumulative distribution function
+
+**Kaplan-Meier estimate**
+
+![](_images/168.png)
+
+![](_images/169.png)
+
+![](_images/170.png)
+
+![](_images/171.png)
+
+**First Kaplan-Meier estimate**
+
+In this exercise, we will use the same data shown in the video. We will take a look at the `survfit()` function and the object it generates. This exercise will help you explore the `survfit` object.
+
+The `survival` package is loaded for you in this exercise.
+
+```{r}
+# Create time and event data
+time <- c(5, 6, 2, 4, 4)
+event <- c(1, 0, 0, 1, 1)
+
+# Compute Kaplan-Meier estimate
+km <- survfit(Surv(time, event) ~ 1)
+km
+
+# Take a look at the structure
+str(km)
+
+# Create data.frame
+data.frame(time = km$time, n.risk = km$n.risk, n.event = km$n.event,
+  n.censor = km$n.censor, surv = km$surv)
+```
+
+With this exercise, you learned how to extract relevant information from a `survfit` object.
+
+The survival function is the same as $1−distribution$ function, but we must think about censoring. Kaplan-Meier curves allow for this.
+
+**Understanding and visualizing Kaplan-Meier curves**
+
+![](_images/172.png)
+
+![](_images/173.png)
+
+**The survfit function**
+
+```
+survfit(object)
+```
+
+- If `object` is a `formula`: Kaplan Meier estimation
+- Other options for `object` (see upcoming chapters):
+  - `coxph`
+  - `survreg`
+  
+**Exercise ignoring censoring**
+
+You throw a party and at 1 a.m. guests suddenly start dancing. You are curious to analyze how long your guests will dance for and start collecting data. The problem is that you get tired and go to bed after a while.
+
+You obtain the following right censored dancing times data given in `dancedat`:
+
+`name` is the name of your friend.
+`time` is the right-censored dancing time.
+`obs_end` indicates if you observed the end of your friends dance (1) or if you went to sleep before they stopped dancing (0).
+You start analyzing the data in the morning, but you are tired and, at first, ignore the fact that you have censored observations. Then you remember this course on DataCamp and do it correctly.
+
+The `survival` package is loaded for you in this exercise.
+
+```{r}
+p_load(survminer)
+
+# Create dancedat data
+dancedat <- data.frame(
+  name = c("Chris", "Martin", "Conny", "Desi", "Reni", "Phil", 
+    "Flo", "Andrea", "Isaac", "Dayra", "Caspar"),
+  time = c(20, 2, 14, 22, 3, 7, 4, 15, 25, 17, 12),
+  obs_end = c(1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0))
+
+# Estimate the survivor function pretending that all censored observations are actual observations.
+km_wrong <- survfit(Surv(time) ~ 1, data = dancedat)
+
+# Estimate the survivor function from this dataset via kaplan-meier.
+km <- survfit(Surv(time, obs_end) ~ 1, data = dancedat)
+
+# Plot the two and compare
+ggsurvplot_combine(list(correct = km, wrong = km_wrong))
+```
+
+See how ignoring censoring underestimates your friends' dancing stamina? The correct analysis (red curve) shows that your friends actually dance longer than the incorrect blue curve suggests.
+
+**Estimating and visualizing a survival curve**
+
+Let's take a look at the survival of breast cancer patients.
+
+In this exercise, we work with the `GBSG2` dataset again.
+
+The `survival` and `survminer` packages and the `GBSG2` data are loaded for you in this exercise.
+
+```{r}
+# Kaplan-Meier estimate
+km <- survfit(Surv(time, cens) ~ 1, data = GBSG2)
+
+# plot of the Kaplan-Meier estimate
+ggsurvplot(km)
+
+# add the risk table to plot
+ggsurvplot(km, risk.table = TRUE)
+
+# add a line showing the median survival time
+ggsurvplot(km, risk.table = TRUE, surv.median.line = "hv")
+```
+
+You are becoming an expert in visualizing survival curves! You can immediatley spot the median survival and see how many women are still at risk of dying.
+
+**The Weibull model for estimating survival curves**
+
