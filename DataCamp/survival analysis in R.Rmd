@@ -265,7 +265,106 @@ ggsurvplot(km, risk.table = TRUE)
 ggsurvplot(km, risk.table = TRUE, surv.median.line = "hv")
 ```
 
-You are becoming an expert in visualizing survival curves! You can immediatley spot the median survival and see how many women are still at risk of dying.
+You are becoming an expert in visualizing survival curves! You can immediately spot the median survival and see how many women are still at risk of dying.
 
 **The Weibull model for estimating survival curves**
+
+![](_images/174.png)
+
+![](_images/175.png)
+
+**Estimating median survival from a Weibull model**
+
+We can now estimate the survival of the breast cancer patients in the `GBSG2` data using a Weibull model (function `survreg()`). Remember, the Weibull model estimates a smooth survival function instead of a step function, which is what the Kaplan-Meier method estimates.
+
+The `predict()` function with `type = "quantile"` allows us to compute the quantiles of the distribution function. We will use this to compute the median survival.
+
+The `survival` package and the `GBSG2` data are loaded for you in this exercise.
+
+```{r}
+# Weibull model
+wb <- survreg(Surv(time, cens) ~ 1, data = GBSG2)
+
+# Compute the median survival from the model
+predict(wb, type = "quantile", p = 0.5, newdata = data.frame(1))
+```
+
+Half the patients live longer than 1693.93 days and half die before.
+
+**Survival curve quantiles from a Weibull model**
+
+We can now estimate the survival of the breast cancer patients in the `GBSG2` data using a Weibull model.
+
+The `predict()` function with `type = "quantile"` allows us to compute the quantiles of the distribution function. As we learned in this course so far, the survival function is 1 - the distribution function $(S=1−D)$, so we can easily compute the quantiles of the survival function using the `predict()` function.
+
+The `survival` package and `GBSG2` data are loaded for you in this exercise.
+
+```{r}
+# Weibull model
+wb <- survreg(Surv(time, cens) ~ 1, data = GBSG2)
+
+# 70 Percent of patients survive beyond time point...
+predict(wb, type = "quantile", p = 1 - 0.7, newdata = data.frame(1))
+```
+
+70 out of 100 patients survive more than 1004.524 days.
+
+**Estimating the survival curve with survreg()**
+
+We can now estimate the survival of the breast cancer patients in the `GBSG2` data using a Weibull model.
+
+The Weibull distribution has two parameters, which determine the form of the survival curve.
+
+The `survival` package and the `GBSG2` data are loaded for you in this exercise.
+
+```{r}
+# Weibull model
+wb <- survreg(Surv(time, cens) ~ 1, data = GBSG2)
+
+# Retrieve survival curve from model probabilities 
+surv <- seq(.99, .01, by = -.01)
+
+# Get time for each probability
+t <- predict(wb, type = "quantile", p = 1 - surv, newdata = data.frame(1))
+
+# Create data frame with the information
+surv_wb <- data.frame(time = t, surv = surv)
+
+# Look at first few lines of the result
+head(surv_wb)
+```
+
+See how the survival curve goes down with time?
+
+**Visualizing the results of Weibull models**
+
+![](_images/176.png)
+
+![](_images/177.png)
+
+**Comparing Weibull model and Kaplan-Meier estimate**
+
+Let's plot the survival curve we get from the Weibull model for the `GBSG2` data!
+
+The `survival` and `survminer` packages and the `GBSG2` data are loaded for you in this exercise.
+
+```{r}
+# Weibull model
+wb <- survreg(Surv(time, cens) ~ 1, data = GBSG2)
+
+# Retrieve survival curve from model
+surv <- seq(.99, .01, by = -.01)
+
+# Get time for each probability
+t <- predict(wb, type = "quantile", p = 1 - surv, newdata = data.frame(1))
+
+# Create data frame with the information needed for ggsurvplot_df
+surv_wb <- data.frame(time = t, surv = surv, 
+  upper = NA, lower = NA, std.err = NA)
+
+# Plot
+ggsurvplot_df(fit = surv_wb, surv.geom = geom_line)
+```
+
+See how the Weibull model estimates a smooth survival function?
 
