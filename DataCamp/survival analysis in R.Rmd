@@ -368,3 +368,126 @@ ggsurvplot_df(fit = surv_wb, surv.geom = geom_line)
 
 See how the Weibull model estimates a smooth survival function?
 
+**Why use the Weibull model?**
+
+**Interpreting coefficients**
+
+We have a dataset of lung cancer patients. In this exercise, we want to know if the sex of the patients is associated with their survival time.
+
+The `survival` package and the dataset are already loaded for you.
+
+```
+# Look at the data set
+str(dat)
+```
+```
+'data.frame':	228 obs. of  3 variables:
+ $ time  : num  306 455 1010 210 883 ...
+ $ status: num  2 2 1 2 2 1 2 2 2 2 ...
+ $ sex   : Factor w/ 2 levels "male","female": 1 1 1 1 1 1 2 2 1 1 ...
+```
+```
+# Estimate a Weibull model
+wbmod <- survreg(Surv(time, status) ~ sex, data = dat)
+coef(wbmod)
+```
+```
+(Intercept)   sexfemale 
+   5.884162    0.395578 
+```
+
+The `sexfemale` coefficient is positive which means women tend to survive longer.
+
+```{r}
+# Weibull model
+wbmod <- survreg(Surv(time, cens) ~ horTh, data = GBSG2)
+coef(wbmod)
+
+# Retrieve survival curve from model
+surv <- seq(.99, .01, by = -.01)
+t_yes <- predict(wbmod, type = "quantile", p = 1 - surv,
+  newdata = data.frame(horTh = "yes"))
+
+# Take a look at survival curve
+str(t_yes)
+```
+
+`str()` shows the structure of the survival curve.
+
+**Visualizing Weibull models**
+
+**Steps to produce visualization**
+
+- Compute Weibull model
+- Decide on "imaginary patients"
+- Compute survival curves
+- Create `data.frame` with survival curve information
+- Plot
+
+**Computing a Weibull model and the survival curves**
+
+In this exercise we will reproduce the example from the video using the following steps:
+
+- Compute Weibull model
+- Decide on "imaginary patients"
+- Compute survival curves
+- Create data.frame with survival curve information
+- Plot
+
+In this exercise, we will focus on the first three steps. The next exercise will cover the remaining steps.
+
+The `survival`, `survminer`, and `reshape2` packages and the `GBSG2` data are loaded for you in this exercise.
+
+```{r}
+p_load(reshape2)
+
+# Weibull model
+wbmod <- survreg(Surv(time, cens) ~ horTh + tsize, data = GBSG2)
+
+# Imaginary patients
+newdat <- expand.grid(
+  horTh = levels(GBSG2$horTh),
+  tsize = quantile(GBSG2$tsize, probs = c(0.25, 0.5, 0.75)))
+newdat
+
+# Compute survival curves
+surv <- seq(.99, .01, by = -.01)
+t <- predict(wbmod, type = "quantile", p = 1 - surv,
+  newdata = newdat)
+
+# How many rows and columns does t have?
+dim(t)
+```
+
+Each row of `t` corresponds to one covariate combination (one imaginary patient) and each column to one value of `surv`.
+
+We will focus now on the last two steps.
+
+The `survival`, `survminer`, and `reshape2` packages and the `GBSG2` data are loaded for you in this exercise. The Weibull model `wbmod` and the imaginary patient data newdat you already computed are also available.
+
+```{r}
+# Use cbind() to combine the information in newdat with t
+surv_wbmod_wide <- cbind(newdat, t)
+  
+# Use melt() to bring the data.frame to long format
+surv_wbmod <- melt(surv_wbmod_wide, id.vars = c("horTh", "tsize"), variable.name = "surv_id", value.name = "time")
+
+# Use surv_wbmod$surv_id to add the correct survival probabilities surv
+surv_wbmod$surv <- surv[as.numeric(surv_wbmod$surv_id)]
+
+# Add columns upper, lower, std.err, and strata to the data.frame
+surv_wbmod[, c("upper", "lower", "std.err", "strata")] <- NA
+
+# Take a look at the structure of the object
+str(surv_wbmod)
+
+# Plot the survival curves
+ggsurvplot_df(surv_wbmod, surv.geom = geom_line,
+  linetype = "horTh", color = "tsize", legend.title = NULL)
+```
+
+The visualization shows that patients with smaller tumors tend to survive longer and patients who receive hormonal therapy tend to survive longer.
+
+**Other distributions than Weibull**
+
+`dist` is the argument to set the assumed distribution for y variable. You can check which options are possible when looking at the help of `survreg.distributions` (`?survreg.distributions`).
