@@ -23,7 +23,7 @@ ___
 
 #### Epidemiology
 1. [survival analysis in R](https://rpubs.com/odenipinedo/survival-analysis-in-R)
-     - [Certificate](/_certificates/survival-analysis-in-R.pdf)
+     - [Certificate](https://github.com/odenipinedo/R/blob/master/DataCamp/_certificates/survival-analysis-in-R.pdf)
 2. designing and analyzing clinical trials in R
 
 #### Machine Learning Scientist with R
@@ -56,7 +56,7 @@ ___
 4. [forecasting in R](https://rpubs.com/odenipinedo/forecasting-in-R)
 5. [visualizing time series data in R](https://rpubs.com/odenipinedo/visualizing-time-series-data-in-R)
 6. [case studies - manipulating time series data in R](https://rpubs.com/odenipinedo/case-studies-manipulating-time-series-data-in-R)
--  [Certificate](/_certificates/time-series-with-R.pdf)
+-  [Certificate](https://github.com/odenipinedo/R/blob/master/DataCamp/_certificates/time-series-with-R.pdf)
 ___
 #### RMarkdown
 - [All .Rmd Files](https://github.com/dapinedo/R/tree/master/DataCamp)
