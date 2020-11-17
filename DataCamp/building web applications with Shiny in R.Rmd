@@ -1,6 +1,6 @@
 ---
 title: "building web applications with Shiny in R"
-author: "DataCamp - Ramnath Valdyanathan"
+author: "DataCamp - Kaelen Medeiros"
 date: "11/16/2020"
 output: html_document
 ---
@@ -9,4 +9,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+**Introduction to Shiny**
+
+**Build a "Hello, world" Shiny app**
+
+![](_images/187.png)
 
