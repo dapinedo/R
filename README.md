@@ -22,7 +22,8 @@ ___
 #### Data Scientist with R
 
 #### Epidemiology
-1. survival analysis in R
+1. [survival analysis in R](https://rpubs.com/odenipinedo/survival-analysis-in-R)
+     - [Certificate](/_certificates/survival-analysis-in-R.pdf)
 2. designing and analyzing clinical trials in R
 
 #### Machine Learning Scientist with R
@@ -30,6 +31,13 @@ ___
 #### Network Analysis with R
 
 #### R Programmer
+
+#### Shiny Fundamentals with R
+1. building web applications with Shiny in R
+2. case studies - building web applications with Shiny in R
+3. building dashboards with shinydashboard
+4. building dashboards with flexdashboard
+- Certificate
 
 #### Spatial Data with R
 1. visualizing geospatial data in R
@@ -48,7 +56,7 @@ ___
 4. [forecasting in R](https://rpubs.com/odenipinedo/forecasting-in-R)
 5. [visualizing time series data in R](https://rpubs.com/odenipinedo/visualizing-time-series-data-in-R)
 6. [case studies - manipulating time series data in R](https://rpubs.com/odenipinedo/case-studies-manipulating-time-series-data-in-R)
--  [Certificate](https://www.datacamp.com/statement-of-accomplishment/track/bc62af00e2dd28e937de0070de19a98aa4afca1c)
+-  [Certificate](/_certificates/time-series-with-R.pdf)
 ___
 #### RMarkdown
 - [All .Rmd Files](https://github.com/dapinedo/R/tree/master/DataCamp)
