@@ -19,6 +19,12 @@ ___
 
 #### Analyzing Genomic Data in R
 
+#### Data Visualization with R
+1. introduction to data visualization with ggplot2
+2. intermediate data visualization with ggplot2
+3. visualization best practices in R
+- Certificate
+
 #### Data Scientist with R
 
 #### Epidemiology
@@ -33,7 +39,7 @@ ___
 #### R Programmer
 
 #### Shiny Fundamentals with R
-1. building web applications with Shiny in R
+1. [building web applications with Shiny in R](https://rpubs.com/odenipinedo/building-web-applications-with-Shiny-in-R)
 2. case studies - building web applications with Shiny in R
 3. building dashboards with shinydashboard
 4. building dashboards with flexdashboard
