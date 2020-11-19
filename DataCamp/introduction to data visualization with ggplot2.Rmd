@@ -9,4 +9,462 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+**Your instructor - Rick Scavetta**
+
+- email: office@scavetta.academy
+- twitter: @Rick_Scavetta
+
+![](_images/231.png)
+
+![](_images/232.png)
+
+**Drawing your first plot**
+
+To get a first feel for `ggplot2`, let's try to run some basic `ggplot2` commands. The `mtcars` dataset contains information on 32 cars from a 1973 issue of Motor Trend magazine. This dataset is small, intuitive, and contains a variety of continuous and categorical variables.
+
+```{r}
+# Load the ggplot2 package
+library(pacman)
+p_load(ggplot2)
+
+# Explore the mtcars data frame with str()
+data(mtcars)
+str(mtcars)
+
+# Execute the following command
+p <- ggplot(mtcars, aes(cyl, mpg)) +
+  geom_point()
+```
+
+Notice that `ggplot2` treats `cyl` as a continuous variable. You get a plot, but it's not quite right, because it gives the impression that there is such a thing as a 5 or 7-cylinder car, which there is not.
+
+**Data columns types affect plot types**
+
+The plot from the previous exercise wasn't really satisfying. Although `cyl` (the number of cylinders) is categorical, you probably noticed that it is classified as numeric in `mtcars`. This is really misleading because the representation in the plot doesn't match the actual data type. You'll have to explicitly tell `ggplot2` that `cyl` is a categorical variable.
+
+```{r}
+# Change the command below so that cyl is treated as factor
+ggplot(mtcars, aes(factor(cyl), mpg)) +
+  geom_point()
+```
+
+Notice that `ggplot2` treats `cyl` as a factor. This time the x-axis does not contain variables like 5 or 7, only the values that are present in the dataset.
+
+**The grammar of graphics**
+
+![](_images/233.png)
+
+![](_images/234.png)
+
+![](_images/235.png)
+
+![](_images/236.png)
+
+**Mapping data columns to aesthetics**
+
+Let's dive a little deeper into the three main topics in this course: The data, aesthetics, and geom layers. We'll get to making pretty plots in the last chapter with the themes layer.
+
+We'll continue working on the 32 cars in the `mtcars` data frame.
+
+Consider how the examples and concepts we discuss throughout these courses apply to your own data-sets!
+
+```{r}
+# Edit to add a color aesthetic mapped to disp
+ggplot(mtcars, aes(wt, mpg, color = disp)) +
+  geom_point()
+
+# Change the color aesthetic to a size aesthetic
+ggplot(mtcars, aes(wt, mpg, size = disp)) +
+  geom_point()
+```
+
+Notice that a legend for the color and size scales was automatically generated.
+
+**ggplot2 layers**
+
+- the grammar of graphics implemented in R
+- Two key concepts:
+  1. layer grammatical elements
+  2. aesthetic mappings
+  
+![](_images/237.png)
+
+**Adding geometries**
+
+The `diamonds` dataset contains details of 1,000 diamonds. Among the variables included are `carat` (a measurement of the diamond's size) and `price`.
+
+You'll use two common geom layer functions:
+
+- [geom_point()](http://www.rdocumentation.org/packages/ggplot2/functions/geom_point) adds points (as in a scatter plot).
+- [geom_smooth()](http://www.rdocumentation.org/packages/ggplot2/functions/geom_smooth) adds a smooth trend curve.
+
+As you saw previously, these are added using the `+` operator.
+
+```
+ggplot(data, aes(x, y)) +
+  geom_*()
+```
+
+Where `*` is the specific geometry needed. 
+
+```{r}
+# Explore the diamonds data frame with str()
+data(diamonds)
+str(diamonds)
+
+# Add geom_point() with +
+ggplot(diamonds, aes(carat, price)) +
+  geom_point()
+
+# Add geom_smooth() with +
+ggplot(diamonds, aes(carat, price)) +
+  geom_point() +
+  geom_smooth()
+```
+
+If you had executed the command without adding a `+`, it would produce an error message 'No layers in plot' because you are missing the third essential layer - the geom layer.
+
+**Changing one geom or every geom**
+
+If you have multiple geoms, then mapping an aesthetic to data variable inside the call to `ggplot()` will change *all* the geoms. It is also possible to make changes to *individual* geoms by passing arguments to the `geom_*()` functions.
+
+`geom_point(`) has an `alpha` argument that controls the opacity of the points. A value of `1` (the default) means that the points are totally opaque; a value of `0` means the points are totally transparent (and therefore invisible). Values in between specify transparency.
+
+The plot you drew last time is provided in the script.
+
+```{r}
+# Map the color aesthetic to clarity
+ggplot(diamonds, aes(carat, price, color = clarity)) +
+  geom_point() +
+  geom_smooth()
+
+# Make the points 40% opaque
+ggplot(diamonds, aes(carat, price, color = clarity)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth()
+```
+
+`geom_point()` + `geom_smooth()` is a common combination.
+
+**Saving plots as variables**
+
+Plots can be saved as variables, which can be added to later on using the `+` operator. This is really useful if you want to make multiple related plots from a common base.
+
+```{r}
+# Draw a ggplot
+plt_price_vs_carat <- ggplot(
+  # Use the diamonds dataset
+  diamonds,
+  # For the aesthetics, map x to carat and y to price
+  aes(carat, price)
+)
+
+# Add a point layer to plt_price_vs_carat
+plt_price_vs_carat + geom_point()
+
+# Edit this to make points 20% opaque: plt_price_vs_carat_transparent
+plt_price_vs_carat_transparent <- plt_price_vs_carat + geom_point(alpha = 0.2)
+
+# See the plot
+plt_price_vs_carat_transparent
+
+# Edit this to map color to clarity,
+# Assign the updated plot to a new object
+plt_price_vs_carat_by_clarity <- plt_price_vs_carat + geom_point(aes(color = clarity))
+
+# See the plot
+plt_price_vs_carat_by_clarity
+```
+
+By assigning parts of plots to a variable then reusing that variable in other plots, it makes it really clear how much those plots have in common.
+
+**Visible aesthetics**
+
+![](_images/238.png)
+
+**All about aesthetics: color, shape and size**
+
+In the video you saw 9 visible aesthetics. Let's apply them to a categorical variable — the cylinders in `mtcars`, `cyl`.
+
+These are the aesthetics you can consider within [aes()](http://www.rdocumentation.org/packages/ggplot2/functions/aes) in this chapter: `x`, `y`, `color`, `fill`, `size`, `alpha`, `labels` and `shape`.
+
+One common convention is that you don't name the `x` and `y` arguments to `aes()`, since they almost always come first, but you do name other arguments.
+
+In the following exercise the `fcyl` column is categorical. It is `cyl` transformed into a factor.
+
+```{r}
+mtcars$fcyl <- as.factor(mtcars$cyl)
+
+# Map x to mpg and y to fcyl
+ggplot(mtcars, aes(mpg, fcyl)) +
+  geom_point()
+
+# Swap mpg and fcyl
+ggplot(mtcars, aes(fcyl, mpg)) +
+  geom_point()
+
+# Map x to wt, y to mpg and color to fcyl
+ggplot(mtcars, aes(wt, mpg, color = fcyl)) +
+  geom_point()
+
+ggplot(mtcars, aes(wt, mpg, color = fcyl)) +
+  # Set the shape and size of the points
+  geom_point(shape = 1, size = 4)
+```
+
+Head over to the next exercise for some more aesthetics!
+
+**All about aesthetics: color vs. fill**
+
+Typically, the `color` aesthetic changes the *outline* of a geom and the `fill` aesthetic changes the *inside*. `geom_point()` is an exception: you use `color` (not `fill`) for the point color. However, some shapes have special behavior.
+
+The default `geom_point()` uses `shape = 19`: a solid circle. An alternative is `shape = 21`: a circle that allows you to use *both* fill for the inside and color for the outline. This lets you map two aesthetics to each point.
+
+All shape values are described on the [points()](https://www.rdocumentation.org/packages/graphics/topics/points) help page.
+
+`fcyl` and `fam` are the `cyl` and `am` columns converted to factors, respectively.
+
+```{r}
+mtcars$fam <- as.factor(mtcars$am)
+
+# Map fcyl to fill
+ggplot(mtcars, aes(wt, mpg, fill = fcyl)) +
+  geom_point(shape = 1, size = 4)
+
+ggplot(mtcars, aes(wt, mpg, fill = fcyl)) +
+  # Change point shape; set alpha
+  geom_point(shape = 21, size = 4, alpha = 0.6)
+
+# Map color to fam
+ggplot(mtcars, aes(wt, mpg, fill = fcyl, color = fam)) +
+  geom_point(shape = 21, size = 4, alpha = 0.6)
+```
+
+Notice that mapping a categorical variable onto fill doesn't change the colors, although a legend is generated! This is because the default shape for points only has a color attribute and not a fill attribute! Use fill when you have another shape (such as a bar), or when using a point that does have a fill and a color attribute, such as `shape = 21`, which is a circle with an outline. Any time you use a solid color, make sure to use alpha blending to account for over plotting.
+
+**All about aesthetics: comparing aesthetics**
+
+Now that you've got some practice with using attributes, be careful of a major pitfall: these attributes can overwrite the aesthetics of your plot!
+
+```{r}
+# Establish the base layer
+plt_mpg_vs_wt <- ggplot(mtcars, aes(wt, mpg))
+
+# Map fcyl to size
+plt_mpg_vs_wt +
+  geom_point(aes(size = fcyl))
+
+# Map fcyl to shape, not alpha
+plt_mpg_vs_wt +
+  geom_point(aes(alpha = fcyl))
+
+# Map fcyl to shape, not alpha
+plt_mpg_vs_wt +
+  geom_point(aes(shape = fcyl))
+
+# Use text layer and map fcyl to label
+plt_mpg_vs_wt +
+  geom_text(aes(label = fcyl))
+```
+
+Which aesthetic do you think is the clearest for categorical data?
+
+**Using attributes**
+
+**All about attributes: color, shape, size and alpha**
+
+This time you'll use these arguments to set *attributes* of the plot, not map variables onto *aesthetics*.
+
+You can specify colors in R using **hex codes**: a hash followed by two hexadecimal numbers each for red, green, and blue ("`#RRGGBB`"). Hexadecimal is base-16 counting. You have 0 to 9, and A representing 10 up to F representing 15. Pairs of hexadecimal numbers give you a range from 0 to 255. "`#000000`" is "black" (no color), "`#FFFFFF`" means "white", and "`#00FFFF`" is cyan (mixed green and blue).
+
+A hexadecimal color variable, `my_blue` has been defined for you.
+
+```{r}
+# A hexadecimal color
+my_blue <- "#4ABEFF"
+
+ggplot(mtcars, aes(wt, mpg)) +
+  # Set the point color and alpha
+  geom_point(color = my_blue, alpha = 0.6)
+
+# Change the color mapping to a fill mapping
+ggplot(mtcars, aes(wt, mpg, fill = fcyl)) +
+  # Set point size and shape
+  geom_point(color = my_blue, size = 10, shape = 21)
+```
+
+`ggplot2` lets you control these attributes in many ways to customize your plots.
+
+**All about attributes: conflicts with aesthetics**
+
+In the videos you saw that you can use all the aesthetics as attributes. Let's see how this works with the aesthetics you used in the previous exercises: `x`, `y`, `color`, `fill`, `size`, `alpha`, `label` and `shape`.
+
+In this exercise you will set all kinds of attributes of the points!
+
+You will continue to work with `mtcars`.
+
+```{r}
+ggplot(mtcars, aes(wt, mpg, color = fcyl)) +
+  # Add point layer with alpha 0.5
+  geom_point(alpha = 0.5)
+
+ggplot(mtcars, aes(wt, mpg, color = fcyl)) +
+  # Add text layer with label rownames(mtcars) and color red
+  geom_text(label = rownames(mtcars), color = "red")
+
+ggplot(mtcars, aes(wt, mpg, color = fcyl)) +
+  # Add points layer with shape 24 and color yellow
+  geom_point(shape = 24, color = "yellow")
+```
+
+**Going all out**
+
+In this exercise, you will gradually add more aesthetics layers to the plot. You're still working with the `mtcars` dataset, but this time you're using more features of the cars. Each of the columns is described on the [mtcars](https://www.rdocumentation.org/packages/datasets/topics/mtcars) help page. Columns `fcyl` and `fam` have been added (as before) as categorical versions of `cyl` and `am` respectively.
+
+Notice that adding more aesthetic mappings to your plot is not always a good idea! You may just increase complexity and decrease readability.
+
+```{r}
+# 3 aesthetics: qsec vs. mpg, colored by fcyl
+ggplot(mtcars, aes(mpg, qsec, color = fcyl)) +
+  geom_point()
+
+# 4 aesthetics: add a mapping of shape to fam
+ggplot(mtcars, aes(mpg, qsec, color = fcyl, shape = fam)) +
+  geom_point()
+
+# 5 aesthetics: add a mapping of size to hp / wt
+ggplot(mtcars, aes(mpg, qsec, color = fcyl, shape = fam, size = hp / wt)) +
+  geom_point()
+```
+
+Between the x and y dimensions, the color, shape, and size of the points, your plot displays five dimensions of the dataset!
+
+**Modifying aesthetics**
+
+**position**
+
+Adjustment for overlapping
+
+- identity
+- dodge
+- stack
+- fill
+- jitter
+- jitterdodge
+- nudge
+
+![](_images/239.png)
+![](_images/240.png)
+
+![](_images/241.png)
+
+![](_images/242.png)
+
+![](_images/243.png)
+
+**Updating aesthetic labels**
+
+In this exercise, you'll modify some aesthetics to make a bar plot of the number of cylinders for cars with different types of transmission.
+
+You'll also make use of some functions for improving the appearance of the plot.
+
+- [labs()](https://www.rdocumentation.org/packages/ggplot2/topics/labs) to set the x- and y-axis labels. It takes strings for each argument.
+- [scale_color_manual()](https://www.rdocumentation.org/packages/ggplot2/topics/scale_manual) defines properties of the color scale (i.e. axis). The first argument sets the legend title. `values` is a named vector of colors to use.
+
+```{r}
+levels(mtcars$fam) <- c("automatic", "manual")
+
+ggplot(mtcars, aes(fcyl, fill = fam)) +
+  geom_bar() +
+  # Set the axis labels
+  labs(x = "Number of Cylinders",
+       y = "Count")
+
+palette <- c(automatic = "#377EB8", manual = "#E41A1C")
+
+ggplot(mtcars, aes(fcyl, fill = fam)) +
+  geom_bar() +
+  labs(x = "Number of Cylinders", y = "Count") +
+  # Set the fill color scale
+  scale_fill_manual("Transmission", values = palette)
+
+# Set the position
+ggplot(mtcars, aes(fcyl, fill = fam)) +
+  geom_bar(position = "dodge") +
+  labs(x = "Number of Cylinders", y = "Count") +
+  scale_fill_manual("Transmission", values = palette)
+```
+
+**Setting a dummy aesthetic**
+
+In the last chapter you saw that all the visible aesthetics can serve as attributes and aesthetics, but I very conveniently left out x and y. That's because although you can make univariate plots (such as histograms, which you'll get to in the next chapter), a y-axis will always be provided, even if you didn't ask for it.
+
+You can make univariate plots in `ggplot2`, but you will need to add a fake y axis by mapping y to zero.
+
+When using setting y-axis limits, you can specify the limits as separate arguments, or as a single numeric vector. That is, `ylim(lo, hi)` or `ylim(c(lo, hi))`.
+
+```{r}
+# Plot 0 vs. mpg
+ggplot(mtcars, aes(mpg, 0)) +
+  # Add jitter 
+  geom_point(position = "jitter")
+
+ggplot(mtcars, aes(mpg, 0)) +
+  geom_jitter() +
+  # Set the y-axis limits
+  ylim(c(-2, 2))
+```
+
+The best way to make your plot depends on a lot of different factors and sometimes `ggplot2` might not be the best choice.
+
+**Aesthetics best practices**
+
+**Which aesthetics?**
+
+- use your creative know-how, and
+- follow some clear guidelines
+- Jacques Bertin
+  - the semiology of graphics, 1967
+-William Cleveland
+  - the elements of graphing data, 1985
+  - visualizing data, 1993
+
+**Form follows functions**
+
+**Function**
+
+Primary:
+
+  - accurate and efficient representations
+  
+Secondary:
+
+  - visually appealing, beautiful plots
+  
+**Guiding principles**
+
+Never:
+
+  - misrepresent or obscure data
+  - confuse viewers with complexity
+  
+Always:
+
+  - consider the audience and purpose of every plot
+  
+**The best choices for aesthetics**
+
+- Efficient
+  - provides a faster overview than numeric summaries
+- Accurate
+  - minimizes information loss
+
+**Continuous data**  
+![](_images/244.png)
+
+**Categorical data**
+![](_images/245.png)
+
+**Scatter plots**
+
 
