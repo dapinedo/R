@@ -39,6 +39,7 @@ ___
 2. predictive analytics using networked data in R
 3. network analysis in the tidyverse
 4. case studies: network analysis in R
+- Certificate
 
 #### R Programmer
 
