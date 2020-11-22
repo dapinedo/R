@@ -20,7 +20,7 @@ ___
 #### Analyzing Genomic Data in R
 
 #### Data Visualization with R
-1. introduction to data visualization with ggplot2
+1. [introduction to data visualization with ggplot2](https://rpubs.com/odenipinedo/introduction-to-data-visualization-with-ggplot2)
 2. intermediate data visualization with ggplot2
 3. visualization best practices in R
 - Certificate
