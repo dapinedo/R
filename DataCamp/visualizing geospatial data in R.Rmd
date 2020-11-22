@@ -9,4 +9,120 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+**What is spatial data?**
 
+- data associated with locations
+- location described by coordinates + a coordinate reference system (CRS)
+- common CRS: longitude, latitude describes locations on the surface of the Earth
+
+![](_images/300.png)
+
+**Point data**: locations are points, described by a single pair of coordinates
+
+![](_images/301.png)
+
+![](_images/302.png)
+
+**Grabbing a background map**
+
+There are two steps to adding a map to a `ggplot2` plot with `ggmap`:
+
+1. Download a map using `get_map()`
+2. Display the map using `ggmap()`
+
+As an example, let's grab a map for New York City:
+
+```
+library(ggmap)
+
+nyc <- c(lon = -74.0059, lat = 40.7128)
+nyc_map <- get_map(location = nyc, zoom = 10)
+```
+
+`get_map()` has a number of arguments that control what kind of map to get, but for now you'll mostly stick with the defaults. The most important argument is the first, `location`, where you can provide a longitude and latitude pair of coordinates where you want the map centered. (We found these for NYC from a quick google search of "coordinates nyc".) The next argument, `zoom`, takes an integer between 3 and 21 and controls how far the mapped is zoomed in. In this exercise, you'll set a third argument, `scale`, equal to 1. This controls the resolution of the downloaded maps and you'll set it lower (the default is 2) to reduce how long it takes for the downloads.
+
+Displaying the map is then as simple as calling `ggmap()` with your downloaded map as the only argument: `ggmap(nyc_map)`
+
+Your turn! We are going to be looking at house sales in Corvallis, but you probably have no idea where that is! Let's find out.
+
+```{r, message = FALSE}
+library(pacman)
+p_load(ggmap)
+corvallis <- c(lon = -123.2620, lat = 44.5646)
+
+# Get map at zoom level 5: map_5
+map_5 <- ggmap::get_map(location = corvallis, zoom = 5, scale = 1)
+
+# Plot map at zoom level 5
+ggmap(map_5)
+
+# Get map at zoom level 13: corvallis_map
+corvallis_map <- get_map(corvallis, zoom = 13, scale = 1)
+
+# Plot map at zoom level 13
+ggmap(corvallis_map)
+```
+
+**Putting it all together**
+You now have a nice map of Corvallis, but how do you put the locations of the house sales on top?
+
+Similar to `ggplot()`, you can add layers of data to a `ggmap()` call (e.g. `+ geom_point()`). It's important to note, however, that `ggmap()` sets the map as the default dataset and also sets the default aesthetic mappings.
+
+This means that if you want to add a layer from something other than the map (e.g. `sales`), you need to explicitly specify both the `mapping` and `data` arguments to the geom.
+
+What does this look like? You've seen how you might make a basic plot of the sales:
+
+```
+ggplot(sales, aes(lon, lat)) + 
+  geom_point()
+```
+
+An equivalent way to specify the same plot is:
+
+```
+ggplot() + 
+  geom_point(aes(lon, lat), data = sales)
+```
+
+Here, we've specified the data and mapping in the call to `geom_point()` rather than `ggplot()`. The benefit of specifying the plot this way is you can swap out `ggplot()` for a call to `ggmap()` and get a map in the background of the plot.
+
+```{r}
+sales <- readRDS(file = "_data/01_corv_sales.rds")
+
+# Look at head() of sales
+head(sales)
+
+# Swap out call to ggplot() with call to ggmap()
+ggmap(corvallis_map) +
+  geom_point(aes(lon, lat), data = sales)
+```
+
+You just made your first data map!
+
+**Insight through aesthetics**
+
+Adding a map to your plot of sales explains some of the structure in the data: there are no house sales East of the Willamette River or on the Oregon State University campus. This structure is really just a consequence of where houses are in Corvallis; you can't have a house sale where there are no houses!
+
+The value of displaying data spatially really comes when you add other variables to the display through the properties of your geometric objects, like color or size. You already know how to do this with `ggplot2` plots: add additional mappings to the aesthetics of the geom.
+
+Let's see what else you can learn about these houses in Corvallis.
+
+*NOTE: Many exercises in this course will require you to create more than one plot. You can toggle between plots with the arrows at the bottom of the 'Plots' window and zoom in on a plot by clicking the arrows on the tab at the top of the 'Plots' window.*
+
+```{r}
+# Map color to year_built
+ggmap(corvallis_map) +
+  geom_point(aes(lon, lat, color = year_built), data = sales)
+
+# Map size to bedrooms
+ggmap(corvallis_map) +
+  geom_point(aes(lon, lat, size = bedrooms), data = sales)
+
+# Map color to price / finished_squarefeet
+ggmap(corvallis_map) +
+  geom_point(aes(lon, lat, color = price/finished_squarefeet), data = sales)
+```
+
+The last plot wasn't so successful because one sale had a very high price per squarefoot. This pushed all the other sales into the same color range and made it hard to see any patterns. You could solve that by filtering out the offending sale, or change the way the values are mapped to colors, something we'll talk about in Chapter 3. You might also be wondering why some of the points are gray even though gray isn't in our color scale. The gray points are locations with missing values for the variable we have mapped to color, that is, sales with `NA` for price or `finished_squarefeet`.
+
+**Useful get_map() and ggmap() options**
