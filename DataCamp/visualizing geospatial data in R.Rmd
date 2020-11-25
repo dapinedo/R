@@ -1125,7 +1125,431 @@ tm_shape(land_cover) +
 
 ![](_images/334.png)
 
+**Reading in spatial data**
+
+![](_images/335.png)
+
+![](_images/336.png)
+
+![](_images/337.png)
+
+![](_images/338.png)
+
+![](_images/339.png)
+
+![](_images/340.png)
+
+**Reading in a shapefile**
+
+Shapefiles are one of the most common ways spatial data are shared and are easily read into R using `readOGR()` from the `rgdal` package. `readOGR()` has two important arguments: `dsn` and `layer`. Exactly what you pass to these arguments depends on what kind of data you are reading in. You learned in the video that for shapefiles, `dsn` should be the path to the directory that holds the files that make up the shapefile and `layer` is the file name of the particular shapefile (without any extension).
+
+For your map, you want neighborhood boundaries. We downloaded the Neighborhood Tabulation Areas, as defined by the City of New York, from the [Open Data Platform of the Department of City Planning](https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-nynta.page). The download was in the form of a zip archive and we have put the result of unzipping the downloaded file in your working directory.
+
+You'll use the `dir()` function from base R to examine the contents of your working directory, then read in the shapefile to R.
+
+```{r, message = FALSE}
+p_load(sp, rgdal)
+
+# The files below were created for the exercise based on data provided by the course instructor. 
+# These commands are run only one time and are thus commented
+
+#nynta_16c <- readRDS(file = "_data/04_nynta_16c.rds")
+#rgdal::writeOGR(nynta_16c, "_data/nynta_16c", "nynta", driver = "ESRI Shapefile")
+
+# Use dir() to find directory name
+#dir()
+
+# Call dir() with directory name
+dir("_data/nynta_16c")
+
+# Read in shapefile with readOGR(): neighborhoods
+neighborhoods <- readOGR("_data/nynta_16c", "nynta")
+
+# summary() of neighborhoods
+summary(neighborhoods)
+
+# Plot neighborhoods
+plot(neighborhoods)
+```
+
+**Reading in a raster file**
+
+Raster files are most easily read in to R with the `raster()` function from the `raster` package. You simply pass in the filename (including the extension) of the raster as the first argument, `x`.
+
+The `raster()` function uses some native `raster` package functions for reading in certain file types (based on the extension in the file name) and otherwise hands the reading of the file on to `readGDAL()` from the `rgdal` package. The benefit of not using `readGDAL()` directly is simply that `raster()` returns a `RasterLayer` object.
+
+A common kind of raster file is the GeoTIFF, with file extension `.tif` or `.tiff`. We've downloaded a median income raster from the [US census](http://sedac.ciesin.columbia.edu/data/collection/usgrid) and put it in your working directory.
+
+Let's take a look and read it in.
+
+```{r}
+p_load(raster)
+
+# The files below were created for the exercise based on data provided by the course instructor. 
+# These commands are run only one time and are thus commented
+
+#income_grid_raster <- readRDS(file = "_data/04_income_grid.rds")
+#income_grid_raster <- raster(income_grid_raster)
+#raster::writeRaster(income_grid_raster,"_data/nyc_grid_data/m5602ahhi00.tif", options=c('TFW=YES'))
+
+# Call dir()
+#dir()
+
+# Call dir() on the directory
+dir("_data/nyc_grid_data")
+
+# Use raster() with file path: income_grid
+income_grid <- raster("_data/nyc_grid_data/m5602ahhi00.tif")
+
+# Call summary() on income_grid
+summary(income_grid)
+
+# Call plot() on income_grid
+plot(income_grid)
+```
+
+These data are actually a little coarse for your purpose. Instead you'll use income data at the census tract level in the following plots.
+
+**Getting data using a package**
+
+Reading in spatial data from a file is one way to get spatial data into R, but there are also some packages that provide commonly used spatial data. For example, the `rnaturalearth` package provides data from [Natural Earth](http://www.naturalearthdata.com/), a source of high resolution world maps including coastlines, states, and populated places. In fact, this was the source of the data from Chapter 2.
+
+You will be examining median income at the census tract level in New York County (a.k.a. the Bourough of Manhattan), but to do this you'll need to know the boundaries of the census tracts. The `tigris` package in R provides a way to easily download and import shapefiles based on US Census geographies. You'll use the `tracts()` function to download tract boundaries, but `tigris` also provides `states()`, `counties()`, `places()` and many other functions that match the various levels of geographic entities defined by the Census.
+
+Let's grab the spatial data for the tracts.
+
+```{r}
+p_load(tigris)
+
+# Call tracts(): nyc_tracts
+nyc_tracts <- tracts(state = "NY", county = "New York", cb = TRUE)
+nyc_tracts <- as_Spatial(nyc_tracts)
+
+# Call summary() on nyc_tracts
+summary(nyc_tracts)
+
+# Plot nyc_tracts
+plot(nyc_tracts)
+```
+
+In case you were wondering, the final argument `cb = TRUE` downloads the lower resolution boundaries which makes for a quicker download.
+
+**Coordinate reference systems**
+
+![](_images/341.png)
+
+![](_images/342.png)
+
+![](_images/343.png)
+
+![](_images/344.png)
+
+**Merging data from different CRS/projections**
+
+Every spatial object has a coordinate reference system (CRS) associated with it. Generally, this is set when the data are imported and will be read directly from the spatial files. This is how the `neighborhoods` and `nyc_tracts` obtained their coordinate system information.
+
+Both the `sp` and `raster` packages have a `proj4string()` function that returns the CRS of the object it's called on.
+
+Trying to work with spatial data using different CRSs is a bit like trying to work with a dataset in miles and another in kilometers. They are measuring the same thing, but the numbers aren't directly comparable.
+
+Let's take a look at our two polygon objects.
+
+```{r}
+# proj4string() on nyc_tracts and neighborhoods
+proj4string(nyc_tracts)
+proj4string(neighborhoods)
+
+# coordinates() on nyc_tracts and neighborhoods
+head(coordinates(nyc_tracts))
+head(coordinates(neighborhoods))
+
+# plot() neighborhoods and nyc_tracts
+plot(neighborhoods)
+plot(nyc_tracts, add = TRUE, col = "red")
+```
+
+Why didn't we see the tracts on our plot of neighborhoods? Simply because the coordinates of the tracts put them way off the boundaries of our plot.
 
 
+**Converting from one CRS/projection to another**
 
+The process of converting from one CRS or projection to another is handled by the `spTransform()` methods in the `rgdal` package. `spTransform()` has methods for all `sp` objects including `SpatialPolygonsDataFrame`, but doesn't work on `raster` objects. This is because transforming a raster is a little more complicated; the transformed rectangular grid will no longer be rectangular. You can look at `?raster::projectRaster` if you are curious about transforming rasters.
 
+Transformation is simple. The first argument to `spTransform()`, `x`, is the spatial object to be transformed and the second, `CRS`, is a specification of the desired CRS. The `CRS` can be specified by a PROJ4 string, which you could construct by hand, but it's much easier to take it from an existing object (e.g. with the `proj4string()` function).
+
+Time to get your two polygons datasets into the same CRS.
+
+```{r}
+water <- readRDS(file = "_data/04_water_big.rds")
+
+# Use spTransform on neighborhoods: neighborhoods
+neighborhoods <- spTransform(neighborhoods,   
+                             proj4string(nyc_tracts))
+
+# head() on coordinates() of neighborhoods
+head(coordinates(neighborhoods))
+
+# Plot neighborhoods, nyc_tracts and water
+plot(neighborhoods)
+plot(nyc_tracts, add = TRUE, col = "red")
+plot(water, add = TRUE, col = "blue")
+```
+
+If you plot the untransformed objects with `tmap`, it actually does this transformation on the fly, but it's useful to know how to do it manually.
+
+**Adding data to spatial objects**
+
+![](_images/345.png)
+
+![](_images/346.png)
+
+![](_images/347.png)
+
+![](_images/348.png)
+
+![](_images/349.png)
+
+![](_images/350.png)
+
+**Adding new data**
+
+- once created, no checks that data stay matched to polygons
+- recreate object being very careful to match polygons to the right rows
+- `sp::merge()`, `merge()` for `sp` objects
+
+**The wrong way**
+
+When a `Spatial***DataFrame` object is created, there are two ways the spatial objects (e.g. `Polygons`) might be matched up to the rows of the data. The most robust is to use IDs on the spatial objects that are matched up to row names in the data. This ensures if there are any that don't match you are quickly alerted. The other way is simply by order -- the first spatial object is assumed to correspond to the first row of data.
+
+Once created, the correspondence is based purely on order. If you manipulate the `data` slot, there is no checking the spatial objects still correspond to the right rows. What does this mean in practice? It's very dangerous to manipulate the `data` slot directly!
+
+To create your plot of income, you need to match up the income data frame with the tracts `SpatialPolygonsDataFrame`. To illustrate the danger of manipulating `@data` directly, let's see what happens if you try to force `nyc_income` in to `nyc_tracts`.
+
+```{r}
+nyc_income <- readRDS(file = "_data/04_nyc_income.rds")
+
+# Use str() on nyc_income 
+str(nyc_income)
+
+# ...and on nyc_tracts@data
+str(nyc_tracts@data)
+
+# Highlight tract 002201 in nyc_tracts
+plot(nyc_tracts)
+plot(nyc_tracts[nyc_tracts$TRACTCE == "002201", ], 
+     col = "red", add = TRUE)
+     
+# Set nyc_tracts@data to nyc_income
+#nyc_tracts@data <- nyc_income
+
+# Highlight tract 002201 again
+#plot(nyc_tracts)
+#plot(nyc_tracts[nyc_tracts$tract == "002201", ], 
+#     col = "red", add = TRUE)
+```
+
+Notice how the row in the data for tract 002201 no longer corresponds to the right polygon. (I did not run the incorrect code in this case, but it is provided and commented)
+
+**Checking data will match**
+
+Forcing your data into the `data` slot doesn't work because you lose the correct correspondence between rows and spatial objects. How do you add the income data to the polygon data? The `merge()` function in `sp` is designed exactly for this purpose.
+
+You might have seen `merge()` before with data frames. `sp::merge()` has almost the exact same structure, but you pass it a `Spatial***` object and a data frame and it returns a new `Spatial***` object where the data slot is now a merge of the original data slot and the data frame. To do this merge, you'll require both the spatial object and data frame to have a column that contains IDs to match on.
+
+Both `nyc_tracts` and `nyc_income` have columns with tract IDs, so these are great candidates for merging the two datasets. However, it's always a good idea to check that the proposed IDs are unique and that there is a match for every row in both datasets.
+
+Let's check this before moving on to the merge.
+
+```{r}
+# Check for duplicates in nyc_income
+any(duplicated(nyc_income$tract))
+
+# Check for duplicates in nyc_tracts
+any(duplicated(nyc_tracts$TRACTCE))
+
+# Check nyc_tracts in nyc_income
+all((nyc_tracts$TRACTCE %in% nyc_income$tract))
+
+# Check nyc_income in nyc_tracts
+all((nyc_income$tract %in% nyc_tracts$TRACTCE))
+```
+
+Looks like the `tract` column in `nyc_income` and the `TRACTCE` column in `nyc_income` are ideal for merging on.
+
+**Merging data attributes**
+
+`merge()` by default merges based on columns with the same name in both datasets. In your case, this isn't appropriate since the column of IDs is called `tract` in one dataset and `TRACTCE` in the other. To handle this, `merge()` has the optional arguments `by.x` and `by.y`, where you can specify the names of the column to merge on in the two datasets, respectively.
+
+`merge()` returns a new `Spatial___DataFrame` object, so you can take a look at the result by plotting it with `tmap`.
+
+Let's go ahead and merge.
+
+```{r}
+p_load(sp, tmap, rgeos)
+
+# Merge nyc_tracts and nyc_income: nyc_tracts_merge
+nyc_tracts_merge <- merge(nyc_tracts, nyc_income, by.x = "TRACTCE", by.y = "tract")
+
+# Call summary() on nyc_tracts_merge
+summary(nyc_tracts_merge)
+
+# Choropleth with col mapped to estimate
+tm_shape(nyc_tracts_merge) +
+  tm_fill(col = "estimate") 
+```
+
+**A first plot**
+
+So far, you've read in some spatial files, transformed spatial data to the same projection, and merged a data frame with a spatial object. Time to put your work together and see how your map looks. For each dataset, you need a `tm_shape()` call to specify the data source, followed by a `tm_*` layer (like `tm_fill()`, `tm_borders()` or `tm_bubbles()`) to draw on the map.
+
+First, you'll add the neighborhoods and water areas to your plot from the previous exercise.
+
+```{r}
+tm_shape(nyc_tracts_merge) +
+  tm_fill(col = "estimate") +
+  # Add a water layer, tm_fill() with col = "grey90"
+  tm_shape(water) +
+  tm_fill(col = "grey90") +
+  # Add a neighborhood layer, tm_borders()
+  tm_shape(neighborhoods) +
+  tm_borders() 
+```
+
+Looking good, but there are a few tweaks you might make to make it look even better.
+
+**Polishing a map**
+
+- remove distractions, let data shine
+- **useful** spatial context
+- like any plot: check legend, title, and labels for readability
+- add annotations
+  - highlight important points
+  - attribute data sources
+  
+![](_images/351.png)
+
+![](_images/352.png)
+
+**Subsetting the neighborhoods**
+
+You don't need all those extraneous neighborhoods in New York, so you'll subset out just the neighborhoods in New York County. You already know how!
+
+`neighborhoods` is a `SpatialPolygonsDataFrame` and you learned back in Chapter 2 how to subset based on the column in the `data` slot. The key was creating a logical vector, then subsetting the `SpatialPolygonsDataFrame` like a data frame.
+
+How can you identify the right neighborhoods? Check out:
+
+```
+head(neighborhoods@data)
+```
+
+The `CountyFIPS` is a numeric code that identifies the county. If you can figure out the code for New York County, you can keep just the rows with that value.
+
+```{r}
+head(neighborhoods@data)
+
+# Find unique() nyc_tracts_merge$COUNTYFP
+unique(nyc_tracts_merge$COUNTYFP)
+
+# Add logical expression to pull out New York County
+manhat_hoods <- neighborhoods[neighborhoods$CountyFIPS == "061", ]
+
+tm_shape(nyc_tracts_merge) +
+  tm_fill(col = "estimate") +
+  tm_shape(water) +
+  tm_fill(col = "grey90") +
+  # Edit to use manhat_hoods instead
+  tm_shape(manhat_hoods) +
+  tm_borders() +
+  # Add a tm_text() layer
+  tm_text(text = "NTAName")
+```
+
+Except those labels are a bit messy, you'll tidy them up in the next exercise.
+
+**Adding neighborhood labels**
+
+The neighborhood labels are so long and big they are obscuring our data. Take a look at `manhat_hoods$NTAName`. You'll see some neighborhoods are really the combination of a couple of places. One option to make the names a little more concise is to split them into a few lines. For example, turning
+
+```
+Midtown-Midtown South
+```
+
+into
+
+```
+Midtown /
+Midtown 
+South
+```
+
+To do this, you can make use of the `gsub()` function in base R. `gsub()` replaces the first argument by the second argument in the strings provided in the third argument. For example, `gsub("a", "A", x)` replaces all the `"a"`s in `x` with `"A"`.
+
+You also might play with the size of the text to shrink the impact of the neighborhood names.
+
+```{r}
+library(tmap)
+
+# gsub() to replace " " with "\n"
+manhat_hoods$name <- gsub(" ", "\n", manhat_hoods$NTAName)
+
+# gsub() to replace "-" with "/\n"
+manhat_hoods$name <- gsub("-", "/\n", manhat_hoods$name)
+
+# Edit to map text to name, set size to 0.5
+tm_shape(nyc_tracts_merge) +
+    tm_fill(col = "estimate") +
+  tm_shape(water) +
+    tm_fill(col = "grey90") +
+  tm_shape(manhat_hoods) +
+    tm_borders() +
+    tm_text(text = "name", size = 0.5)
+```
+
+Not perfect, but much better!
+
+**Tidying up the legend and some final tweaks**
+
+Time for some final tweaks and then to save your plot.
+
+Every element in your plot is a target for tweaks. Is it the right color? Is it the right size? Does it have intuitive labels? Your goal is to emphasize the data and de-emphasise the non-data elements.
+
+We've got some ideas for this plot. Let's tweak a few things.
+
+```{r}
+tm_shape(nyc_tracts_merge) +
+  # Add title and change palette
+  tm_fill(col = "estimate", 
+          title = "Median Income",
+          palette = "Greens") +
+  # Add tm_borders()
+  tm_borders(col = "grey60", lwd = 0.5) +
+  tm_shape(water) +
+  tm_fill(col = "grey90") +
+  tm_shape(manhat_hoods) +
+  # Change col and lwd of neighborhood boundaries
+  tm_borders(col = "grey40", lwd = 2) +
+  tm_text(text = "name", size = 0.5) +
+  # Add tm_credits()
+  tm_credits("Source: ACS 2014 5-year Estimates, \n accessed via acs package", 
+             position = c("right", "bottom"))
+
+# Save map as "nyc_income_map.png"
+tmap_save(filename = "_images/nyc_income_map.png", width = 4, height = 7)
+```
+
+Take a look at your [final plot](_images/nyc_income_map.png)!
+
+**Wrap up**
+
+![](_images/353.png)
+
+![](_images/354.png)
+
+![](_images/355.png)
+
+**Chapter 4**
+
+- reading in spatial data
+- transforming coordinate systems
+- adding data to `Spatial___DataFrame` objects
+- polishing a map
