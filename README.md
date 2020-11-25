@@ -51,7 +51,7 @@ ___
 - Certificate
 
 #### Spatial Data with R
-1. [visualizing geospatial data in R](https://htmlpreview.github.io/?https://github.com/odenipinedo/R/blob/master/DataCamp/_html/visualizing-geospatial-data-in-R.html)
+1. [visualizing geospatial data in R](https://pinedo.org/R/DataCamp/_html/visualizing-geospatial-data-in-R.html)
 2. spatial analysis with sf and raster in R
 3. spatial statistics in R
 4. interactive maps with leaflet in R
