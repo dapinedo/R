@@ -1,5 +1,4 @@
 # R
-___
 ## Claremont Graduate University
       
 #### Data Wrangling
@@ -14,7 +13,7 @@ ___
 - [Categorical and Non-Parametric Analysis](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Categorical)
 - [Factor Analysis](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Factor)
 - [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/CGU/Statistics/SEM)
-___
+
 ## DataCamp
 
 #### Analyzing Genomic Data in R
@@ -68,7 +67,7 @@ ___
 5. [visualizing time series data in R](https://rpubs.com/odenipinedo/visualizing-time-series-data-in-R)
 6. [case studies - manipulating time series data in R](https://rpubs.com/odenipinedo/case-studies-manipulating-time-series-data-in-R)
 -  [Certificate](https://github.com/odenipinedo/R/blob/master/DataCamp/_certificates/time-series-with-R.pdf)
-___
+
 #### RMarkdown
 - [All .Rmd Files](https://github.com/dapinedo/R/tree/master/DataCamp)
 
