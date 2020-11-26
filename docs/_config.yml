@@ -3,3 +3,6 @@ title: R portfolio
 description: by Daniel Pinedo
 url: "https://pinedo.org/R"
 author: Daniel Pinedo
+
+github:
+  is_project_page: false
