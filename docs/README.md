@@ -1,4 +1,3 @@
-# R
 ## Claremont Graduate University
       
 #### Data Wrangling
