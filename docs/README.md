@@ -1,15 +1,3 @@
----
-title: R
-layout: default
-permalink: /R/
-
-sitemap:
-  priority: 0.7
-  changefreq: 'weekly'
-  lastmod: 2020-11-26
-  exclude: 'no'
----
-
 ## Claremont Graduate University
       
 #### Data Wrangling
