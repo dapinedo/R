@@ -1,5 +1,8 @@
-theme: jekyll-theme-slate
+remote_theme: odenipinedo/name
 title: R Portfolio
 description: by Daniel Pinedo
 url: "https://pinedo.org/R"
 author: Daniel Pinedo
+
+plugins:
+  - jekyll-remote-theme
