@@ -68,6 +68,6 @@
 -  [Certificate](https://github.com/odenipinedo/R/blob/master/DataCamp/_certificates/time-series-with-R.pdf)
 
 #### RMarkdown
-- [All .Rmd Files](https://github.com/dapinedo/R/tree/master/DataCamp)
+- [All Files](https://github.com/dapinedo/R/tree/master/DataCamp)
 
 <!-- comment -->
