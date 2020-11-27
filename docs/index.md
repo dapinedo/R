@@ -8,7 +8,7 @@ sitemap:
   exclude: 'no'
 ---
 
-### Claremont Graduate University
+## CGU
       
 #### Data Wrangling
 - [Taming/Wrangling](https://github.com/dapinedo/R/tree/master/CGU/Taming)
@@ -23,7 +23,7 @@ sitemap:
 - [Factor Analysis](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Factor)
 - [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/CGU/Statistics/SEM)
 
-### DataCamp
+## DataCamp
 
 #### Analyzing Genomic Data in R
 
