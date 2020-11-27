@@ -49,7 +49,7 @@
 - Certificate
 
 #### Spatial Data with R
-1. <a href="https://pinedo.org/R/visualizing-geospatial-data-in-R.html" class="btn" target="_blank" rel="noopener noreferrer">visualizing geospatial data in R</a>
+1. <a href="https://pinedo.org/R/html/visualizing-geospatial-data-in-R.html" class="btn" target="_blank" rel="noopener noreferrer">visualizing geospatial data in R</a>
 2. spatial analysis with sf and raster in R
 3. spatial statistics in R
 4. interactive maps with leaflet in R
