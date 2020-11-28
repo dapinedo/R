@@ -8,7 +8,7 @@ sitemap:
   exclude: 'no'
 ---
 
-## Claremont Graduate University
+## CGU
       
 #### Data Wrangling
 - [Taming/Wrangling](https://github.com/dapinedo/R/tree/master/CGU/Taming)
