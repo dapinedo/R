@@ -10,3 +10,99 @@ knitr::opts_chunk$set(echo = TRUE)
 options(repos="https://CRAN.R-project.org")
 ```
 
+![](_images/356.png)
+
+- Nodes/vertices are connected via edges. a `1` in the adjacency matrix indicates an edge exists between nodes in the matrix
+
+![](_images/357.png)
+
+- each row represents an edge between two individual vertices in each column
+
+![](_images/358.png)
+
+- first number indicates number of vertices (`7`)
+- second number indicates number of edges (`7`)
+- final row shows all edges in the network
+
+![](_images/359.png)
+
+- number and which vertices
+  - `V(g)`
+- number and which edges
+  - `E(g)`
+- number of vertices
+  - `gorder(g)`
+- number of edges
+  - `gsize(g)`
+
+**Creating an igraph object**
+
+Here you will learn how to create an `igraph` 'object' from data stored in an edgelist. The data are friendships in a group of students. You will also learn how to make a basic visualization of the network.
+
+Each row of the friends dataframe represents an edge in the network.
+
+```{r creating-an-igraph-object}
+friends <- read.csv("_data/friends.csv")
+
+# Load igraph
+library(igraph)
+
+# Inspect the first few rows of the dataframe 'friends'
+head(friends)
+
+# Convert friends dataframe to a matrix
+friends.mat <- as.matrix(friends)
+
+# Convert friends matrix to an igraph object
+g <- graph.edgelist(friends.mat, directed = FALSE)
+
+# Make a very basic plot of the network
+plot(g)
+```
+
+**Counting vertices and edges**
+
+A lot of basic information about a network can be extracted from an `igraph` object. In this exercise you will learn how to count the vertices and edges from a network by applying several functions to the graph object `g`.
+
+Each row of the friends dataframe represents an edge in the network.
+
+```{r counting-vertices-and-edges}
+# Subset vertices and edges
+V(g)
+E(g)
+
+# Count number of edges
+gsize(g)
+
+# Count number of vertices
+gorder(g)
+```
+
+**Network attributes**
+
+![](_images/360.png)
+
+- `attr` indicates that this `igraph` object has attribute `name` defined
+
+![](_images/361.png)
+
+- the most common edge attribute is `weight` between edges, with line thickness indicating weights.
+
+![](_images/362.png)
+
+![](_images/363.png)
+
+![](_images/364.png)
+
+**Node attributes and subsetting**
+
+In this exercise you will learn how to add attributes to vertices in the network and view them.
+
+```{r node-attributes-and-subsetting}
+
+```
+
+
+
+
+
