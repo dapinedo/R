@@ -43,7 +43,7 @@ sitemap:
 #### Machine Learning Scientist with R
 
 #### Network Analysis with R
-1. <a href="https://rpubs.com/odenipinedo/network-analysis-in-R.html" target="_blank" rel="noopener noreferrer">network analysis in R</a>
+1. <a href="https://rpubs.com/odenipinedo/network-analysis-in-R" target="_blank" rel="noopener noreferrer">network analysis in R</a>
 2. predictive analytics using networked data in R
 3. network analysis in the tidyverse
 4. case studies: network analysis in R
@@ -69,8 +69,8 @@ sitemap:
 - foundations of probability in R
 
 #### Time Series
-1. [manipulating time series data with xts and zoo in R](https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R)
-2. [time series analysis in R](https://rpubs.com/odenipinedo/time-series-analysis-in-R)
+1. <a href="https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R" target="_blank" rel="noopener noreferrer"> manipulating time series data with xts and zoo in R</a>
+2. <a href="https://rpubs.com/odenipinedo/time-series-analysis-in-R" target="_blank" rel="noopener noreferrer">time series analysis in R</a>
 3. [ARIMA Models in R](https://rpubs.com/odenipinedo/ARIMA-Models-in-R)
 4. [forecasting in R](https://rpubs.com/odenipinedo/forecasting-in-R)
 5. [visualizing time series data in R](https://rpubs.com/odenipinedo/visualizing-time-series-data-in-R)
@@ -80,4 +80,4 @@ sitemap:
 #### RMarkdown
 - [All Files](https://github.com/dapinedo/R/tree/master/DataCamp)
 
-<!-- comment -->
+<!-- <a href="" target="_blank" rel="noopener noreferrer"></a> -->
