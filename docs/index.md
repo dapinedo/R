@@ -43,7 +43,7 @@ sitemap:
 #### Machine Learning Scientist with R
 
 #### Network Analysis with R
-1. <a href="https://pinedo.org/R/visualizing-geospatial-data-in-R.html" target="_blank" rel="noopener noreferrer">network analysis in R</a>
+1. <a href="https://rpubs.com/odenipinedo/network-analysis-in-R.html" target="_blank" rel="noopener noreferrer">network analysis in R</a>
 2. predictive analytics using networked data in R
 3. network analysis in the tidyverse
 4. case studies: network analysis in R
