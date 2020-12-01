@@ -1,0 +1,13 @@
+---
+title: "foundations of probability in R"
+author: "DataCamp - David Robinson"
+date: "11/30/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+**Flipping coins in R**
