@@ -35,7 +35,7 @@ sitemap:
 - Certificate
 
 #### Data Scientist with R
-1. introduction to R
+1. <a href="https://rpubs.com/odenipinedo/introduction-to-R" target="_blank" rel="noopener noreferrer">introduction to R</a>
 2. intermediate R
 3. introduction to the Tidyverse
 4. data manipulation with dplyr
