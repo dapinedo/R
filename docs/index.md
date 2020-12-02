@@ -3,12 +3,12 @@ title: R
 layout: default
 sitemap:
   priority: 0.7
-  changefreq: 'monthly'
-  lastmod: 2020-11-30
+  changefreq: 'weekly'
+  lastmod: 2020-12-01
   exclude: 'no'
 ---
 
-## CGU
+## Claremont Graduate University
       
 #### Data Wrangling
 - [Taming/Wrangling](https://github.com/dapinedo/R/tree/master/CGU/Taming)
