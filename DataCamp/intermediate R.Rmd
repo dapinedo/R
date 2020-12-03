@@ -12,4 +12,500 @@ options(repos="https://CRAN.R-project.org")
 
 **Relational Operators**
 
+![](_images/436.png)
+
+![](_images/437.png)
+
+![](_images/438.png)
+
+![](_images/439.png)
+
+![](_images/440.png)
+
+![](_images/441.png)
+
+**Equality**
+
+The most basic form of comparison is equality. Let's briefly recap its syntax. The following statements all evaluate to TRUE (feel free to try them out in the console).
+
+```
+3 == (2 + 1)
+"intermediate" != "r"
+TRUE != FALSE
+"Rchitect" != "rchitect"
+```
+
+Notice from the last expression that R is case sensitive: "R" is not equal to "r". Keep this in mind when solving the exercises in this chapter!
+
+```{r Equality}
+# Comparison of logicals
+TRUE == FALSE
+
+# Comparison of numerics
+-6 * 14 != 17 - 101
+
+# Comparison of character strings
+"useR" == "user"
+
+# Compare a logical with a numeric
+TRUE == 1
+```
+
+Awesome! Since `TRUE` coerces to `1` under the hood, `TRUE == 1` evaluates to `TRUE`. Make sure not to mix up `==` (comparison) and `=` (assignment), `==` is what you need to check the equality of R objects.
+
+**Greater and less than**
+
+Apart from equality operators, Filip also introduced the *less than* and *greater than* operators: `<` and `>`. You can also add an equal sign to express *less than or equal to* or *greater than or equal to*, respectively. Have a look at the following R expressions, that all evaluate to `FALSE`:
+
+```
+(1 + 2) > 4
+"dog" < "Cats"
+TRUE <= FALSE
+```
+
+Remember that for string comparison, R determines the *greater than* relationship based on alphabetical order. Also, keep in mind that `TRUE` is treated as `1` for arithmetic, and `FALSE` is treated as `0`. Therefore, `FALSE < TRUE` is `TRUE`.
+
+```{r Greater-and-less-than}
+# Comparison of numerics
+-6 * 5 + 2 >= -10 + 1
+
+# Comparison of character strings
+"raining" <= "raining dogs"
+
+# Comparison of logicals
+TRUE > FALSE
+```
+
+Great job! Make sure to have a look at the console output to see if R returns the results you expected.
+
+**Compare vectors**
+
+You are already aware that R is very good with vectors. Without having to change anything about the syntax, R's relational operators also work on vectors.
+
+Let's go back to the example that was started in the video. You want to figure out whether your activity on social media platforms have paid off and decide to look at your results for LinkedIn and Facebook. The sample code in the editor initializes the vectors `linkedin` and `facebook`. Each of the vectors contains the number of profile views your LinkedIn and Facebook profiles had over the last seven days.
+
+```{r Compare-vectors}
+# The linkedin and facebook vectors have already been created for you
+linkedin <- c(16, 9, 13, 5, 2, 17, 14)
+facebook <- c(17, 7, 5, 16, 8, 13, 14)
+
+# Popular days
+linkedin > 15
+
+# Quiet days
+linkedin <= 5
+
+# LinkedIn more popular than Facebook
+linkedin > facebook
+```
+
+Wonderful! Have a look at the console output. Your LinkedIn profile was pretty popular on the sixth day, but less so on the fourth and fifth day.
+
+**Compare matrices**
+
+R's ability to deal with different data structures for comparisons does not stop at vectors. Matrices and relational operators also work together seamlessly!
+
+Instead of in vectors (as in the previous exercise), the LinkedIn and Facebook data is now stored in a matrix called `views`. The first row contains the LinkedIn information; the second row the Facebook information. The original vectors `facebook` and `linkedin` are still available as well.
+
+```{r Compare-matrices}
+# The social data has been created for you
+linkedin <- c(16, 9, 13, 5, 2, 17, 14)
+facebook <- c(17, 7, 5, 16, 8, 13, 14)
+views <- matrix(c(linkedin, facebook), nrow = 2, byrow = TRUE)
+
+# When does views equal 13?
+views == 13
+
+# When is views less than or equal to 14?
+views <= 14
+```
+
+This exercise concludes the part on comparators. Now that you know how to query the relation between R objects, the next step will be to use the results to alter the behavior of your programs. Find out all about that in the next video!
+
+**Logical Operators**
+
+- AND operator `&`
+- OR operator `|`
+- NOT operator `!`
+
+![](_images/442.png)
+
+![](_images/443.png)
+
+![](_images/444.png)
+
+![](_images/445.png)
+
+![](_images/446.png)
+
+- single sign evaluates each element of vector, while double sign only evaluates first elemenrt of vector
+
+**& and |**
+
+Before you work your way through the next exercises, have a look at the following R expressions. All of them will evaluate to `TRUE`:
+
+```
+TRUE & TRUE
+FALSE | TRUE
+5 <= 5 & 2 < 3
+3 < 4 | 7 < 6
+```
+
+Watch out: `3 < x < 7` to check if `x` is between 3 and 7 will not work; you'll need `3 < x & x < 7` for that.
+
+In this exercise, you'll be working with the `last` variable. This variable equals the last value of the `linkedin` vector that you've worked with previously. The `linkedin` vector represents the number of LinkedIn views your profile had in the last seven days, remember? Both the variables `linkedin` and `last` have already been defined in the editor.
+
+```{r &-and-|}
+# The linkedin and last variable are already defined for you
+linkedin <- c(16, 9, 13, 5, 2, 17, 14)
+last <- tail(linkedin, 1)
+
+# Is last under 5 or above 10?
+last < 5 | last > 10
+
+# Is last between 15 (exclusive) and 20 (inclusive)?
+last > 15 & last <= 20
+```
+
+Great! Have one last look at the console before proceeding; do the results of the different expressions make sense?
+
+**& and | (2)**
+
+Like relational operators, logical operators work perfectly fine with vectors and matrices.
+
+Both the vectors `linkedin` and `facebook` are available again. Also a matrix - `views` - has been defined; its first and second row correspond to the `linkedin` and `facebook` vectors, respectively. Ready for some advanced queries to gain more insights into your social outreach?
+
+```{r &-and-|-(2)}
+# The social data (linkedin, facebook, views) has been created for you
+
+# linkedin exceeds 10 but facebook below 10
+linkedin > 10 & facebook < 10
+
+# When were one or both visited at least 12 times?
+linkedin >= 12 | facebook >= 12
+
+# When is views between 11 (exclusive) and 14 (inclusive)?
+views > 11 & views <= 14
+```
+
+Bravo! You'll have noticed how easy it is to use logical operators to vectors and matrices. What do these results tell us? The third day of the recordings was the only day where your LinkedIn profile was visited more than 10 times, while your Facebook profile wasn't. Can you draw similar conclusions for the other results?
+
+**Blend it all together**
+
+With the things you've learned by now, you're able to solve pretty cool problems.
+
+Instead of recording the number of views for your own LinkedIn profile, suppose you conducted a survey inside the company you're working for. You've asked every employee with a LinkedIn profile how many visits their profile has had over the past seven days. You stored the results in a data frame called `li_df`. This data frame is available in the workspace; type `li_df` in the console to check it out.
+
+```
+# li_df is pre-loaded in your workspace
+head(li_df)
+dim(li_df)
+```
+```
+           day1 day2 day3 day4 day5 day6 day7
+employee_1    2    3    3    6    4    2    0
+employee_2   19   23   18   22   23   29   25
+employee_3   24   18   15   19   18   22   17
+employee_4   22   18   27   26   19   21   25
+employee_5   25   25   26   31   24   36   37
+employee_6   22   20   29   26   23   22   29
+
+[1] 50  7
+```
+```
+# Select the second column, named day2, from li_df: second
+second <- li_df$day2
+
+# Build a logical vector, TRUE if value in second is extreme: extremes
+extremes <- second > 25 | second < 5
+
+# Count the number of TRUEs in extremes
+sum(extremes)
+```
+```
+[1] 16
+```
+
+Great! Head over to the next video and learn how relational and logical operators can be used to alter the flow of your R scripts.
+
+**Conditional Statements**
+
+![](_images/447.png)
+
+![](_images/448.png)
+
+![](_images/449.png)
+
+![](_images/450.png)
+
+**The if statement**
+
+Before diving into some exercises on the if statement, have another look at its syntax:
+
+```
+if (condition) {
+  expr
+}
+```
+
+Remember your vectors with social profile views? Let's look at it from another angle. The `medium` variable gives information about the social website; the `num_views` variable denotes the actual number of views that particular `medium` had on the last day of your recordings. Both these variables have already been defined in the editor.
+
+```{r The-if-statement}
+# Variables related to your last day of recordings
+medium <- "LinkedIn"
+num_views <- 14
+
+# Examine the if statement for medium
+if (medium == "LinkedIn") {
+  print("Showing LinkedIn information")
+}
+
+# Write the if statement for num_views
+if (num_views > 15) {
+  print("You are popular!")
+}
+```
+
+Great! Try to see what happens if you change the `medium` and `num_views` variables and run your code again. Let's further customize these if statements in the next exercise.
+
+**Add an else**
+
+You can only use an `else` statement in combination with an `if` statement. The `else` statement does not require a condition; its corresponding code is simply run if all of the preceding conditions in the control structure are `FALSE`. Here's a recipe for its usage:
+
+```
+if (condition) {
+  expr1
+} else {
+  expr2
+}
+```
+
+*It's important that the* `else` *keyword comes on the same line as the closing bracket of the* `if` *part!*
+
+Both `if` statements that you coded in the previous exercises are already available in the editor. It's now up to you to extend them with the appropriate `else` statements!
+
+```{r Add-an-else}
+# Variables related to your last day of recordings
+medium <- "LinkedIn"
+num_views <- 14
+
+# Control structure for medium
+if (medium == "LinkedIn") {
+  print("Showing LinkedIn information")
+} else {
+  print("Unknown medium")
+}
+
+# Control structure for num_views
+if (num_views > 15) {
+  print("You're popular!")
+} else {
+  print("Try to be more visible!")
+}
+```
+
+Great job! You also had Facebook information available, remember? Time to add some more statements to our control structures using `else if`!
+
+**Customize further: else if**
+
+The `else if` statement allows you to further customize your control structure. You can add as many `else if` statements as you like. Keep in mind that R ignores the remainder of the control structure once a condition has been found that is `TRUE` and the corresponding expressions have been executed. Here's an overview of the syntax to freshen your memory:
+
+```
+if (condition1) {
+  expr1
+} else if (condition2) {
+  expr2
+} else if (condition3) {
+  expr3
+} else {
+  expr4
+}
+```
+
+*Again, It's important that the* `else if` *keywords comes on the same line as the closing bracket of the previous part of the control construct!*
+
+```{r Customize-further:-else-if}
+# Variables related to your last day of recordings
+medium <- "LinkedIn"
+num_views <- 14
+
+# Control structure for medium
+if (medium == "LinkedIn") {
+  print("Showing LinkedIn information")
+} else if (medium == "Facebook") {
+  # Add code to print correct string when condition is TRUE
+  print("Showing Facebook information")
+} else {
+  print("Unknown medium")
+}
+
+# Control structure for num_views
+if (num_views > 15) {
+  print("You're popular!")
+} else if (num_views <= 15 & num_views > 10) {
+  # Add code to print correct string when condition is TRUE
+  print("Your number of views is average")
+} else {
+  print("Try to be more visible!")
+}
+```
+
+Awesome! Have another look at the second control structure. Because R abandons the control flow as soon as it finds a condition that is met, you can simplify the condition for the `else if` part in the second construct to `num_views > 10`.
+
+**Take control!**
+
+In this exercise, you will combine everything that you've learned so far: relational operators, logical operators and control constructs. You'll need it all!
+
+In the editor, we've coded two values beforehand: `li` and `fb`, denoting the number of profile views your LinkedIn and Facebook profile had on the last day of recordings. Go through the instructions to create R code that generates a 'social media score', `sms`, based on the values of `li` and `fb`.
+
+```{r Take-control!}
+# Variables related to your last day of recordings
+li <- 15
+fb <- 9
+
+# Code the control-flow construct
+if (li >= 15 & fb >= 15) {
+  sms <- 2 * (li + fb)
+} else if (li < 10 & fb < 10) {
+  sms <- 0.5 * (li + fb)
+} else {
+  sms <- li + fb
+}
+
+# Print the resulting sms to the console
+sms
+```
+
+Bellissimo! Feel free to play around some more with your solution by changing the values of `li` and `fb`.
+
+**While loop**
+
+![](_images/451.png)
+
+![](_images/452.png)
+
+![](_images/453.png)
+
+**Write a while loop**
+
+Let's get you started with building a `while` loop from the ground up. Have another look at its recipe:
+
+```
+while (condition) {
+  expr
+}
+```
+
+Remember that the `condition` part of this recipe should become `FALSE` at some point during the execution. Otherwise, the `while` loop will go on indefinitely.
+
+*If your session expires when you run your code, check the body of your* `while` *loop carefully.*
+
+```{r Write-a-while-loop}
+# Initialize the speed variable
+speed <- 64
+
+# Code the while loop
+while (speed > 30) {
+  print("Slow down!")
+  speed <- speed - 7
+}
+
+# Print out the speed variable
+speed
+```
+
+**Throw in more conditionals**
+
+In the previous exercise, you simulated the interaction between a driver and a driver's assistant: When the speed was too high, "Slow down!" got printed out to the console, resulting in a decrease of your speed by 7 units.
+
+There are several ways in which you could make your driver's assistant more advanced. For example, the assistant could give you different messages based on your speed or provide you with a current speed at a given moment.
+
+A `while` loop similar to the one you've coded in the previous exercise is already available in the editor. It prints out your current speed, but there's no code that decreases the `speed` variable yet, which is pretty dangerous. Can you make the appropriate changes?
+
+```{r Throw-in-more-conditionals}
+# Initialize the speed variable
+speed <- 64
+
+# Extend/adapt the while loop
+while (speed > 30) {
+  print(paste("Your speed is", speed))
+  if (speed > 48) {
+    print("Slow down big time!")
+    speed <- speed - 11
+  } else {
+    print("Slow down!")
+    speed <- speed - 6
+  }
+}
+```
+
+Wonderful! To further improve our driver assistant model, head over to the next exercise!
+
+**Stop the while loop: break**
+
+There are some very rare situations in which severe speeding is necessary: what if a hurricane is approaching and you have to get away as quickly as possible? You don't want the driver's assistant sending you speeding notifications in that scenario, right?
+
+This seems like a great opportunity to include the `break` statement in the `while` loop you've been working on. Remember that the `break` statement is a control statement. When R encounters it, the `while` loop is abandoned completely.
+
+```{r Stop-the-while-loop:-break}
+# Initialize the speed variable
+speed <- 88
+
+while (speed > 30) {
+  print(paste("Your speed is", speed))
+  
+  # Break the while loop when speed exceeds 80
+  if (speed > 80) {
+    break
+  }
+  
+  if (speed > 48) {
+    print("Slow down big time!")
+    speed <- speed - 11
+  } else {
+    print("Slow down!")
+    speed <- speed - 6
+  }
+}
+```
+
+Wonderful! Now that you've correctly solved this exercise, feel free to play around with different values of `speed` to see how the `while` loop handles the different cases.
+
+**Build a while loop from scratch**
+
+The previous exercises guided you through developing a pretty advanced `while` loop, containing a `break` statement and different messages and updates as determined by control flow constructs. If you manage to solve this comprehensive exercise using a `while` loop, you're totally ready for the next topic: the `for` loop.
+
+```{r Build-a-while-loop-from-scratch}
+# Initialize i as 1 
+i <- 1
+
+# Code the while loop
+while (i <= 10) {
+  print(3 * i)
+  if ( (3 * i) %% 8 == 0) {
+    break
+  }
+  i <- i + 1
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
