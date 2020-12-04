@@ -36,7 +36,7 @@ sitemap:
 
 #### Data Scientist with R
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-R" target="_blank" rel="noopener noreferrer">introduction to R</a>
-2. intermediate R
+2. <a href="https://rpubs.com/odenipinedo/intermediate-R" target="_blank" rel="noopener noreferrer">intermediate R</a>
 3. introduction to the Tidyverse
 4. data manipulation with dplyr
 5. joining data with dplyr
