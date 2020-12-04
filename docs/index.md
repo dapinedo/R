@@ -38,7 +38,7 @@ sitemap:
 #### Data Scientist with R
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-R" target="_blank" rel="noopener noreferrer">introduction to R</a>
 2. <a href="https://rpubs.com/odenipinedo/intermediate-R" target="_blank" rel="noopener noreferrer">intermediate R</a>
-3. introduction to the Tidyverse
+3. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
 4. data manipulation with dplyr
 5. joining data with dplyr
 6. <a href="https://rpubs.com/odenipinedo/introduction-to-data-visualization-with-ggplot2" target="_blank" rel="noopener noreferrer">introduction to data visualization with ggplot2</a>
@@ -75,7 +75,7 @@ sitemap:
 - Certificate
 
 #### R Programmer
-1. introduction to the Tidyverse
+1. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
 2. project: Dr. Semmelweis and the discovery of handwashing
 3. data manipulation with dplyr
 4. writing efficient R code
