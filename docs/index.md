@@ -10,7 +10,7 @@ sitemap:
 ## Claremont Graduate University
       
 #### Data Wrangling
-- <a href="https://github.com/dapinedo/R/tree/master/CGU/Taming" target="_blank" rel="noopener noreferrer"></a><a href="" target="_blank" rel="noopener noreferrer">Taming/Wrangling</a>
+- <a href="https://github.com/dapinedo/R/tree/master/CGU/Taming" target="_blank" rel="noopener noreferrer">Taming/Wrangling</a>
 
 #### Networks
 - <a href="https://github.com/dapinedo/R/tree/master/CGU/Networks/Correlational" target="_blank" rel="noopener noreferrer">Correlational Network Analysis</a>
