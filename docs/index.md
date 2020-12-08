@@ -7,21 +7,20 @@ sitemap:
   lastmod: 2020-12-01
   exclude: 'no'
 ---
-
 ## Claremont Graduate University
       
 #### Data Wrangling
-- [Taming/Wrangling](https://github.com/dapinedo/R/tree/master/CGU/Taming)
+- <a href="https://github.com/dapinedo/R/tree/master/CGU/Taming" target="_blank" rel="noopener noreferrer">Taming/Wrangling</a>
 
 #### Networks
-- [Correlational Network Analysis](https://github.com/dapinedo/R/tree/master/CGU/Networks/Correlational)
+- <a href="https://github.com/dapinedo/R/tree/master/CGU/Networks/Correlational" target="_blank" rel="noopener noreferrer">Correlational Network Analysis</a>
 
 #### Psych Stats
-- [T Tests & ANOVA](https://github.com/dapinedo/R/tree/master/CGU/Statistics/ANOVA)
-- [Multiple Regression](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Regression)
-- [Categorical and Non-Parametric Analysis](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Categorical)
-- [Factor Analysis](https://github.com/dapinedo/R/tree/master/CGU/Statistics/Factor)
-- [Structural Equation Modeling](https://github.com/dapinedo/R/tree/master/CGU/Statistics/SEM)
+1. <a href="https://github.com/dapinedo/R/tree/master/CGU/Statistics/ANOVA" target="_blank" rel="noopener noreferrer">T Tests & ANOVA</a>
+2. <a href="https://github.com/dapinedo/R/tree/master/CGU/Statistics/Regression" target="_blank" rel="noopener noreferrer">Multiple Regression</a>
+3. <a href="https://github.com/dapinedo/R/tree/master/CGU/Statistics/Categorical" target="_blank" rel="noopener noreferrer">Categorical and Non-Parametric Analysis</a>
+4. <a href="https://github.com/dapinedo/R/tree/master/CGU/Statistics/Factor" target="_blank" rel="noopener noreferrer">Factor Analysis</a>
+5. <a href="https://github.com/dapinedo/R/tree/master/CGU/Statistics/SEM" target="_blank" rel="noopener noreferrer">Structural Equation Modeling</a>
 
 ## DataCamp
 
@@ -39,7 +38,7 @@ sitemap:
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-R" target="_blank" rel="noopener noreferrer">introduction to R</a>
 2. <a href="https://rpubs.com/odenipinedo/intermediate-R" target="_blank" rel="noopener noreferrer">intermediate R</a>
 3. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
-4. data manipulation with dplyr
+4. <a href="https://rpubs.com/odenipinedo/data-manipulation-with-dplyr" target="_blank" rel="noopener noreferrer">data manipulation with dplyr</a>
 5. joining data with dplyr
 6. <a href="https://rpubs.com/odenipinedo/introduction-to-data-visualization-with-ggplot2" target="_blank" rel="noopener noreferrer">introduction to data visualization with ggplot2</a>
 7. intermediate data visualization with ggplot2
@@ -77,7 +76,7 @@ sitemap:
 #### R Programmer
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
 2. project: Dr. Semmelweis and the discovery of handwashing
-3. data manipulation with dplyr
+3. <a href="https://rpubs.com/odenipinedo/data-manipulation-with-dplyr" target="_blank" rel="noopener noreferrer">data manipulation with dplyr</a>
 4. writing efficient R code
 5. working with dates and times in R
 6. project: drunken datetimes in Ames, Iowa
@@ -126,13 +125,13 @@ sitemap:
 #### Time Series
 1. <a href="https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R" target="_blank" rel="noopener noreferrer"> manipulating time series data with xts and zoo in R</a>
 2. <a href="https://rpubs.com/odenipinedo/time-series-analysis-in-R" target="_blank" rel="noopener noreferrer">time series analysis in R</a>
-3. [ARIMA Models in R](https://rpubs.com/odenipinedo/ARIMA-Models-in-R)
-4. [forecasting in R](https://rpubs.com/odenipinedo/forecasting-in-R)
-5. [visualizing time series data in R](https://rpubs.com/odenipinedo/visualizing-time-series-data-in-R)
-6. [case studies - manipulating time series data in R](https://rpubs.com/odenipinedo/case-studies-manipulating-time-series-data-in-R)
--  [Certificate](https://github.com/odenipinedo/R/blob/master/DataCamp/_certificates/time-series-with-R.pdf)
+3. <a href="https://rpubs.com/odenipinedo/ARIMA-Models-in-R" target="_blank" rel="noopener noreferrer">ARIMA Models in R</a>
+4. <a href="https://rpubs.com/odenipinedo/forecasting-in-R" target="_blank" rel="noopener noreferrer">forecasting in R</a>
+5. <a href="https://rpubs.com/odenipinedo/visualizing-time-series-data-in-R" target="_blank" rel="noopener noreferrer">visualizing time series data in R</a>
+6. <a href="https://rpubs.com/odenipinedo/case-studies-manipulating-time-series-data-in-R" target="_blank" rel="noopener noreferrer">case studies - manipulating time series data in R</a>
+-  <a href="https://github.com/odenipinedo/R/blob/master/DataCamp/_certificates/time-series-with-R.pdf" target="_blank" rel="noopener noreferrer">Certificate</a>
 
 #### RMarkdown
-- [All Files](https://github.com/dapinedo/R/tree/master/DataCamp)
+- <a href="https://github.com/dapinedo/R/tree/master/DataCamp" target="_blank" rel="noopener noreferrer">All Files</a>
 
 <!-- <a href="" target="_blank" rel="noopener noreferrer"></a> -->
