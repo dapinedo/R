@@ -55,7 +55,8 @@ sitemap:
 17. supervised learning in R: regression
 18. unsupervised learning in R
 19. cluster analysis in R
-
+- Certificate
+  
 #### Epidemiology
 1. <a href="https://rpubs.com/odenipinedo/survival-analysis-in-R" target="_blank" rel="noopener noreferrer">survival analysis in R</a>
      - <a href="https://github.com/odenipinedo/R/blob/master/DataCamp/_certificates/survival-analysis-in-R.pdf" target="_blank" rel="noopener noreferrer">Certificate</a>
@@ -90,6 +91,7 @@ sitemap:
 13. defensive R programming
 14. developing R packages
 15. object-oriented programming with S3 and R6 in R
+- Certificate
 
 #### Shiny Fundamentals with R
 1. <a href="https://rpubs.com/odenipinedo/building-web-applications-with-Shiny-in-R" target="_blank" rel="noopener noreferrer">building web applications with Shiny in R</a>
@@ -120,6 +122,7 @@ sitemap:
 12. linear algebra for data science in R
 13. inference for categorical data in R
 14. Bayesian modeling with RJAGS
+- Certificate
 
 #### Text Mining with R
 
