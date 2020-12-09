@@ -40,7 +40,7 @@ sitemap:
 2. <a href="https://rpubs.com/odenipinedo/intermediate-R" target="_blank" rel="noopener noreferrer">intermediate R</a>
 3. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
 4. <a href="https://rpubs.com/odenipinedo/data-manipulation-with-dplyr" target="_blank" rel="noopener noreferrer">data manipulation with dplyr</a>
-5. joining data with dplyr
+5. <a href="https://rpubs.com/odenipinedo/joining-data-with-dplyr" target="_blank" rel="noopener noreferrer">joining data with dplyr</a>
 6. <a href="https://rpubs.com/odenipinedo/introduction-to-data-visualization-with-ggplot2" target="_blank" rel="noopener noreferrer">introduction to data visualization with ggplot2</a>
 7. intermediate data visualization with ggplot2
 8. introduction to importing data in R
