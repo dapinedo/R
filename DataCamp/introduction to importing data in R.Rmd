@@ -583,7 +583,88 @@ Nice job! This is about as complicated as the [read_excel()](https://cran.r-proj
 
 ## gdata
 
+**gdata**
 
+- Gregory Warnes
+- entire suite of tools for data manipulation
+- supercharges basic R
+- `read.xls()`
+- support for XLS
+- support for XLSX with additional driver
+- no `readxl::excel_sheets()` equivalent
+
+![](_images/644.png)
+
+**Import a local file**
+
+In this part of the chapter you'll learn how to import `.xls` files using the `gdata` package. Similar to the `readxl` package, you can import single Excel sheets from Excel sheets to start your analysis in R.
+
+You'll be working with the [urbanpop.xls](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xls) dataset, the `.xls` version of the Excel file you've been working with before. It's available in your current working directory.
+
+```{r}
+# Load the gdata package
+library(gdata)
+perl_path <- "C:/Strawberry/perl/bin/perl.exe"
+
+# Import the second sheet of urbanpop.xls: urban_pop
+urban_pop <- read.xls("_data/urbanpop.xls", sheet = "1967-1974", perl = perl_path)
+
+# Print the first 11 observations using head()
+head(urban_pop, n = 11)
+```
+
+Congratulations! There seems to be a lot of missing data, but [read.xls()](http://www.rdocumentation.org/packages/gdata/functions/read.xls) knows how to handle it. In the next exercise you will learn which arguments you can use in `read.xls()`.
+
+**read.xls() wraps around read.table()**
+
+Remember how [read.xls()](http://www.rdocumentation.org/packages/gdata/functions/read.xls) actually works? It basically comes down to two steps: converting the Excel file to a `.csv` file using a Perl script, and then reading that `.csv` file with the [read.csv()](http://www.rdocumentation.org/packages/utils/functions/read.table) function that is loaded by default in R, through the `utils` package.
+
+This means that all the options that you can specify in [read.csv()](http://www.rdocumentation.org/packages/utils/functions/read.table), can also be specified in [read.xls()](http://www.rdocumentation.org/packages/gdata/functions/read.xls).
+
+The [urbanpop.xls](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xls) dataset is already available in your workspace. It's still comprised of three sheets, and has column names in the first row of each sheet.
+
+```{r}
+# The gdata package is already loaded
+
+# Column names for urban_pop
+columns <- c("country", paste0("year_", 1967:1974))
+
+# Finish the read.xls call
+urban_pop <- read.xls("_data/urbanpop.xls", sheet = 2,
+                      skip = 50, header = FALSE, stringsAsFactors = FALSE,
+                      col.names = columns,
+                      perl = perl_path)
+
+# Print first 10 observation of urban_pop
+head(urban_pop, n = 10)
+```
+
+**Work that Excel data!**
+
+Now that you can read in Excel data, let's try to clean and merge it. You already used the [cbind()](http://www.rdocumentation.org/packages/base/functions/cbind) function some exercises ago. Let's take it one step further now.
+
+The [urbanpop.xls](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xls) dataset is available in your working directory. The file still contains three sheets, and has column names in the first row of each sheet.
+
+```{r}
+# Import all sheets from urbanpop.xls
+path <- "_data/urbanpop.xls"
+urban_sheet1 <- read.xls(path, perl = perl_path, sheet = 1, stringsAsFactors = FALSE)
+urban_sheet2 <- read.xls(path, perl = perl_path, sheet = 2, stringsAsFactors = FALSE)
+urban_sheet3 <- read.xls(path, perl = perl_path, sheet = 3, stringsAsFactors = FALSE)
+
+# Extend the cbind() call to include urban_sheet3: urban_all
+urban <- cbind(urban_sheet1, urban_sheet2[-1], urban_sheet3[-1])
+
+# Remove all rows with NAs from urban: urban_clean
+urban_clean <- na.omit(urban)
+
+# Print out a summary of urban_clean
+summary(urban_clean)
+```
+
+Awesome! Time for something totally different: `XLConnect`.
+
+## Reading sheets
 
 
 
