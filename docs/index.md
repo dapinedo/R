@@ -31,7 +31,7 @@ sitemap:
 
 #### Data Visualization with R
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-data-visualization-with-ggplot2" target="_blank" rel="noopener noreferrer">introduction to data visualization with ggplot2</a>
-2. intermediate data visualization with ggplot2
+2. <a href="https://rpubs.com/odenipinedo/intermediate-data-visualization-with-ggplot2" target="_blank" rel="noopener noreferrer">intermediate data visualization with ggplot2</a>
 3. visualization best practices in R
 - Certificate
 
@@ -42,7 +42,7 @@ sitemap:
 4. <a href="https://rpubs.com/odenipinedo/data-manipulation-with-dplyr" target="_blank" rel="noopener noreferrer">data manipulation with dplyr</a>
 5. <a href="https://rpubs.com/odenipinedo/joining-data-with-dplyr" target="_blank" rel="noopener noreferrer">joining data with dplyr</a>
 6. <a href="https://rpubs.com/odenipinedo/introduction-to-data-visualization-with-ggplot2" target="_blank" rel="noopener noreferrer">introduction to data visualization with ggplot2</a>
-7. intermediate data visualization with ggplot2
+7. <a href="https://rpubs.com/odenipinedo/intermediate-data-visualization-with-ggplot2" target="_blank" rel="noopener noreferrer">intermediate data visualization with ggplot2</a>
 8. introduction to importing data in R
 9. intermediate importing data in R
 10. cleaning data in R
