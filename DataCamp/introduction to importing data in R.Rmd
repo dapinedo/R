@@ -1,0 +1,25 @@
+---
+title: "Introduction to Importing Data in R"
+author: "DataCamp - Filip Schouwenaars"
+date: "12/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## Introduction & read.csv
+
+![](_images/627.png)
+
+
+
+
+
+
+
+
+
+
