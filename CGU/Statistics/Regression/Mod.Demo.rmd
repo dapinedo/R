@@ -1,0 +1,143 @@
+---
+title: "Moderation Analysis in Multiple Regression"
+author: "Conway"
+output:
+  html_document: default
+  pdf_document: default
+---
+  
+  <!-- LEAVE THIS HERE, DO NOT PUT ANY CODE ABOVE IT -->
+```{r, echo=FALSE, results=FALSE, message=FALSE, cache=FALSE}
+library(knitr); opts_chunk$set(error=TRUE, cache=FALSE)
+```
+
+*Prompt*
+----------
+Suppose a clinical psychologist wanted to test the hypothesis that among teenagers, state anxiety moderates the relationship between neuroticism and depression. The psychologist conducts a correlational study of 231 teenagers in a high school in the Midwest.
+
+*Variables:*
+bdi = Beck Depression Inventory
+epiNeur = Neuroticism from Eysenck Personality Inventory
+stateanx = state anxiety
+
+*Data:*
+These data are open source and available in R
+From the console, View(epi.bfi)
+
+```{r}
+
+# Load packages
+library(pacman)
+p_load(psych, jmv, car, rockchalk)
+# rockchalk is used for figure
+
+# Create dataframe
+dat <- epi.bfi
+
+```
+
+```{r}
+# Descriptive statistics
+
+desc <- descriptives(data = dat, 
+                     vars = c('bdi', 'epiNeur', 'stateanx'), 
+                     sd = TRUE, 
+                     skew = TRUE, 
+                     kurt = TRUE)
+desc
+
+# Correlations of all variables in this dataset
+round(cor(dat), 2)
+
+# Correlations for this analysis
+corvars <- c("bdi", "epiNeur", "stateanx")
+newdat <- dat[corvars]
+round(cor(newdat), 2)
+
+```
+
+```{r}
+# Multiple regression, No moderation
+# REMEMBER: Coefficient estimate for one predictor is slope across average of other predictors.
+
+model1 <- linReg(data = dat, 
+                 dep = 'bdi', 
+                 covs = c('epiNeur', 'stateanx'),
+                 blocks = list('epiNeur', 'stateanx'), 
+                 modelTest = TRUE, 
+                 r2Adj = TRUE,
+                 stdEst = TRUE,
+                 ciStdEst = TRUE)
+model1
+
+```
+
+```{r}
+# Multiple regression with Moderation
+# REMEMBER: Coefficient estimate for one predictor is slope across average of other predictors.
+#F test tests null hypothesis that null hypothesis is zero (is square of t score of product term)
+#T test test null hypothesis that product term is zero
+
+dat$mod <- dat$epiNeur * dat$stateanx
+
+model2 <- linReg(data = dat, 
+                 dep = 'bdi', 
+                 covs = c('epiNeur', 'stateanx', 'mod'),
+                 blocks = list(
+                            list('epiNeur', 'stateanx'), 
+                            list('mod') ), 
+                 modelTest = TRUE, 
+                 r2Adj = TRUE,
+                 stdEst = TRUE,
+                 ciStdEst = TRUE)
+model2
+
+```
+
+```{r}
+# Hierarchical regression with model comparison (R2 change when adding moderator)
+
+modelcomp <- linReg(data = dat, 
+                    dep = 'bdi', 
+                    covs = c('epiNeur', 'stateanx', 'mod'),
+                    blocks = list(
+                      list('epiNeur', 'stateanx'), 
+                      list('mod')), 
+                    modelTest = TRUE,
+                    r2Adj = TRUE,
+                    stdEst = TRUE)
+modelcomp
+
+```
+
+```{r}
+# Moderation analysis with centered predictors
+
+dat$epiNeur.c <- dat$epiNeur - mean(dat$epiNeur)
+dat$stateanx.c <- dat$stateanx - mean(dat$stateanx)
+dat$mod.c <- dat$epiNeur.c * dat$stateanx.c
+
+modelcomp.c <- linReg(data = dat, 
+                      dep = 'bdi', 
+                      covs = c('epiNeur.c', 'stateanx.c', 'mod.c'),
+                      blocks = list(
+                        list('epiNeur.c', 'stateanx.c'), 
+                        list('mod.c')), 
+                      modelTest = TRUE, 
+                      r2Adj = TRUE,
+                      stdEst = TRUE,
+                      ciStdEst = TRUE)
+modelcomp.c
+
+# Graph it
+# moderator is represented on the plot line that is in the legend
+# high state anxiety "exaggerates" the relationship between neuroticism and beck depression inventory
+plot1 <- lm(bdi ~ epiNeur + stateanx + (epiNeur*stateanx), data = dat)
+plotSlopes(plot1, plotx = "epiNeur", modx = "stateanx", modxVals = "std.dev.", main = "Moderation Analysis")
+
+plot2 <- lm(bdi ~ epiNeur.c + stateanx.c + (epiNeur.c*stateanx.c), data = dat)
+plotSlopes(plot2, plotx = "epiNeur.c", modx = "stateanx.c", modxVals = "std.dev.", main = "Moderation Analysis")
+
+
+```
+

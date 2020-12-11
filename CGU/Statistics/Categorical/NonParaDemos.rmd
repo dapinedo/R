@@ -1,0 +1,313 @@
+---
+title: "Non-Parametric Demos"
+author: "Sir Stats McStatserson III"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Demo 1 - Independent t-test**
+
+A researcher wants to investigate the Imagined Contact Hypothesis using a replication on an online platform (Turner, Crisp, & Lambert, 2007). The study recruits individuals to either read a positive imaginative scenario of a disliked outgroup or a neutral one. Following, outgroup anxiety is measued using a 10-point Likert scale. The researcher is interested in figuring out if the results of the original study hold up - that imaginging positive contact with a negative outgroup reduces outgroup anxiety compared to a control group.
+
+
+```{r}
+
+# Load data and libraries
+dat <- read.csv('https://www.dropbox.com/s/ek205h95ssjxt7w/NonParaDemo1.csv?dl=1')
+
+library(pacman)
+p_load(jmv, psych, car, effsize)
+```
+
+```{r}
+
+# Descriptives
+desc <-descriptives(dat, 
+                    vars = c('GrpAnx'), 
+                    sd = TRUE, 
+                    range = TRUE, 
+                    min = TRUE, 
+                    max = TRUE, 
+                    skew = TRUE, 
+                    kurt = TRUE,
+                    hist = TRUE)
+desc
+
+# Descriptives by Condition
+descriptives(data = dat,
+             vars = 'GrpAnx',
+             splitBy = 'Condition',
+             sd = TRUE, 
+             min = TRUE,
+             max = TRUE,
+             skew = TRUE,
+             kurt = TRUE, 
+             hist = TRUE)
+
+hist(dat$GrpAnx [dat$Condition== 'Control'])
+hist(dat$GrpAnx [dat$Condition== 'Positive'])
+```
+
+
+```{r}
+
+# Mann-Whitney test (with Levene's)
+test <- ttestIS(data = dat, 
+                vars = 'GrpAnx',      # DV
+                group = 'Condition',  # IV
+                mann = TRUE,          # Mann-Whitney U
+                eqv = TRUE,           # Levene's test
+                meanDiff = FALSE, 
+                effectSize = FALSE)   # Cohen's d
+test
+
+```
+
+```{r}
+# Cliff's Delta (non-parametric effect size) - a more robust version of Cohen's d which considers the ordinal nature, as opposed to interval, of most behavioral science and psych data (e.g., Likert scale). It is more powerful under conditions such as skewed distributions, etc. Essentially, it computes the dominance (overlap between two distributions) based on the probability that a selected score in Group 1 being greater than Group 2 minus the probability of a selected score in Group 1 being less than Group 2 divided by the product of the n of Group 1 and Group 2. The value range is between -1.0 and +1.0, where anything closer to the absolute value of 1 is no overlap (good) and closer to 0 is complete overlap (not so good).
+
+cliff.delta(GrpAnx ~ Condition, data = dat, conf.level = .95, magnitude = TRUE, method = "Cliff's Delta")
+
+# Because this package is nice - it gives you the Delta estimate and an interpretation. We can see that it's a super large effect size. If you were to cautiously compare this is the Cohen's d of 3.55 (which is scary large), then this would make sense. 
+```
+
+**Demo 2 - Independent t-test**
+
+A local school believes the 2nd grade students are the happiest when they come into school in the morning, regardless of which teacher they have. The principal conducts a quick survey of students as they file into homeroom with Mr. Sad's class and Mrs. Humor's class. Conduct an analysis on the survey data collected with happiness levels being taken on a 1-100 scale. 
+
+
+
+```{r}
+
+# Load data and libraries
+dat2 <- read.csv('https://www.dropbox.com/s/57jdxxkzh2x1koe/NonParaDemo2.csv?dl=1')
+
+library(jmv)
+library(psych)
+library(car)
+library(effsize)
+
+```
+
+```{r}
+
+# Descriptives
+desc2 <- descriptives(dat2, 
+                      vars = c('Happy'), 
+                      sd = TRUE, 
+                      range = TRUE, 
+                      min = TRUE, 
+                      max = TRUE, 
+                      skew = TRUE, 
+                      kurt = TRUE)
+desc2
+
+# Descriptives by Class
+descriptives(data = dat2,
+             vars = 'Happy',
+             splitBy = 'Class',
+             sd = TRUE, 
+             min = TRUE,
+             max = TRUE,
+             skew = TRUE,
+             kurt = TRUE, 
+             hist = TRUE)
+
+hist(dat2$Happy [dat2$Class== 'Sad'])
+hist(dat2$Happy [dat2$Class== 'Happy'])
+```
+
+
+```{r}
+
+# Mann-Whitney test (with Levene's)
+test2 <- ttestIS(data = dat2, 
+                 vars = 'Happy', 
+                 group = 'Class', 
+                 mann = TRUE, 
+                 eqv = TRUE, 
+                 meanDiff = TRUE, 
+                 effectSize = TRUE)
+test2
+
+```
+
+```{r}
+# Effect size (Cliff's Delta)
+cliff.delta(Happy ~ Class, data = dat2, conf.level = .95, magnitude = TRUE, method = "Cliff's Delta")
+
+# Look at the comparison (cautiously) between the Cohen's d and Cliff's Delta. The d = 1.13 which is pretty good and then .61, which is also considered large - but we can see the comparable decrease when looking back on the first demo example.  
+```
+
+**Demo 3 - Paired-Samples t-test**
+
+A start-up in Minnesota wants to launch a new app to increase individual's self-awareness. The app sends out two messages per day during reported peak inattention times (10-11 a.m. and 2-3 p.m.) for the typical '9-to-5' worker which spurs them to re-engage and become aware of their environment, reflect on their thoughts, highlight any ruminations, etc. The company measures participants feelings of inattention prior to the use of the app and after two weeks of using it. They are hoping to launch soon. Please assess their app's performance by using the self-awareness ratings which is reported on a 10-point scale. 
+
+
+```{r}
+
+# Load data and libraries
+dat3 <- read.csv('https://www.dropbox.com/s/lczn6qxs92ol5yl/NonParaDemo3.csv?dl=1')
+
+library(jmv)
+library(psych)
+library(car)
+
+```
+
+```{r}
+
+# Compute difference scores
+dat3$diff <- (dat3$After - dat3$Pre)
+
+# Descriptives
+desc3 <- descriptives(dat3, 
+                      vars = c('Pre', 'After', 'diff'), 
+                      sd = TRUE, 
+                      range = TRUE, 
+                      min = TRUE, 
+                      max = TRUE, 
+                      skew = TRUE, 
+                      kurt = TRUE,
+                      hist = TRUE)
+desc3
+
+```
+
+
+```{r}
+ 
+# Wilcoxan Signed Rank Test (with Shapiro-Wilk)
+test3 <- ttestPS(dat3, 
+                 pairs = list(
+                   list(i1 = 'Pre', i2 = 'After')), 
+                 wilcoxon = TRUE, 
+                 norm = TRUE, 
+                 meanDiff = TRUE)
+test3
+
+```
+
+Clean this ugly code using defined constants/variables for the homework
+```{r}
+# Effect size for non-parametric related-samples t-test
+# r = z/sqrt(N)
+
+# to find z, we use this formula.
+# z = (W - mW + .5)/o ; where mW is the null that there is no difference between T1 and T2 so it will always equal 0 and W is the sum ranks (378 - you compute this by adding the Wilcoxon W for both directions - run the test in both directions for Pre/Post)
+
+# first we need to find o:coxon
+# where n = total number of scores (2 x number of cases)
+# o = sqrt((n(n+1)(2n+1))/6)
+o = sqrt(((54*(54+1)*(2*54)+1))/6)
+o
+
+# now to find z:
+z = (378-0+.5)/231.2145
+z
+
+# r is the Pearson value reported for the non-parametric paired-sample t-test
+r = (1.637)/sqrt(54)
+r
+# Effect size is the probability of a time 2 score being greater than a time 1 score
+
+# Based on Cohen's criteria of evaluating effect size: .10 = small, .30 = medium, and .50 = large (but remember sometimes this is subjective). So in our case with r = .88, we  have a large effect size - which if we check back to our median scores for pre and after - makes sense.
+```
+
+```{r}
+# To get the "other" sum of ranks, reverse the order of variables
+wilcox.test(dat3$After, 
+            dat3$Pre, 
+            paired = T, 
+            exact = FALSE) 
+
+# To get the total sum of ranks:
+N <- dim(dat3)[1]
+sumranks <- N*(N+1) / 2
+
+```
+
+**Demo 4 - ANOVA**
+
+A production company that specializes in movie trailers wants to have a friendly competition between their four production teams before the upcoming summer releases. Each team believes they can get viewers to have highest intention to watch an upcoming movie based on their trailer. Each team created a 3-minute trailer for the upcoming Marvel movie and recruited groups of viewers to watch the trailer and take a short survey afterwards indicating their intention to see the movie on a 100-point scale. The company will reward the best production team by releasing their trailer nationwide but needs your help to determine who they should choose. 
+
+
+```{r}
+
+# Load data and libraries
+dat4 <- read.csv('https://www.dropbox.com/s/mwvitjc1cdal0bv/NonParaDemo4.csv?dl=1')
+
+library(pacman)
+p_load(jmv, psych, car)
+
+```
+
+```{r}
+
+# Descriptives
+desc4 <- descriptives(dat4, 
+                      vars = c('Intent'), 
+                      sd = TRUE, 
+                      range = TRUE, 
+                      min = TRUE, 
+                      max = TRUE, 
+                      skew = TRUE, 
+                      kurt = TRUE)
+desc4
+
+# Descriptives by Team
+descriptives(data = dat4,
+             vars = 'Intent',
+             splitBy = 'Team',
+             sd = TRUE, 
+             min = TRUE,
+             max = TRUE,
+             skew = TRUE,
+             kurt = TRUE, 
+             hist = TRUE)
+
+hist(dat4$Intent [dat4$Team== 'Alpha'])
+hist(dat4$Intent [dat4$Team== 'Blast'])
+hist(dat4$Intent [dat4$Team== 'Cornerstone'])
+hist(dat4$Intent [dat4$Team== 'Domino'])
+
+```
+
+```{r}
+
+# ANOVA with each Team on Intent (with Levene's) 
+INTaov <- jmv::ANOVA(data = dat4, dep = 'Intent', factors = c('Team'), effectSize = 'partEta', postHoc = c('Team'), postHocCorr = 'tukey', homo = TRUE)
+INTaov
+
+```
+
+```{r}
+
+# Kruskal-Wallis including pairwise comparisons (Dwass-Steel-Crichlow-Fligner)
+KW_INT_aov <- anovaNP(data = dat4, 
+                      dep = 'Intent', 
+                      group = c('Team'), 
+                      pairs = TRUE)
+KW_INT_aov
+
+```
+
+```{r}
+# Epsilon-squared estimate of effect size
+# .1 .3 .5 --- .2 .4 .6 are good estimates for small/med/large
+
+# EpiSq = (H)/((n^2-1)/(n+1))
+
+EpiSq = (84.3)/((158^2 -1)/(158+1))
+EpiSq
+
+# Compare this to the eta squared that was printed with the original ANOVA (.56). They are quite similar to each other, but this is taking the H stat into consideration and sample size.
+```
+
+
+

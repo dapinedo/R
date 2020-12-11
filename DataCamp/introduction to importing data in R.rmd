@@ -1,0 +1,864 @@
+---
+title: "Introduction to Importing Data in R"
+author: "DataCamp - Filip Schouwenaars"
+date: "12/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## Introduction & read.csv
+
+![](_images/627.png)
+
+![](_images/628.png)
+
+**read.csv**
+
+The `utils` package, which is automatically loaded in your R session on startup, can import CSV files with the [read.csv()](http://www.rdocumentation.org/packages/utils/functions/read.table) function.
+
+In this exercise, you'll be working with `swimming_pools.csv`[http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/swimming_pools.csv]; it contains data on swimming pools in Brisbane, Australia (Source: [data.gov.au](https://data.gov.au/dataset/swimming-pools-brisbane-city-council)). The file contains the column names in the first row. It uses a comma to separate values within rows.
+
+Type [dir()](http://www.rdocumentation.org/packages/base/functions/list.files) in the console to list the files in your working directory. You'll see that it contains `swimming_pools.csv`, so you can start straight away.
+
+```{r}
+# Import swimming_pools.csv: pools
+pools <- read.csv("_data/swimming_pools.csv", stringsAsFactors = TRUE)
+
+# Print the structure of pools
+str(pools)
+```
+
+**stringsAsFactors**
+
+With `stringsAsFactors`, you can tell R whether it should convert strings in the flat file to factors.
+
+For all importing functions in the `utils` package, this argument is `FALSE`, which means that you import strings as strings. If you set `stringsAsFactors` to `FALSE`, the data frame columns corresponding to strings in your text file will be `character`.
+
+You'll again be working with the [swimming_pools.csv](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/swimming_pools.csv) file. It contains two columns (`Name` and `Address`), which shouldn't be factors.
+
+```{r}
+# Import swimming_pools.csv correctly: pools
+pools <- read.csv("_data/swimming_pools.csv", stringsAsFactors = FALSE)
+
+# Check the structure of pools
+str(pools)
+```
+
+## read.delim & read.table
+
+![](_images/629.png)
+
+![](_images/630.png)
+
+**read.delim**
+
+Aside from `.csv` files, there are also the `.txt` files which are basically text files. You can import these functions with [read.delim()](http://www.rdocumentation.org/packages/utils/functions/read.table). By default, it sets the `sep` argument to `"\t"` (fields in a record are delimited by tabs) and the `header` argument to `TRUE` (the first row contains the field names).
+
+In this exercise, you will import [hotdogs.txt](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/hotdogs.txt), containing information on sodium and calorie levels in different hotdogs (Source: [UCLA](http://wiki.stat.ucla.edu/socr/index.php/SOCR_012708_ID_Data_HotDogs)). The dataset has 3 variables, but the variable names are not available in the first line of the file. The file uses tabs as field separators.
+
+```{r}
+# Import hotdogs.txt: hotdogs
+hotdogs <- read.delim("_data/hotdogs.txt", header = FALSE)
+
+# Summarize hotdogs
+summary(hotdogs)
+```
+
+Nice one! You are now able to import `.txt` files on your own!
+
+**read.table**
+
+If you're dealing with more exotic flat file formats, you'll want to use [read.table()](http://www.rdocumentation.org/packages/utils/functions/read.table). It's the most basic importing function; you can specify tons of different arguments in this function. Unlike [read.csv()](http://www.rdocumentation.org/packages/utils/functions/read.table) and [read.delim()](http://www.rdocumentation.org/packages/utils/functions/read.table), the header argument defaults to `FALSE` and the `sep` argument is `""` by default.
+
+Up to you again! The data is still [hotdogs.txt](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/hotdogs.txt). It has no column names in the first row, and the field separators are tabs. This time, though, the file is in the `data` folder inside your current working directory. A variable `path` with the location of this file is already coded for you.
+
+```{r}
+# Path to the hotdogs.txt file: path
+path <- file.path("_data", "hotdogs.txt")
+
+# Import the hotdogs.txt file: hotdogs
+hotdogs <- read.table(path, 
+                      sep = "\t", 
+                      col.names = c("type", "calories", "sodium"))
+
+# Call head() on hotdogs
+head(hotdogs)
+```
+
+Great! No need to specify the `header` argument: it is `FALSE` by default for `read.table()`, which is exactly what you want here.
+
+**Arguments**
+
+Lily and Tom are having an argument because they want to share a hot dog but they can't seem to agree on which one to choose. After some time, they simply decide that they will have one each. Lily wants to have the one with the fewest calories while Tom wants to have the one with the most sodium.
+
+Next to `calories` and `sodium`, the hotdogs have one more variable: `type`. This can be one of three things: `Beef`, `Meat`, or `Poultry`, so a categorical variable: a factor is fine.
+
+```{r}
+# Finish the read.delim() call
+hotdogs <- read.delim("_data/hotdogs.txt", header = FALSE, col.names = c("type", "calories", "sodium"))
+
+# Select the hot dog with the least calories: lily
+lily <- hotdogs[which.min(hotdogs$calories), ]
+
+# Select the observation with the most sodium: tom
+tom <- hotdogs[which.max(hotdogs$sodium), ]
+
+# Print lily and tom
+lily
+tom
+```
+
+**Column classes**
+
+Next to column names, you can also specify the column types or column classes of the resulting data frame. You can do this by setting the `colClasses` argument to a vector of strings representing classes:
+
+```
+read.delim("my_file.txt", 
+           colClasses = c("character",
+                          "numeric",
+                          "logical"))
+```
+
+This approach can be useful if you have some columns that should be factors and others that should be characters. You don't have to bother with `stringsAsFactors` anymore; just state for each column what the class should be.
+
+If a column is set to `"NULL"` in the `colClasses` vector, this column will be skipped and will not be loaded into the data frame.
+
+```{r}
+# Previous call to import hotdogs.txt
+hotdogs <- read.delim("_data/hotdogs.txt", header = FALSE, col.names = c("type", "calories", "sodium"))
+
+# Display structure of hotdogs
+str(hotdogs)
+
+# Edit the colClasses argument to import the data correctly: hotdogs2
+hotdogs2 <- read.delim("_data/hotdogs.txt", header = FALSE, 
+                       col.names = c("type", "calories", "sodium"),
+                       colClasses = c("factor", "NULL", "numeric"))
+
+# Display structure of hotdogs2
+str(hotdogs2)
+```
+
+## Final Thoughts
+
+**Wrappers**
+
+- `read.table()` is the main function
+- `read.csv()` = wrapper for CSV
+- `read.delim()` = wrapper for tab-delimited files
+
+![](_images/631.png)
+
+![](_images/632.png)
+
+![](_images/633.png)
+
+- `read.csv2()`
+- `read.delim2()`
+
+exist for locale differences
+
+![](_images/634.png)
+
+## readr: read_csv & read_tsv
+
+**Overview**
+
+- before: utils package
+- specific R packages
+  - readr
+  - data.table
+  
+**readr**
+
+- Hadley Wickham
+- fast, easy to use, consistent
+- utils: verbose, slower
+
+```
+install.packages("readr")
+library(readr)
+```
+
+![](_images/635.png)
+
+![](_images/636.png)
+
+![](_images/637.png)
+
+**read_csv**
+
+CSV files can be imported with [read_csv()](http://www.rdocumentation.org/packages/readr/versions/1.0.0/topics/read_delim). It's a wrapper function around [read_delim()](http://www.rdocumentation.org/packages/readr/versions/1.0.0/topics/read_delim) that handles all the details for you. For example, it will assume that the first row contains the column names.
+
+The dataset you'll be working with here is [potatoes.csv](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/potatoes.csv). It gives information on the impact of storage period and cooking on potatoes' flavor. It uses commas to delimit fields in a record, and contains column names in the first row. The file is available in your workspace. Remember that you can inspect your workspace with `dir()`.
+
+```{r}
+# Load the readr package
+library(readr)
+
+# Import potatoes.csv with read_csv(): potatoes
+potatoes <- read_csv("_data/potatoes.csv")
+```
+
+**read_tsv**
+
+Where you use `read_csv()` to easily read in CSV files, you use [read_tsv()](http://www.rdocumentation.org/packages/readr/versions/1.0.0/topics/read_delim) to easily read in TSV files. TSV is short for tab-separated values.
+
+This time, the potatoes data comes in the form of a tab-separated values file; [potatoes.txt](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/potatoes.txt) is available in your workspace. In contrast to `potatoes.csv`, this file does not contain columns names in the first row, though.
+
+There's a vector `properties` that you can use to specify these column names manually.
+
+```{r}
+# readr is already loaded
+
+# Column names
+properties <- c("area", "temp", "size", "storage", "method",
+                "texture", "flavor", "moistness")
+
+# Import potatoes.txt: potatoes
+potatoes <- read_tsv("_data/potatoes.txt", col_names = properties)
+
+# Call head() on potatoes
+head(potatoes)
+```
+
+Great work! Let's learn some more about the `read_delim()` function!
+
+## readr: read_delim
+
+![](_images/638.png)
+
+![](_images/639.png)
+
+**read_delim**
+
+Just as [read.table()](http://www.rdocumentation.org/packages/utils/functions/read.table) was the main utils function, [read_delim()](http://www.rdocumentation.org/packages/readr/versions/1.0.0/topics/read_delim) is the main readr function.
+
+[read_delim()](http://www.rdocumentation.org/packages/readr/versions/1.0.0/topics/read_delim) takes two mandatory arguments:
+
+- `file`: the file that contains the data
+- `delim`: the character that separates the values in the data file
+
+You'll again be working [potatoes.txt](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/potatoes.txt); the file uses tabs (`"\t"`) to delimit values and does **not** contain column names in its first line. It's available in your working directory so you can start right away. As before, the vector `properties` is available to set the `col_names`.
+
+```{r}
+# readr is already loaded
+
+# Column names
+properties <- c("area", "temp", "size", "storage", "method",
+                "texture", "flavor", "moistness")
+
+# Import potatoes.txt using read_delim(): potatoes
+potatoes <- read_delim("_data/potatoes.txt", delim = "\t", col_names = properties)
+
+# Print out potatoes
+potatoes
+```
+
+Good job! Notice that you could just as well have used [read_tsv()](http://www.rdocumentation.org/packages/readr/versions/1.0.0/topics/read_delim) here. Proceed to the next exercise to learn more about `readr` functions.
+
+**skip and n_max**
+
+Through `skip` and `n_max` you can control *which* part of your flat file you're actually importing into R.
+
+- `skip` specifies the number of lines you're ignoring in the flat file before actually starting to import data.
+- `n_max` specifies the number of lines you're actually importing.
+
+Say for example you have a CSV file with 20 lines, and set `skip = 2` and `n_max = 3`, you're only reading in lines 3, 4 and 5 of the file.
+
+Watch out: Once you `skip` some lines, you also skip the first line that can contain column names!
+
+[potatoes.txt](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/potatoes.txt), a flat file with tab-delimited records and without column names, is available in your workspace.
+
+```{r}
+# readr is already loaded
+
+# Column names
+properties <- c("area", "temp", "size", "storage", "method",
+                "texture", "flavor", "moistness")
+
+# Import 5 observations from potatoes.txt: potatoes_fragment
+potatoes_fragment <- read_tsv("_data/potatoes.txt", skip = 6, n_max = 5, col_names = properties)
+
+str(potatoes_fragment)
+```
+
+Nice job! Feel free to check out the resulting data frames with `str()` in the console!
+
+**col_types**
+
+You can also specify which types the columns in your imported data frame should have. You can do this with `col_types`. If set to `NULL`, the default, functions from the `readr` package will try to find the correct types themselves. You can manually set the types with a string, where each character denotes the class of the column: `c`haracter, `d`ouble, `i`nteger and `l`ogical. `_` skips the column as a whole.
+
+[potatoes.txt](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/potatoes.txt), a flat file with tab-delimited records and without column names, is again available in your workspace.
+
+```{r}
+# readr is already loaded
+
+# Column names
+properties <- c("area", "temp", "size", "storage", "method",
+                "texture", "flavor", "moistness")
+
+# Import all data, but force all columns to be character: potatoes_char
+potatoes_char <- read_tsv("_data/potatoes.txt", col_types = "cccccccc", col_names = properties)
+
+# Print out structure of potatoes_char
+str(potatoes_char)
+```
+
+**col_types with collectors**
+
+Another way of setting the types of the imported columns is using **collectors**. Collector functions can be passed in a [list()](http://www.rdocumentation.org/packages/base/functions/list) to the `col_types` argument of `read_` functions to tell them how to interpret values in a column.
+
+For a complete list of collector functions, you can take a look at the [collector](https://www.rdocumentation.org/packages/readr/topics/collector) documentation. For this exercise you will need two collector functions:
+
+- `col_integer()`: the column should be interpreted as an integer.
+- `col_factor(levels, ordered = FALSE)`: the column should be interpreted as a factor with levels.
+
+In this exercise, you will work with [hotdogs.txt](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/hotdogs.txt), which is a tab-delimited file without column names in the first row.
+
+```{r}
+# readr is already loaded
+
+# Import without col_types
+hotdogs <- read_tsv("_data/hotdogs.txt", col_names = c("type", "calories", "sodium"))
+
+# Display the summary of hotdogs
+summary(hotdogs)
+
+# The collectors you will need to import the data
+fac <- col_factor(levels = c("Beef", "Meat", "Poultry"))
+int <- col_integer()
+
+# Edit the col_types argument to import the data correctly: hotdogs_factor
+hotdogs_factor <- read_tsv("_data/hotdogs.txt",
+                           col_names = c("type", "calories", "sodium"),
+                           col_types = list(fac, int, int))
+
+# Display the summary of hotdogs_factor
+summary(hotdogs_factor)
+```
+
+Awesome! The summary of `hotdogs_factor` clearly contains more interesting information for the `type` column, right?
+
+## data.table: fread
+
+**data.table**
+
+- Matt Dowle & Arun Srinivasan
+- key metric: speed
+- data manipulation in R
+- function to import data: `fread()`
+
+```
+install.packages("data.table")
+library(data.table)
+```
+
+- similar to `read.table()`
+
+**fread**
+
+- infer column types and separators
+- it simply works
+- extremely fast
+- possible to specify numerous parameters
+- improved read.table()
+- fast, convenient, customizable
+
+**fread**
+
+You still remember how to use [read.table()](http://www.rdocumentation.org/packages/utils/functions/read.table), right? Well, [fread()](http://www.rdocumentation.org/packages/data.table/functions/fread) is a function that does the same job with very similar arguments. It is extremely easy to use and blazingly fast! Often, simply specifying the path to the file is enough to successfully import your data.
+
+Don't take our word for it, try it yourself! You'll be working with the [potatoes.csv](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/potatoes.csv) file, that's available in your workspace. Fields are delimited by commas, and the first line contains the column names.
+
+```{r}
+# load the data.table package using library()
+library(data.table)
+
+# Import potatoes.csv with fread(): potatoes
+potatoes <- fread("_data/potatoes.csv")
+
+# Print out potatoes
+potatoes
+```
+
+Amazingly easy, right?
+
+**fread: more advanced use**
+
+Now that you know the basics about [fread()](http://www.rdocumentation.org/packages/data.table/functions/fread), you should know about two arguments of the function: `drop` and `select`, to drop or select variables of interest.
+
+Suppose you have a dataset that contains 5 variables and you want to keep the first and fifth variable, named "a" and "e". The following options will all do the trick:
+
+```
+fread("path/to/file.txt", drop = 2:4)
+fread("path/to/file.txt", select = c(1, 5))
+fread("path/to/file.txt", drop = c("b", "c", "d"))
+fread("path/to/file.txt", select = c("a", "e"))
+```
+
+Let's stick with potatoes since we're particularly fond of them here at DataCamp. The data is again available in the file [potatoes.csv](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/potatoes.csv), containing comma-separated records.
+
+```{r}
+# fread is already loaded
+
+# Import columns 6 and 8 of potatoes.csv: potatoes
+potatoes <- fread("_data/potatoes.csv", select = c(6, 8))
+
+# Plot texture (x) and moistness (y) of potatoes
+plot(potatoes$texture, potatoes$moistness)
+```
+
+Congratulations! We can see that moistness and texture are positively correlated.
+
+## readxl (1)
+
+**Microsoft Excel**
+
+- common data analysis tool
+- many R packages to interact with Excel
+- `readxl` - Hadley Wickham
+
+![](_images/640.png)
+
+**readxl**
+
+- `excel_sheets()`
+  - list different sheets
+  
+- `read_excel()`
+  - actually import data into R
+  
+```
+install.packages("readxl")
+library(readxl)
+```
+
+**List the sheets of an Excel file**
+
+Before you can start importing from Excel, you should find out which sheets are available in the workbook. You can use the [excel_sheets()](https://cran.r-project.org/web/packages/readxl/readxl.pdf) function for this.
+
+You will find the Excel file [urbanpop.xlsx](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xlsx) in your working directory (type [dir()](http://www.rdocumentation.org/packages/base/functions/list.files) to see it). This dataset contains urban population metrics for practically all countries in the world throughout time (Source: [Gapminder](http://www.gapminder.org/)). It contains three sheets for three different time periods. In each sheet, the first row contains the column names.
+
+```{r}
+# Load the readxl package
+library(readxl)
+
+# Print the names of all worksheets
+excel_sheets("_data/urbanpop.xlsx")
+```
+
+Congratulations! As you can see, the result of [excel_sheets()](https://cran.r-project.org/web/packages/readxl/readxl.pdf) is simply a character vector; you haven't imported anything yet. That's something for the [read_excel()](https://cran.r-project.org/web/packages/readxl/readxl.pdf) function. Learn all about it in the next exercise!
+
+**Import an Excel sheet**
+
+Now that you know the names of the sheets in the Excel file you want to import, it is time to import those sheets into R. You can do this with the [read_excel()](https://cran.r-project.org/web/packages/readxl/readxl.pdf) function. Have a look at this recipe:
+
+```
+data <- read_excel("data.xlsx", sheet = "my_sheet")
+```
+
+This call simply imports the sheet with the name `"my_sheet"` from the `"data.xlsx"` file. You can also pass a number to the `sheet` argument; this will cause [read_excel()](https://cran.r-project.org/web/packages/readxl/readxl.pdf) to import the sheet with the given sheet number. `sheet = 1` will import the first sheet, `sheet = 2` will import the second sheet, and so on.
+
+In this exercise, you'll continue working with the [urbanpop.xlsx](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xlsx) file.
+
+```{r}
+# The readxl package is already loaded
+
+# Read the sheets, one by one
+pop_1 <- read_excel("_data/urbanpop.xlsx", sheet = 1)
+pop_2 <- read_excel("_data/urbanpop.xlsx", sheet = 2)
+pop_3 <- read_excel("_data/urbanpop.xlsx", sheet = 3)
+
+# Put pop_1, pop_2 and pop_3 in a list: pop_list
+pop_list <- list(pop_1, pop_2, pop_3)
+
+# Display the structure of pop_list
+str(pop_list)
+```
+
+Great! Now you imported the sheets from `urbanpop.xlsx` correctly. From here on you are able to read and to operate on the imported file. In the next exercise you will learn how to use both the [excel_sheets()](https://cran.r-project.org/web/packages/readxl/readxl.pdf) and the [read_excel()](https://cran.r-project.org/web/packages/readxl/readxl.pdf) function in combination with [lapply()](http://www.rdocumentation.org/packages/base/functions/lapply) to read multiple sheets at once.
+
+**Reading a workbook**
+
+In the previous exercise you generated a list of three Excel sheets that you imported. However, loading in every sheet manually and then merging them in a list can be quite tedious. Luckily, you can automate this with [lapply()](http://www.rdocumentation.org/packages/base/functions/lapply). If you have no experience with [lapply()](http://www.rdocumentation.org/packages/base/functions/lapply), feel free to take [Chapter 4 of the Intermediate R course](https://campus.datacamp.com/courses/intermediate-r/chapter-4-the-apply-family?ex=1).
+
+Have a look at the example code below:
+
+```
+my_workbook <- lapply(excel_sheets("data.xlsx"),
+                      read_excel,
+                      path = "data.xlsx")
+```
+
+The [read_excel()](https://cran.r-project.org/web/packages/readxl/readxl.pdf) function is called multiple times on the `"data.xlsx"` file and each sheet is loaded in one after the other. The result is a list of data frames, each data frame representing one of the sheets in `data.xlsx`.
+
+You're still working with the [urbanpop.xlsx](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xlsx) file.
+
+```{r}
+# The readxl package is already loaded
+
+# Read all Excel sheets with lapply(): pop_list
+pop_list <- lapply(excel_sheets("_data/urbanpop.xlsx"), read_excel, path = "_data/urbanpop.xlsx")
+
+# Display the structure of pop_list
+str(pop_list)
+```
+
+Congratulations! If you're clever, reading multiple Excel sheets doesn't require a lot of coding at all!
+
+## readxl (2)
+
+![](_images/641.png)
+
+![](_images/642.png)
+
+![](_images/643.png)
+
+**Wrap-up**
+
+- excel_sheets()
+- read_excel()
+- everything you need!
+- fast
+- same arguments as in `readr` package
+- consistency
+
+**The col_names argument**
+
+Apart from `path` and `sheet`, there are several other arguments you can specify in [read_excel()](https://cran.r-project.org/web/packages/readxl/readxl.pdf). One of these arguments is called `col_names`.
+
+By default it is `TRUE`, denoting whether the first row in the Excel sheets contains the column names. If this is not the case, you can set `col_names` to `FALSE`. In this case, R will choose column names for you. You can also choose to set `col_names` to a character vector with names for each column. It works exactly the same as in the `readr` package.
+
+You'll be working with the [urbanpop_nonames.xlsx](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop_nonames.xlsx) file. It contains the same data as [urbanpop.xlsx](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xlsx) but has no column names in the first row of the excel sheets.
+
+```{r}
+# The readxl package is already loaded
+
+# Import the first Excel sheet of urbanpop_nonames.xlsx (R gives names): pop_a
+pop_a <- read_excel("_data/urbanpop_nonames.xlsx", col_names = FALSE)
+
+# Import the first Excel sheet of urbanpop_nonames.xlsx (specify col_names): pop_b
+cols <- c("country", paste0("year_", 1960:1966))
+pop_b <- read_excel("_data/urbanpop_nonames.xlsx", col_names = cols)
+
+# Print the summary of pop_a
+summary(pop_a)
+
+# Print the summary of pop_b
+summary(pop_b)
+```
+
+Well done! Did you spot the difference between the summaries? It's really crucial to correctly tell R whether your Excel data contains column names. If you don't, the head of the data frame you end up with will contain incorrect information…
+
+**The skip argument**
+
+Another argument that can be very useful when reading in Excel files that are less tidy, is `skip`. With `skip`, you can tell R to ignore a specified number of rows inside the Excel sheets you're trying to pull data from. Have a look at this example:
+
+```
+read_excel("data.xlsx", skip = 15)
+```
+
+In this case, the first 15 rows in the first sheet of `"data.xlsx"` are ignored.
+
+If the first row of this sheet contained the column names, this information will also be ignored by `readxl`. Make sure to set `col_names` to `FALSE` or manually specify column names in this case!
+
+The file [urbanpop.xlsx](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xlsx) is available in your directory; it has column names in the first rows.
+
+```{r}
+# The readxl package is already loaded
+
+# Import the second sheet of urbanpop.xlsx, skipping the first 21 rows: urbanpop_sel
+urbanpop_sel <- read_excel("_data/urbanpop.xlsx", sheet = 2, col_names = FALSE, skip = 21)
+
+# Print out the first observation from urbanpop_sel
+urbanpop_sel[1,]
+```
+
+Nice job! This is about as complicated as the [read_excel()](https://cran.r-project.org/web/packages/readxl/readxl.pdf) call can get! Time to learn about another package to import data from Excel: `gdata`.
+
+## gdata
+
+**gdata**
+
+- Gregory Warnes
+- entire suite of tools for data manipulation
+- supercharges basic R
+- `read.xls()`
+- support for XLS
+- support for XLSX with additional driver
+- no `readxl::excel_sheets()` equivalent
+
+![](_images/644.png)
+
+**Import a local file**
+
+In this part of the chapter you'll learn how to import `.xls` files using the `gdata` package. Similar to the `readxl` package, you can import single Excel sheets from Excel sheets to start your analysis in R.
+
+You'll be working with the [urbanpop.xls](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xls) dataset, the `.xls` version of the Excel file you've been working with before. It's available in your current working directory.
+
+```{r}
+# Load the gdata package
+library(gdata)
+perl_path <- "C:/Strawberry/perl/bin/perl.exe"
+
+# Import the second sheet of urbanpop.xls: urban_pop
+urban_pop <- read.xls("_data/urbanpop.xls", sheet = "1967-1974", perl = perl_path)
+
+# Print the first 11 observations using head()
+head(urban_pop, n = 11)
+```
+
+Congratulations! There seems to be a lot of missing data, but [read.xls()](http://www.rdocumentation.org/packages/gdata/functions/read.xls) knows how to handle it. In the next exercise you will learn which arguments you can use in `read.xls()`.
+
+**read.xls() wraps around read.table()**
+
+Remember how [read.xls()](http://www.rdocumentation.org/packages/gdata/functions/read.xls) actually works? It basically comes down to two steps: converting the Excel file to a `.csv` file using a Perl script, and then reading that `.csv` file with the [read.csv()](http://www.rdocumentation.org/packages/utils/functions/read.table) function that is loaded by default in R, through the `utils` package.
+
+This means that all the options that you can specify in [read.csv()](http://www.rdocumentation.org/packages/utils/functions/read.table), can also be specified in [read.xls()](http://www.rdocumentation.org/packages/gdata/functions/read.xls).
+
+The [urbanpop.xls](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xls) dataset is already available in your workspace. It's still comprised of three sheets, and has column names in the first row of each sheet.
+
+```{r}
+# The gdata package is already loaded
+
+# Column names for urban_pop
+columns <- c("country", paste0("year_", 1967:1974))
+
+# Finish the read.xls call
+urban_pop <- read.xls("_data/urbanpop.xls", sheet = 2,
+                      skip = 50, header = FALSE, stringsAsFactors = FALSE,
+                      col.names = columns,
+                      perl = perl_path)
+
+# Print first 10 observation of urban_pop
+head(urban_pop, n = 10)
+```
+
+**Work that Excel data!**
+
+Now that you can read in Excel data, let's try to clean and merge it. You already used the [cbind()](http://www.rdocumentation.org/packages/base/functions/cbind) function some exercises ago. Let's take it one step further now.
+
+The [urbanpop.xls](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xls) dataset is available in your working directory. The file still contains three sheets, and has column names in the first row of each sheet.
+
+```{r}
+# Import all sheets from urbanpop.xls
+path <- "_data/urbanpop.xls"
+urban_sheet1 <- read.xls(path, perl = perl_path, sheet = 1, stringsAsFactors = FALSE)
+urban_sheet2 <- read.xls(path, perl = perl_path, sheet = 2, stringsAsFactors = FALSE)
+urban_sheet3 <- read.xls(path, perl = perl_path, sheet = 3, stringsAsFactors = FALSE)
+
+# Extend the cbind() call to include urban_sheet3: urban_all
+urban <- cbind(urban_sheet1, urban_sheet2[-1], urban_sheet3[-1])
+
+# Remove all rows with NAs from urban: urban_clean
+urban_clean <- na.omit(urban)
+
+# Print out a summary of urban_clean
+summary(urban_clean)
+```
+
+Awesome! Time for something totally different: `XLConnect`.
+
+## Reading sheets
+
+**XLConnect**
+
+- Martin Studer
+- work with Excel through R
+- bridge between Excel and R
+- XLS and XLSX
+- easy-to-use functionality
+
+**Installation**
+
+```
+install.packages("XLConnect")
+```
+
+![](_images/645.png)
+
+![](_images/646.png)
+
+![](_images/647.png)
+
+![](_images/648.png)
+
+**Connect to a workbook**
+
+When working with `XLConnect`, the first step will be to load a workbook in your R session with [loadWorkbook()](http://www.rdocumentation.org/packages/XLConnect/functions/loadWorkbook); this function will build a "bridge" between your Excel file and your R session.
+
+In this and the following exercises, you will continue to work with [urbanpop.xlsx](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xlsx), containing urban population data throughout time. The Excel file is available in your current working directory.
+
+```{r}
+# urbanpop.xlsx is available in your working directory
+
+# Load the XLConnect package
+library(XLConnect)
+
+# Build connection to urbanpop.xlsx: my_book
+my_book <- loadWorkbook("_data/urbanpop.xlsx")
+
+# Print out the class of my_book
+class(my_book)
+```
+
+**List and read Excel sheets**
+
+Just as `readxl` and `gdata`, you can use `XLConnect` to import data from Excel file into R.
+
+To list the sheets in an Excel file, use [getSheets()](http://www.rdocumentation.org/packages/XLConnect/functions/getSheets-methods). To actually import data from a sheet, you can use [readWorksheet()](http://www.rdocumentation.org/packages/XLConnect/functions/readWorksheet-methods). Both functions require an XLConnect workbook object as the first argument.
+
+You'll again be working with [urbanpop.xlsx](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xlsx). The `my_book` object that links to this Excel file has already been created.
+
+```{r}
+# XLConnect is already available
+
+# Build connection to urbanpop.xlsx
+my_book <- loadWorkbook("_data/urbanpop.xlsx")
+
+# List the sheets in my_book
+getSheets(my_book)
+
+# Import the second sheet in my_book
+readWorksheet(my_book, sheet = 2)
+```
+
+**Customize readWorksheet**
+
+To get a clear overview about [urbanpop.xlsx](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xlsx) without having to open up the Excel file, you can execute the following code:
+
+```
+my_book <- loadWorkbook("urbanpop.xlsx")
+sheets <- getSheets(my_book)
+all <- lapply(sheets, readWorksheet, object = my_book)
+str(all)
+```
+
+Suppose we're only interested in urban population data of the years 1968, 1969 and 1970. The data for these years is in the columns 3, 4, and 5 of the second sheet. Only selecting these columns will leave us in the dark about the actual countries the figures belong to.
+
+```{r}
+# XLConnect is already available
+
+# Build connection to urbanpop.xlsx
+my_book <- loadWorkbook("_data/urbanpop.xlsx")
+
+# Import columns 3, 4, and 5 from second sheet in my_book: urbanpop_sel
+urbanpop_sel <- readWorksheet(my_book, sheet = 2, startCol = 3, endCol = 5)
+
+# Import first column from second sheet in my_book: countries
+countries <- readWorksheet(my_book, sheet = 2, startCol = 1, endCol = 1)
+
+# cbind() urbanpop_sel and countries together: selection
+selection <- cbind(countries, urbanpop_sel)
+selection
+```
+
+## Adapting sheets
+
+![](_images/649.png)
+
+![](_images/650.png)
+
+![](_images/651.png)
+
+**Wrap-up**
+
+- basic operations
+- reproducibility is the key!
+- more functionality
+  - styling cells
+  - working with formulas
+  - arranging cells
+  - ...
+  
+**Add worksheet**
+
+Where `readxl` and `gdata` were only able to import Excel data, `XLConnect`'s approach of providing an actual interface to an Excel file makes it able to edit your Excel files from inside R. In this exercise, you'll create a new sheet. In the next exercise, you'll populate the sheet with data, and save the results in a new Excel file.
+
+You'll continue to work with [urbanpop.xlsx](http://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/urbanpop.xlsx). The `my_book` object that links to this Excel file is already available.
+
+```{r}
+# XLConnect is already available
+
+# Build connection to urbanpop.xlsx
+my_book <- loadWorkbook("_data/urbanpop.xlsx")
+
+# Add a worksheet to my_book, named "data_summary"
+createSheet(my_book, "data_summary")
+
+# Use getSheets() on my_book
+getSheets(my_book)
+```
+
+Great! It's time to populate your newly created worksheet!
+
+**Populate worksheet**
+
+The first step of creating a sheet is done; let's populate it with some data now! `summ`, a data frame with some summary statistics on the two Excel sheets is already coded so you can take it from there.
+
+```{r}
+# XLConnect is already available
+
+# Create data frame: summ
+sheets <- getSheets(my_book)[1:3]
+dims <- sapply(sheets, function(x) dim(readWorksheet(my_book, sheet = x)), USE.NAMES = FALSE)
+summ <- data.frame(sheets = sheets,
+                   nrows = dims[1, ],
+                   ncols = dims[2, ])
+summ
+
+# Add data in summ to "data_summary" sheet
+writeWorksheet(my_book, summ, "data_summary")
+
+# Save workbook as summary.xlsx
+saveWorkbook(my_book, "_data/summary.xlsx")
+```
+
+Great! If you took the correct steps, the resulting Excel file looks like [this file](https://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/summary.xlsx).
+
+**Renaming sheets**
+
+Come to think of it, `"data_summary"` is not an ideal name. As the summary of these excel sheets is always data-related, you simply want to name the sheet `"summary"`.
+
+The code to build a connection to `"urbanpop.xlsx"` and create `my_book` is already provided for you. It refers to an Excel file with 4 sheets: the three data sheets, and the `"data_summary"` sheet.
+
+```{r}
+# Build connection to urbanpop.xlsx: my_book
+my_book <- loadWorkbook("_data/summary.xlsx")
+
+# Rename "data_summary" sheet to "summary"
+renameSheet(my_book, "data_summary", "summary")
+
+# Print out sheets of my_book
+getSheets(my_book)
+
+# Save workbook to "renamed.xlsx"
+saveWorkbook(my_book, file = "_data/renamed.xlsx")
+```
+
+Nice one! You can find the file you just created [here](https://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/renamed.xlsx).
+
+**Removing sheets**
+
+After presenting the new Excel sheet to your peers, it appears not everybody is a big fan. Why summarize sheets and store the info in Excel if all the information is implicitly available? To hell with it, just remove the entire fourth sheet!
+
+```{r}
+# Load the XLConnect package
+library(XLConnect)
+
+# Build connection to renamed.xlsx: my_book
+my_book <- loadWorkbook("_data/renamed.xlsx")
+
+# Remove the fourth sheet
+removeSheet(my_book, 4)
+
+# Save workbook to "clean.xlsx"
+saveWorkbook(my_book, file = "_data/clean.xlsx")
+```
+
+Nice one! The file you've created in this exercise is available [here](https://s3.amazonaws.com/assets.datacamp.com/production/course_1477/datasets/clean.xlsx).

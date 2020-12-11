@@ -1,0 +1,216 @@
+---
+title: "One-way ANOVA Demo"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+Example 1: 
+A developmental psychologist is looking for a graduate student who can help them with their research project--you have been chosen! Their research looks into adolescent self-esteem and its relationship with parenting styles. There are three primary parenting styles: (1) authoritative (high expectations with support), (2) authoritarian (high expectations with little support), and (3) permissive (low expectations with support). You have collected data on 90 teenagers self-esteem levels and the parenting style they experienced (30 per style). Is there a significant difference in self-esteem by parenting style? What do your findings seem to indicate?
+
+```{r}
+#load library packages needed for analysis
+library(psych)
+library(jmv)
+#load library packages needed for graphs
+library(ggplot2)
+library(plyr)
+```
+
+```{r}
+#load data
+dat_A <- read.csv("https://www.dropbox.com/s/vf50iy07fytkhjb/One-way%20ANOVA.A.csv?dl=1")
+
+#View(dat_A) Row x Col
+head(dat_A)
+tail(dat_A)
+dim(dat_A)
+
+#encode $Style column as a factor because groups are numeric and need to be read as factor and not number
+class(dat_A$Style)
+dat_A$Style <- as.factor(dat_A$Style)
+class(dat_A$Style)
+```
+
+```{r}
+#Descriptives for all data, including histogram - does not check assumptions, but helps for big picture of data
+desc <- descriptives(dat_A, vars = c('Self_esteem'), hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
+desc
+
+#Descriptives by group, including grouped histograms
+desc.group <- descriptives(dat_A, vars = c('Self_esteem'), splitBy = 'Style', hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
+desc.group
+
+#Subset by group
+dat1 <- subset(dat_A, dat_A$Style == "1")
+dat2 <- subset(dat_A, dat_A$Style == "2")
+dat3 <- subset(dat_A, dat_A$Style == "3")
+
+#Histogram for each subsetted group
+hist(dat1$Self_esteem)
+hist(dat2$Self_esteem)
+hist(dat3$Self_esteem)
+```
+
+```{r}
+#anova with tukey post-hoc test
+anova(data = dat_A, dep = 'Self_esteem', factors = c('Style'), effectSize = 'partEta', postHoc = c('Style'), postHocCorr = 'tukey', homo = TRUE)
+
+```
+
+```{r}
+# we need to find the standard errors here so we can have beautiful error bars --- always have error bars...always.
+
+summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                      conf.interval=.95, .drop=TRUE) {
+  library(plyr)
+  
+  # New version of length which can handle NA's: if na.rm==T, don't count them
+  length2 <- function (x, na.rm=FALSE) {
+    if (na.rm) sum(!is.na(x))
+    else       length(x)
+  }
+  
+  # This does the summary. For each group's data frame, return a vector with
+  # N, mean, and sd
+  datac <- ddply(data, groupvars, .drop=.drop,
+                 .fun = function(xx, col) {
+                   c(N    = length2(xx[[col]], na.rm=na.rm),
+                     mean = mean   (xx[[col]], na.rm=na.rm),
+                     sd   = sd     (xx[[col]], na.rm=na.rm)
+                   )
+                 },
+                 measurevar
+  )
+  
+  # Rename the "mean" column    
+  datac <- rename(datac, c("mean" = measurevar))
+  
+  datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+  
+  # Confidence interval multiplier for standard error
+  # Calculate t-statistic for confidence interval: 
+  # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
+  ciMult <- qt(conf.interval/2 + .5, datac$N-1)
+  datac$ci <- datac$se * ciMult
+  
+  return(datac)
+}
+```
+
+```{r}
+sumdat <- summarySE(dat_A, measurevar="Self_esteem", groupvars=c("Style"))
+
+```
+
+
+```{r}
+# creation of the bar graph - including specifications such as the color, title, addition of error bars, etc. 
+bar1 <- ggplot(sumdat, aes(x = Style, y = Self_esteem)) +
+  geom_bar(stat='identity', fill = 'lightblue2') +
+  theme_minimal() +
+  geom_errorbar(aes(ymin=Self_esteem-se, ymax=Self_esteem+se), width = .1)
+
+bar1 + ggtitle('Self-Esteem by Parenting Style')
+
+```
+
+Example 2: You want to see if the trend is the same for younger children. You collected data on 60 kids' self-esteem levels and the parenting style they experienced (20 per style). Is there a significant difference in self-esteem by parenting style for these younger kids? What do your findings seem to indicate?
+
+
+```{r}
+dat_B <- read.csv("https://www.dropbox.com/s/fx9he863ywt5b56/One-way%20ANOVA.B.csv?dl=1")
+
+dat_B$Style <- as.factor(dat_B$Style)
+```
+
+```{r}
+desc.b <- descriptives(dat_B, vars = c('Self_esteem'), hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
+desc.b
+
+desc.b.group <- descriptives(dat_B, vars = c('Self_esteem'), splitBy = 'Style', hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
+desc.b.group
+
+dat1.b <- subset(dat_B, dat_B$Style == "1")
+dat2.b <- subset(dat_B, dat_B$Style == "2")
+dat3.b <- subset(dat_B, dat_B$Style == "3")
+
+hist(dat1.b$Self_esteem)
+hist(dat2.b$Self_esteem)
+hist(dat3.b$Self_esteem)
+```
+
+```{r}
+anova(data = dat_B, dep = 'Self_esteem', factors = c('Style'), effectSize = 'partEta', postHoc = c('Style'), postHocCorr = 'tukey', homo = TRUE)
+
+```
+
+```{r}
+# saving the summary data in an object
+sumdat2 <- summarySE(dat_B, measurevar="Self_esteem", groupvars=c("Style"))
+
+```
+
+
+```{r}
+#creation of the bar graph - including specifications such as the color, title, addition of error bars, etc. 
+bar2 <- ggplot(sumdat2, aes(x = Style, y = Self_esteem)) +
+  geom_bar(stat='identity', fill = 'orchid2') +
+  theme_minimal() +
+  geom_errorbar(aes(ymin=Self_esteem-se, ymax=Self_esteem+se), width = .1)
+
+bar2 + ggtitle('Self-Esteem for Younger Children by Parenting Style')
+
+```
+
+Example 3:  You are interested in if the relationship seems to hold true even for teenagers that are a part of a mentoring program. There are only 30 teenagers involved mentoring program (10 per style). Is there a significant difference in their self-esteem by mentoring style? What do your findings seem to indicate?
+
+
+```{r}
+
+dat_C <- read.csv("https://www.dropbox.com/s/mq31b5zb8lh62qx/One-way%20ANOVA_C.csv?dl=1")
+
+
+dat_C$Style <- as.factor(dat_C$Style)
+```
+
+```{r}
+desc.c <- descriptives(dat_C, vars = c('Self_esteem'), hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
+desc.c
+
+desc.c.group <- descriptives(dat_C, vars = c('Self_esteem'), splitBy = 'Style', hist = TRUE, sd = TRUE, se = TRUE, skew = TRUE, kurt = TRUE)
+desc.c.group
+
+dat1.c <- subset(dat_C, dat_C$Style == "1")
+dat2.c <- subset(dat_C, dat_C$Style == "2")
+dat3.c <- subset(dat_C, dat_C$Style == "3")
+
+
+hist(dat1.c$Self_esteem)
+hist(dat2.c$Self_esteem)
+hist(dat3.c$Self_esteem)
+```
+
+```{r}
+
+
+anova(data = dat_C, dep = 'Self_esteem', factors = c('Style'), effectSize = 'partEta', postHoc = c('Style'), postHocCorr = 'tukey', homo = TRUE)
+
+```
+
+```{r}
+sumdat3 <- summarySE(dat_C, measurevar="Self_esteem", groupvars=c("Style"))
+
+```
+
+
+```{r}
+# creation of the bar graph - including specifications such as the color, title, addition of error bars, etc. 
+bar3 <- ggplot(sumdat3, aes(x = Style, y = Self_esteem)) +
+  geom_bar(stat='identity', fill = 'lavender') +
+  theme_minimal() +
+  geom_errorbar(aes(ymin=Self_esteem-se, ymax=Self_esteem+se), width = .1)
+
+bar3 + ggtitle('Self-Esteem for Teens by Parenting Style')
+
+```

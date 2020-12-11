@@ -1,0 +1,288 @@
+---
+title: "Beginner’s Guide to Factor Analysis with R"
+author: "Berger & Conway"
+date: "September 1, 2019"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+The goal of this script is to introduce applications of R for factor analysis. It is not intended to be a full introduction to using factor analysis.  
+
+###Install and load R packages required for Principal Components and Factor Analysis
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(pacman)
+p_load(corpcor, GPArotation, psych, ggplot2, foreign, tidyverse)
+```
+
+You may receive some warnings about packages that were developed under different versions of R. Check to see which packages you have installed and loaded by opening the Packages tab in the lower-right pane of RStudio.  A check in a box indicates that the package is loaded.
+
+For illustration, we will conduct our analyses on a readily available data set called wiscsem.sav. This is data on 11 subscales of the Wechsler Intelligence Scale for Children (WISC) for 175 children. You can find the data set on Canvas. 
+
+###Read wiscsem.sav into R  
+
+```{r load data, message = FALSE}
+## read in file with working directory set to file location
+# read in spss .sav file and view data frame
+wisc_data <- read.spss("wiscsem.sav", to.data.frame = TRUE)
+head(wisc_data)
+```
+
+We notice that the first variable (client) is an ID code and the second variable (agemate) is a categorizing variable. These two variables should not be used in a factor analysis. 
+
+###Selecting the subset of a data frame
+
+We would like to create a new data frame that omits the first two columns.
+
+The following command retains all rows, but deletes the collection of columns 1 and 2.
+
+```{r clean data}
+wisc_data_1 <- wisc_data[,-c(1,2)]
+head(wisc_data_1)
+```
+
+### Correlation Matrix
+
+Next, let’s generate the correlation matrix.
+
+```{r correlation matrix}
+wisc_cor <- cor(wisc_data_1)
+wisc_cor
+wisc_cor2 <- round(cor(wisc_data_1), 2)
+wisc_cor2
+```
+
+Next we can run some diagnostics on the correlation matrix in preparation for factor analysis.
+
+###Bartlett's Test
+
+```{r bartlett test}
+# arguments are the correlation matrix object and sample size n of the dataset
+# This tests the null hypothesis that the correlation matrix is an identity matrix
+#    where diagonal = 1 and everything else is null
+#    or where all correlations are = 0
+wisc_bart = cortest.bartlett(wisc_cor, n = nrow(wisc_data_1))
+wisc_bart
+```
+
+OK, so p = .00000000000000000000000000000000000000000000000000000000000000000000000001380904
+We can be quite confident that our sample did not come from an identity matrix where all correlations between variables are zero. The df is the number of correlations in the matrix.
+df = ( #vars * (#vars+1) ) / 2 = (10*11) / 2 = 55
+
+###KMO (Kaiser-Meyer-Olkin) test of ‘sampling adequacy’
+
+```{r KMO test}
+# argument is the correlation matrix object
+# how many friendly other manifest variables does each manifest variable have for this dataset?
+KMO(wisc_cor)
+```
+
+Important note: ‘sampling adequacy’ refers to adequacy of the choice of variables, not adequacy of the sample of subjects or cases. It is desirable for factor analysis that each factor (or component) is measured by at least three items. Recall that a larger KMO is desirable, with 1.00 the maximum possible. Values of .80 or larger generally seen as ‘meritorious’ and .90 as ‘marvelous.’ If all variables are independent, KMO = .50. MSA for each item is a ‘Measure of Sampling Adequacy’ for each item relative to the other items in the data set. If an item has at least two ‘friends’ with mutually high correlations, MSA is large. Here we see that the overall MSA (i.e., KMO) looks ‘meritorious’ and all items have good MSA values except for ‘coding’ which doesn’t have at least two good friends.   We will address this later.
+
+###Determinant
+
+If the determinant of a matrix is zero, that is an indication of ‘singularity’ where at least one variable can be perfectly predicted from the other variables. Thus, if the determinant is zero, there is less information in the matrix than first meets the eye, and some matrix calculations cannot be performed.
+
+```{r calculate determinant}
+# argument is the correlation matrix object
+# a determinant of zero indicates perfect multicollinearity
+det(wisc_cor)
+```
+
+If the correlation is an identity matrix with all correlations equal to zero, then the determinant is equal to 1.00.  So, we do expect to have a small determinant, but just not zero.
+
+###Run Principal Components Analysis (PCA) 
+This assumes communalities are one
+
+```{r PCA}
+# syntax format to run principal components analysis
+# form: principal(dataframe or R matrix, nfactors = number of factors, rotate = "method of rotation", 
+# scores = TRUE or FALSE)
+# nfactors - how many factors/components to extract; default is 1
+# rotate - allows for specification of a particular rotation method; default is varimax
+# scores - allows factors scores to be obtained or not; default is FALSE (no scores)
+
+# example of a model created using raw data
+# this model will extract the same number of factors as variables, without rotation
+wisc_pca <- principal(wisc_data_1, nfactors = 11, rotate = "none")
+wisc_pca
+```
+
+Ordinarily, you would use either raw data or the correlation matrix and fewer than 11 factors.
+
+**Reading the output:**
+*h2* is h2, the **communality** for each variable. This is the proportion of the variance of the variable that is captured by the components. In this case we have 11 components to capture variance of 11 variables, so it is no surprise that we can capture all of the variance for each variable.  *u2* is **1 – h2**, or the ‘uniqueness’ of a variable, the part that is not shared with the factors. The values shown are zero within computational error.
+
+The *SS loadings* are the **Eigenvalues**.  We can see that the first is much larger than the second, while there is not a real clear break farther down. A scree plot of the Eigenvalues would clarify. The first three Eigen values are greater than 1.00, so the Kaiser rule suggests three components to be extracted.
+
+*Proportion Var* is the proportion of variance of the original variables that is captured by the unrotated components. With 11 variables, chance is 1/11 or .091. The first three components exceed this proportion, as we expect from examination of the Eigenvalues.
+
+We can also obtain the Eigenvalues with the following command:
+
+```{r Eigen values}
+wisc_pca$values
+```
+
+###Scree plot: Show the pattern of the Eigenvalues
+
+$plot will give you information about the plot command.  It tells us that type can take many forms: e.g., “p” for points, “l” for lines; “b” for both’; “o” for both over-plotted.
+
+```{r scree plot}
+plot(wisc_pca$values, type = "o")
+
+
+fa.parallel(wisc_data_1, n.obs=175, fm="ml", fa="both", n.iter=300, error.bars = TRUE, se.bars = TRUE, show.legend=TRUE, main="Scree plot with parallel analysis")
+```
+
+###Exploring PCA solutions
+
+Based on theory, we might expect two factors, such as verbal and visual. The Kaiser rule suggests three factors while the scree plot suggests there is one strong g factor.
+
+Let’s begin with three factors and Varimax rotation.
+
+```{r exploring PCA}
+wisc_pca_1 <- principal(wisc_data_1, nfactors = 3, rotate = "varimax")
+wisc_pca_1
+```
+
+Now the communality measures are more interesting. Only 37% of the variance in parang (paragraph arrangement) is captured by the three components, while 79% of the variance in coding is captured. But take a look at the loadings for each component. coding has a loading of .88 on the third component (RC3), but it is the only variable with a loading greater than .43 on that component. It probably does not make much sense to have a whole component devoted to one variable – there is no conceptual saving. It would be reasonable to remove coding to handle it separately and try a two-factor solution on the remaining 10 variables.
+
+###Finetuning PCA
+
+Remove the variable 'coding' from the data frame.
+
+```{r remove coding variable}
+wisc_data_2 <- wisc_data_1[,-11] #retains all rows, removes column 11
+head(wisc_data_2)
+```
+  
+Try PCA on data set with the variable 'coding' removed.
+
+```{r finetuned PCA}
+wisc_pca_2 <- principal(wisc_data_2, nfactors = 2, rotate = "varimax")
+wisc_pca_2
+```
+
+Let's grab the Eigenvalues:
+
+```{r Eigen values part two}
+wisc_pca_2$values
+
+plot(wisc_pca_2$values, type = "o")
+```
+
+
+The pattern of Eigenvalues is quite nice, with two clearly greater than 1.0 and the rest falling into a nice linearly decreasing scree plot.  A two-factor model also is consistent with theory, and we see that the first component involves more verbal variables and the second involves more visual variables.
+
+###Examining residuals
+
+In order to examine the residuals, we need to create our own residual matrix using the actual correlation matrix and our factor loadings. Mathematically, the residual matrix is calculated by taking the difference of the actual correlation matrix and the correlation matrix reproduced by the model.
+
+The first step is to create an actual correlation matrix for the 10 variable data set.
+
+
+```{r actual cor matrix}
+wisc_cor_actual <- cor(wisc_data_2)
+wisc_cor_actual
+```
+
+
+The second step is to create the residual matrix using our actual correlation matrix and the factor loadings generated by the PCA.
+
+
+```{r resid upper diag}
+wisc_cor_resid <- factor.residuals(wisc_cor_actual, wisc_pca_2$loadings)
+
+# extract upper diagonal from residual correlation object as first column of new matrix
+#as.matrix returns value as a matrix
+resid_upper <- as.matrix(wisc_cor_resid[upper.tri(wisc_cor_resid)])
+resid_upper
+```
+
+
+Now, let's calculate how many residuals are greater than +/- 0.05...
+
+```{r resid magnitude}
+# abs() calculates the absolute value for object in argument
+resid_magnitude <- abs(resid_upper) > 0.05
+sum(resid_magnitude)
+```
+
+
+...and the proportion of residuals > 0.05.
+
+
+```{r resid proportion}
+# nrow calculates the number of rows in a data frame or matrix
+sum(resid_magnitude)/nrow(resid_upper)
+```
+
+
+Finally, we can calculate the root mean square residual and a plot a histogram of the residuals.
+
+```{r root mean square residual}
+sqrt(mean(resid_upper^2))
+
+hist(resid_upper)
+```
+
+The plot of the residuals is not great – while the largest concentration of residuals is in the
+ -.05 to .00 range, most residuals are greater than that, including six in the -.15 to -.20 range.  
+
+
+We can also create and view the reproduced correlation matrix using the factor loadings.
+
+
+```{r reproduced cor matrix}
+wisc_cor_reproduced <- factor.model(wisc_pca_2$loadings)
+wisc_cor_reproduced
+```
+
+  
+###Factor Analysis (Common Factor Analysis, FA)
+
+Let’s use the 10 variable data set, 2 factor solution, oblique rotation, maximum likelihood extraction for our factor analysis.
+
+ROTATE
+--------
+varimax - force factors to be orthogonal
+oblique - factors may be correlated
+
+
+```{r FA}
+# create factor analysis model as object
+# form: fa(dataframe or R matrix, nfactors = number of factors, rotate = "method of rotation", scores = TRUE or FALSE, fm = "factor method")
+# nfactors - how many factors/components to extract; default is 1
+# rotate - allows for specification of a particular rotation method; default is varimax
+# scores - allows factors scores to be obtained or not; default is FALSE (no scores)
+# fm - allows for a factor method to be specified, e.g. maximum likelihood is "ml", principal axis is “pa”
+wisc_fa <- fa(wisc_data_2, nfactors = 2, rotate = "oblimin", fm = "ml")
+wisc_fa
+
+# alternative syntax for using a correlation matrix as input for same analysis
+# my.fa2 <- fa(my.cor10, nfactors = 2, rotate = "oblimin", fm = "pa")
+```
+
+
+(Recall that you can get help on most any function in R by asking for it directly.  
+>help(fa) will show options for the factor analysis program in R
+There are many possible algorithms in both R and SPSS, and few match exactly.
+The “pa” factor model matches the SPSS “unweighted least squares” solution with Varimax rotation.)
+
+
+You can ask R to sort the variables according to size of the loadings, and suppress small loadings.
+
+
+```{r order by loading size}
+print.psych(wisc_fa, cut = .3, sort = TRUE)
+```
+
+The fa program gives a lot of additional information on the fit of the model. It is desirable to have small values, under .05, for RMSR. Most of these indices are not commonly reported. 
+
+
+
+
+

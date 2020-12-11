@@ -1,0 +1,199 @@
+---
+title: "<center>Mixed Factorial</center>"
+author: "<center>MK</center>"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+```{r, echo=FALSE, results=FALSE, message=FALSE, cache=FALSE, warning=FALSE}
+library(knitr); opts_chunk$set(error=TRUE, cache=FALSE)
+```
+
+You're a researcher that is interested in the development of *self-control* in children.  You decide to examine the differences in the development of self-control among children who are in the presence of another child or alone. You randomly assign 30 children to two groups: either play in a room: a) with a peer or b) alone. You measure the length of time (in seconds) each child can wait before engaging with toys in the room. The measurement occurs at three different times: a) 1 year old (young), b) 3 (middle), and c) 5 (old) throughout their childhood.
+
+*Independent Variables -*
+*B-S - Room:* Peer, Alone
+*R-M - Age:* Young, Middle, Old
+
+*Dependent Variable -*
+Time (Seconds)
+
+```{r packages, include=FALSE}
+library(psych)
+library(reshape)
+library(jmv)
+library(car)
+library(ggplot2)
+```
+
+```{r data}
+dat <- read.csv("https://www.dropbox.com/s/a72gvqm4h23jamg/PSYC308B.MXF.Demo.csv?dl=1")
+
+dat$ID <- as.factor(dat$ID) #Don't forget!
+
+head(dat)
+
+#order IV's correctly
+levels(dat$Age)
+dat$Age <- factor(dat$Age, levels = c("Young", "Middle", "Old"))
+levels(dat$Age)
+```
+
+```{r}
+# Assumptions: 
+
+#cast to wide format from long format [ID and room = between, Age = between]
+dat.wide <- cast(dat, ID + Room ~ Age, value = "Time")
+
+# Normal distribution for RM variable - calculate difference scores
+dat.wide$diff1 <- (dat.wide$Young - dat.wide$Middle)
+dat.wide$diff2 <- (dat.wide$Young - dat.wide$Old)
+dat.wide$diff3 <- (dat.wide$Middle - dat.wide$Old)
+
+descriptives(dat.wide, vars = c('diff1', 'diff2', 'diff3'), skew = TRUE, kurt = TRUE, hist = TRUE)
+
+# Normal distribution for B-S variable -
+
+# Need to find the average time across RM conditions for each BS condition before being able to check the distribution with descriptives.
+
+dat.wide$averagetime <- (dat.wide$Young + dat.wide$Middle + dat.wide$Old) / 3
+
+descriptives(dat.wide, vars = c('averagetime'), splitBy = c('Room'), skew = TRUE, kurt = TRUE, hist = TRUE)
+
+```
+
+```{r Levenes Test}
+# Levene's Test of Homogeneity of Variance for BS variable
+
+leveneTest(dat.wide$averagetime, dat.wide$Room, center = mean)
+```
+
+```{r}
+#add bs and bsTerms 
+model.rm <- anovaRM(data = dat.wide, 
+                 rm = list(list(label = 'Age',
+                                levels = c('Young', 'Middle', 'Old'))), 
+                 rmCells = list(list(measure = 'Young', cell = 'Young'),
+                                list(measure = 'Middle', cell = 'Middle'),
+                                list(measure = 'Old', cell = 'Old')),
+                 rmTerms = list('Age'),
+                 bs = 'Room',
+                 bsTerms = list('Room'),
+                 effectSize = c('partEta'),
+                 spherTests = TRUE,
+                 spherCorr = c('none','GG'),
+                 postHoc = list('Age'),
+                 postHocCorr = 'holm',
+                 emMeans = list(NULL))
+model.rm
+
+```
+
+```{r Simple effects}
+# Subset your data by Age
+Young <- subset(dat, dat$Age == "Young")
+
+Middle <- subset(dat, dat$Age == "Middle")
+
+Old <- subset(dat, dat$Age == "Old")
+
+#Example: we are running this for difference between the BS conditions (room) at each level of RM measure (young, middle, old).
+#Welch's only if Levene's test is significant
+message("Young")
+ttestIS(data=Young, vars = 'Time', group = 'Room', eqv = T, effectSize = T)
+
+message("Middle")
+ttestIS(data=Middle, vars = 'Time', group = 'Room', eqv = T, effectSize = T)
+
+message("Old")
+ttestIS(data=Old, vars = 'Time', group = 'Room', eqv = T, effectSize = T)
+
+# What is another way that you could run simple effects? What would be the benefit of that?
+# Try it on your own to find out! (difference between RM condition (time) at each level of BS measure (alone, peer))
+```
+
+
+```{r directionality}
+
+# Young
+descriptives(Young, vars = c('Time'), splitBy = c('Room'))
+
+# Middle
+descriptives(Middle, vars = c('Time'), splitBy = c('Room'))
+
+# Old
+descriptives(Old, vars = c('Time'), splitBy = c('Room'))
+```
+
+
+# Visualization (because we all love graphs)
+
+```{r}
+# again, we need to find the standard errors here so we can have beautiful error bars --- always have error bars...always.
+
+summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                      conf.interval=.95, .drop=TRUE) {
+  library(plyr)
+  
+  # New version of length which can handle NA's: if na.rm==T, don't count them
+  length2 <- function (x, na.rm=FALSE) {
+    if (na.rm) sum(!is.na(x))
+    else       length(x)
+  }
+  
+  # This does the summary. For each group's data frame, return a vector with
+  # N, mean, and sd
+  datac <- ddply(data, groupvars, .drop=.drop,
+                 .fun = function(xx, col) {
+                   c(N    = length2(xx[[col]], na.rm=na.rm),
+                     mean = mean   (xx[[col]], na.rm=na.rm),
+                     sd   = sd     (xx[[col]], na.rm=na.rm)
+                   )
+                 },
+                 measurevar
+  )
+  
+  # Rename the "mean" column    
+  datac <- rename(datac, c("mean" = measurevar))
+  
+  datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+  
+  # Confidence interval multiplier for standard error
+  # Calculate t-statistic for confidence interval: 
+  # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
+  ciMult <- qt(conf.interval/2 + .5, datac$N-1)
+  datac$ci <- datac$se * ciMult
+  
+  return(datac)
+}
+```
+
+```{r}
+sumdat <- summarySE(dat, measurevar="Time", groupvars=c("Room","Age"))
+
+```
+
+```{r}
+# this plot with group them on the x by age and the cluster by room (three groups, with two bars)
+plot <- ggplot(sumdat, aes(x = Age, y = Time, fill = Room))+
+  geom_bar(stat='identity', position= 'dodge') +
+  geom_errorbar(aes(ymin=Time-se, ymax=Time+se), position = position_dodge(.9), width = .1) +
+  theme_minimal()
+
+plot + ggtitle('Two-Way Interaction Graph for Self-Control by Room and Age')
+
+```
+
+```{r}
+# ORRRRR you can have it this way where you look at each room on the x and they are clustered by age. Sometimes it's nice to see how the graphs may change based on how you want to present the data.
+
+plot2 <- ggplot(sumdat, aes(x = Room, y = Time, fill = Age))+
+  geom_bar(stat='identity', position= 'dodge') +
+  geom_errorbar(aes(ymin=Time-se, ymax=Time+se), position = position_dodge(.9), width = .1) +
+  theme_minimal()
+
+plot2 + ggtitle('Two-Way Interaction Graph for Self-Control by Room and Age')
+
+```

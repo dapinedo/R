@@ -1,0 +1,292 @@
+---
+title: "RegressionDemo.1"
+author: "Wonderful TA"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Multiple Regression Demo - Data Set #1**
+
+Prompt:
+
+A local business, Real Good Food, had their grand opening two weeks ago and collected information about customer experiences for each new patron with a small survey. The survey was taken as customers left the restaurant after finishing their meal and consisted of questions assessing enjoyment of the food, quality of the service, excitement about the opening, rating of happiness, and intention to return. Real Good Food is interested in what factor(s) influence whether a customer wants to come back and how they should focus their advertisements and attention.
+
+Variables:
+
+Enjoy - rating of enjoyment of the meal.
+Qual - rating of perceived quality of the service.
+Excite - rating of level of excitement about the opening of Read Good Food.
+Happy - rating of happiness when leaving the restaurant.
+Intent - rating of intention to return the restaurant in the near future.
+
+*Run the appropriate analyses and report relevant statistics in APA format. Please interpret the results for both someone who is knowledgable in statistics and for someone who is not.*
+
+```{r echo = FALSE, message = FALSE}
+library(psych)
+library(car)
+library(lsr)
+library(jmv)
+library(ggeffects)
+library(ggplot2)
+```
+
+```{r}
+dat <- read.csv("https://www.dropbox.com/s/nqr41bfvw2i8c66/RegDemo.1.csv?dl=1")
+```
+
+**Descriptive Statistics and Assumptions**
+```{r}
+# Descriptives
+desc <- descriptives(data = dat, 
+                     vars = c('Enjoy', 'Qual', 'Excite', 'Happy', 'Intent'), 
+                     hist = TRUE, 
+                     sd = TRUE, 
+                     range = TRUE, 
+                     skew = TRUE, 
+                     kurt = TRUE)
+desc
+```
+
+```{r}
+# Scatterplots
+plot(dat$Enjoy, dat$Intent, abline(lm(dat$Intent ~ dat$Enjoy)))
+plot(dat$Qual, dat$Intent, abline(lm(dat$Intent ~ dat$Qual)))
+plot(dat$Excite, dat$Intent, abline(lm(dat$Intent ~ dat$Excite)))
+plot(dat$Happy, dat$Intent, abline(lm(dat$Intent ~ dat$Happy)))
+```
+
+**Correlations**
+```{r}
+# Correlation
+cortable <- corrMatrix(data = dat, 
+                       vars = c('Enjoy', 'Qual', 'Excite', 'Happy', 'Intent'), 
+                       flag = TRUE)
+cortable
+```
+
+**Simple Regression**
+```{r}
+# Simple regression
+model1 <- linReg(data = dat, 
+                 dep = 'Intent', 
+                 covs = c('Enjoy'), 
+                 blocks = list('Enjoy'), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE)
+model1
+
+model2 <- linReg(data = dat, 
+                 dep = 'Intent', 
+                 covs = c('Qual'), 
+                 blocks = list('Qual'), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE)
+model2
+
+model3 <- linReg(data = dat, 
+                 dep = 'Intent', 
+                 covs = c('Excite'), 
+                 blocks = list('Excite'), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE)
+model3
+```
+
+```{r}
+# Interpret
+
+```
+
+**Visualization**
+
+```{r}
+plot1 <- ggplot(dat, aes(x=Enjoy, y=Intent))+ 
+  geom_point()+
+  geom_smooth(method=lm, se=TRUE, fullrange=TRUE) + xlab("Enjoyment") + ggtitle("Predicting Intention to Return from Enjoyment of Meal") + ylab("Intention to Return")
+
+plot1 + theme_minimal()
+
+```
+
+```{r}
+plot2 <- ggplot(dat, aes(x=Qual, y=Intent))+ 
+  geom_point()+
+  geom_smooth(method=lm, se=TRUE, fullrange=TRUE) + xlab("Quality of Service") + ggtitle("Predicting Intention to Return from Quality of Service") + ylab("Intention to Return")
+
+plot2 + theme_minimal()
+
+```
+
+```{r}
+plot3 <- ggplot(dat, aes(x=Excite, y=Intent))+ 
+  geom_point()+
+  geom_smooth(method=lm, se=TRUE, fullrange=TRUE) + xlab("Excitement about Opening") + ggtitle("Predicting Intention to Return from Excitement about Opening") + ylab("Intention to Return")
+
+plot3 + theme_minimal()
+
+```
+
+
+**Multiple Regression Demo - Data Set #2**
+
+Prompt:
+
+A local resident recently joined their church's newly developed charitable giving program is interested in finding out more about prosocial behavior in members of the congregation. Without knowing much about the literature, they develop a short survey to give to a nearby school district to find out what influences the amount of money given to their program for community outreach. Ultimately, they must report their findings to the program coordinator and a statistician on the board.
+
+Variables:
+
+Belief - belief that charitable giving has a positive effect.
+Need - rating of perceived amount of need required in the community.
+Interest - rating of level of interest in the project.
+Happy - rating of happiness felt when making donations.
+Amount - amount given (max $10).
+
+*Run the appropriate analyses and report relevant statistics in APA format. Please interpret the results for both someone who is knowledgable in statistics and for someone who is not.*
+
+```{r}
+dat2 <- read.csv("https://www.dropbox.com/s/9xo2qnb6ep5vamj/RegDemo.2.csv?dl=1")
+```
+
+**Descriptive Statistics and Assumptions**
+```{r}
+# Descriptives
+desc <- descriptives(data = dat2, 
+                     vars = c('Belief', 'Need', 'Interest', 'Happy', 'Amount'), 
+                     hist = TRUE, 
+                     sd = TRUE, 
+                     range = TRUE, 
+                     skew = TRUE, 
+                     kurt = TRUE)
+desc
+```
+
+```{r}
+# Scatterplots
+plot(dat2$Belief, dat2$Amount, abline(lm(dat2$Amount ~ dat2$Belief)))
+plot(dat2$Need, dat2$Amount, abline(lm(dat2$Amount ~ dat2$Need)))
+plot(dat2$Interest, dat2$Amount, abline(lm(dat2$Amount ~ dat2$Interest)))
+plot(dat2$Happy, dat2$Amount, abline(lm(dat2$Amount ~ dat2$Happy)))
+```
+
+**Correlations**
+```{r}
+# Correlation
+cortable <- corrMatrix(data = dat2, 
+                       vars = c('Belief', 'Need', 'Interest', 'Happy', 'Amount'), 
+                       flag = TRUE)
+cortable
+```
+
+**Simple Regression**
+```{r}
+# Simple regression
+# start with the simpler model first - Belief is most highly correlated with outcome variable (Amount)
+model1 <- linReg(data = dat2, 
+                 dep = 'Amount', #outcome
+                 covs = c('Belief'), #predictors
+                 blocks = list(c('Belief')), #order - doesn't matter fore simple regression as there is only one variable
+                 modelTest = TRUE, #significance test on model [H0: R squared = 0]
+                 stdEst = TRUE) #standardized regression coefficient for individual variable
+model1 #print to screen
+
+model2 <- linReg(data = dat2, 
+                 dep = 'Amount', 
+                 covs = c('Need'), 
+                 blocks = list(c('Need')), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE)
+model2
+```
+
+**Multiple Regression**
+```{r}
+# Multiple regression
+model3 <- linReg(data = dat2, 
+                 dep = 'Amount', #outcome
+                 covs = c('Belief', 'Need'), #predictors
+                 blocks = list(c('Belief', 'Need')), #order matters here if separate blocks of variables are provided
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ciStdEst = TRUE, 
+                 r2Adj = TRUE)
+model3
+
+model4 <- linReg(data = dat2, 
+                 dep = 'Amount', 
+                 covs = c('Belief', 'Need', 'Interest', 'Happy'), 
+                 blocks = list(c('Belief', 'Need', 'Interest', 'Happy')), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ciStdEst = TRUE, 
+                 r2Adj = TRUE)
+model4
+```
+
+**Model Comparison**
+```{r}
+# Hierarchical regression with model comparison (R2 change)
+
+# ALTERNATIVE
+# modelA<- lm(Amount ~ Belief + Need, data = dat2)
+# modelB <- lm(Amount ~ Belief + Need + Happy, data = dat2)
+# stats::anova(modelA, modelB)
+# summary(modelA)
+# summary(modelB)
+
+# 2 models plus comparison of them for final homework should be presented
+# Model 1 is Belief + Need
+# Model 2 is Belief + Need + Interest (just one more variable added to model)
+compare1 <- linReg(data = dat2, 
+                   dep = 'Amount', 
+                   covs = c('Belief', 'Need', 'Interest'),
+                   blocks = list(
+                     list('Belief', 'Need'), #comparison of models
+                     list('Interest')), 
+                   modelTest = TRUE,
+                   r2Adj = TRUE,
+                   stdEst = TRUE,
+                   ciStdEst = TRUE)
+compare1
+
+
+# Model 1 is Belief + Need + Interest
+# Model 2 is Belief + Need + Interest + Happy (just one more variable added to model)
+compare2 <- linReg(data = dat2, 
+                   dep = 'Amount',
+                   covs = c('Belief', 'Need', 'Interest', 'Happy'),
+                   blocks = list(
+                     list('Belief', 'Need', 'Interest'),
+                     list('Happy')), 
+                   modelTest = TRUE,
+                   r2Adj = TRUE, 
+                   stdEst = TRUE,
+                   ciStdEst = TRUE)
+compare2
+```
+
+**Interpretation**
+```{r}
+# Interpret
+
+```
+
+**Visualization** 
+```{r}
+# Example of plotting a multiple regression model based on belief, need, and interest predicting amount given.
+# save regression equation in an object
+fit1 = lm(Amount ~ Belief + Need + Interest, data = dat2)
+summary(fit1)
+
+# create predicted values from three predictors and save in object
+model_p <- ggpredict(fit1, terms = c('Belief', 'Need', 'Interest'), full.data = TRUE,  pretty = FALSE)
+
+# plot predicted line
+plot <- ggplot(model_p, aes(x, predicted)) +
+      geom_smooth(method = "lm", se = FALSE, fullrange=TRUE) + xlab("Score") + ggtitle("Plot of Model Predicting Amount Given") + ylab("Predicted Amount Given") +
+      geom_point() + theme_minimal()
+
+plot 
+```

@@ -1,0 +1,229 @@
+---
+title: "PSY.308c.DA1"
+author: "Daniel Pinedo"
+output: word_document
+---
+
+```{r, echo=FALSE, results=FALSE, message=FALSE, cache=FALSE, warning=FALSE}
+library(knitr); opts_chunk$set(error=TRUE, cache=FALSE)
+```
+
+**Prompt**
+A local business has implemented a new program to encourage employees to take more control over their workday. Acccording to the program, employees are allowed to take their break at any point during the day for as long as they want between 1 and 60 minutes. As businesses do, they were wondering how this program may relate to productivity on a 1-100 scale. At the end of the first month, the business conducted a short survey which had all 175 employees report the average length of their break, enjoyment had during the break, and desire to come to work. The business employed you to investigate these factors and how they may relate to productivity.
+
+**Variables:**
+Length - numeric; length of break in minutes (range 1-60).
+Enjoy - numeric; self-reported level of enjoyment of break period (scale average; range 1-10).
+Desire - numeric; self-reported level of desire to come to work (scale average; range 1-10).
+Product (Productivity) - numeric; percentage of time meeting weekly goals (range 1-100; represented as whole number).
+
+**Hypotheses**
+H~0~: no relationship between variables
+H~a~: length, enojoy, and desire predict product
+N = 175
+
+**Load Libraries**
+```{r echo = FALSE, message = FALSE}
+library(psych)
+library(car)
+library(lsr)
+library(jmv)
+library(ggeffects)
+library(ggplot2)
+```
+
+**Read Data Frame**
+```{r}
+dat <- read.csv('https://www.dropbox.com/s/b7vnpku0c1sezb6/PSY.308c.DA1.csv?dl=1')
+```
+
+**Descriptive Statistics and Assumptions**
+```{r}
+# Prerequisitites
+  # 1. Variables are measured on the continuous level
+
+# Assumptions
+  # 1. Normal Distribution for X and Y (Product) [i.e. histogram, skew +-3, kurtosis +-10]
+    # Distribition for Y appears to be bimodal, but otherwise normally distributed
+    # Skew for Y is -0.15; Kurtosis for Y is -.38 ---> both pass
+  # 2. Linear Relationship beween X and Y
+    # Visual inspection of scatterplot and prediction model line indicate a linear relationship
+  # 3. Homoscedasticity
+    # Visual inspection of scatterplots indicate homoscedasticity is true for all X/Y relationships
+  # 4. [Examine residuals (e = Y - Y~predicted~) to understand 2 and 3]
+
+# Descriptives [Assumption 1]
+desc <- descriptives(data = dat, 
+                     vars = c('Length', 'Enjoy', 'Desire', 'Product'), 
+                     hist = TRUE, 
+                     sd = TRUE, 
+                     range = TRUE, 
+                     skew = TRUE, 
+                     kurt = TRUE)
+desc
+
+```
+
+```{r}
+# Scatterplots
+plot(dat$Length, dat$Product, abline(lm(dat$Product ~ dat$Length)))
+plot(dat$Enjoy, dat$Product, abline(lm(dat$Product ~ dat$Enjoy)))
+plot(dat$Desire, dat$Product, abline(lm(dat$Product ~ dat$Desire)))
+```
+
+**Correlations**
+```{r}
+# Correlation
+cortable <- corrMatrix(data = dat, 
+                       vars = c('Length', 'Enjoy', 'Desire', 'Product'), 
+                       flag = TRUE)
+cortable
+
+```
+
+
+**Simple Regression**
+```{r}
+# Simple Regression Model 1
+# Start with the simpler model first - Enjoy is most correlated with outcome variable (Product)
+model1 <- linReg(data = dat, 
+                 dep = 'Product', #outcome
+                 covs = c('Enjoy'), #predictors
+                 blocks = list(c('Enjoy')), #order - doesn't matter fore simple regression as there is only one variable
+                 modelTest = TRUE, #significance test on model [H0: R squared = 0]
+                 stdEst = TRUE) #standardized regression coefficient for individual variable [Stand. Estimate]
+model1 #print to screen
+
+#This model is best fit for simple regression based on R squared and Beta Estimates
+
+# ALTERNATIVE
+model1.1<- lm(Product ~ Enjoy, data = dat)
+summary(model1.1)
+```
+
+```{r}
+# Simple Regression Model 2
+# Desire is second most correlated with outcome variable (Product)
+model2 <- linReg(data = dat, 
+                 dep = 'Product', #outcome
+                 covs = c('Desire'), #predictors
+                 blocks = list(c('Desire')), #order - doesn't matter fore simple regression as there is only one variable
+                 modelTest = TRUE, #significance test on model [H0: R squared = 0]
+                 stdEst = TRUE) #standardized regression coefficient for individual variable
+model2 #print to screen
+
+# ALTERNATIVE
+model2.1<- lm(Product ~ Desire, data = dat)
+summary(model2.1)
+```
+
+**Multiple Regression**
+```{r}
+# Multiple regression test #A
+
+modelA <- linReg(data = dat, 
+                 dep = 'Product', #outcome
+                 covs = c('Enjoy', 'Desire'), #predictors
+                 blocks = list(c('Enjoy', 'Desire')), #order matters here if separate blocks of variables are provided
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ciStdEst = TRUE, 
+                 r2Adj = TRUE)
+modelA
+
+# ALTERNATIVE
+modelA.1<- lm(Product ~ Enjoy + Desire, data = dat)
+summary(modelA.1)
+```
+
+```{r}
+# Multiple regression test #B
+
+modelB <- linReg(data = dat, 
+                 dep = 'Product', #outcome
+                 covs = c('Enjoy', 'Desire', 'Length'), #predictors
+                 blocks = list(c('Enjoy', 'Desire', 'Length')), #order matters here if separate blocks of variables are provided
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ciStdEst = TRUE, 
+                 r2Adj = TRUE)
+modelB
+
+# ALTERNATIVE
+modelB.1<- lm(Product ~ Enjoy + Desire + Length, data = dat)
+summary(modelB.1)
+```
+
+**Model Comparison**
+```{r}
+# Hierarchical regression with model comparison (significance of R squared change)
+# 2 models plus comparison of them for final homework should be presented
+
+# Comparison Model 1
+  # Model B: Product ~ Enjoy + Desire + Length
+  # Model A: Product ~ Enjoy + Desire
+
+compare1 <- linReg(data = dat, 
+                   dep = 'Product', 
+                   covs = c('Enjoy', 'Desire', 'Length'),
+                   blocks = list(
+                     list('Enjoy', 'Desire'), #Model A
+                     list('Length')), #Model B
+                   modelTest = TRUE,
+                   r2Adj = TRUE,
+                   stdEst = TRUE,
+                   ciStdEst = TRUE)
+compare1
+
+# ALTERNATIVE
+stats::anova(modelB.1, modelA.1)
+
+# Both statistical tests yield no significant difference between models B and A
+```
+
+```{r}
+# Comparison Model 2
+  # Model A: Product ~ Enjoy + Desire
+  # Model 1: Product ~ Enjoy
+
+compare2 <- linReg(data = dat, 
+                   dep = 'Product', 
+                   covs = c('Enjoy', 'Desire'),
+                   blocks = list(
+                     list('Enjoy'), #Model 1
+                     list('Desire')), #Model A
+                   modelTest = TRUE,
+                   r2Adj = TRUE,
+                   stdEst = TRUE,
+                   ciStdEst = TRUE)
+compare2
+
+# ALTERNATIVE
+stats::anova(modelA.1, model1.1)
+
+# Both statistical tests yield significant difference between models A and 1
+# These model comparisons yield that model A is the best fit for outcome variable Product
+```
+
+**Interpretation**
+```{r}
+# Interpret
+
+```
+
+**Visualization** 
+```{r}
+# plotting a multiple regression model based on: 
+  # Model A: Product ~ Enjoy + Desire (from lm command of model created 'modelA.1')
+
+
+# create predicted values from three predictors and save in object
+model_p <- ggpredict(modelA.1, terms = c('Enjoy', 'Desire'), full.data = TRUE,  pretty = FALSE)
+
+# plot predicted line
+plot <- ggplot(model_p, aes(x, predicted)) +
+      geom_smooth(method = "lm", se = FALSE, fullrange=TRUE) + xlab("Score") + ggtitle("Plot of Model Predicting Productivity") + ylab("Weekly Goal Percentage") +
+      geom_point() + theme_minimal()
+
+plot 
+```

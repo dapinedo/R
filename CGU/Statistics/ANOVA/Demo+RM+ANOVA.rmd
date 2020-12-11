@@ -1,0 +1,311 @@
+---
+title: "Repeated Measures ANOVA Demo 2018"
+output: word_document
+---
+
+You are an astute and observant graduate student and have noticed that friends in your cohort seem to especially crave junk food during midterms and finals (after all, there is a lot of free food around CGU - especially pizza). You wonder if stress and food consumption are related, do a speedy literature review, and hypothesize that individuals eat more slices of pizza when stressed compared to when they are calm. You decide to run a study where you experimentally manipulate feelings of calm, mildly stressed, and strongly stressed in participants and then see how many slices of pizza they eat. Money is tight and recruitment is hard, so you implement a within-subjects, repeated measures design. Will you impress the powers-that-be at Domino's, Round Table, and Sbarro? Let's see!
+
+# Demo 1
+
+#Load packages
+```{r}
+library(psych)
+library(ggplot2)
+library(reshape)
+library(reshape2)
+library(jmv)
+```
+
+#Read in your data
+```{r}
+pizza1 <- read.csv("https://www.dropbox.com/s/vcs2lqxfmpsyg4r/RM.ANOVA.Demo1.csv?dl=1")
+```
+
+#Prep Data
+```{r}
+#Note that ID was read by R as an integer. ID 1 = 1, NOT ID 1 = scored 1
+class(pizza1$ID)
+
+#View data. Anything wrong with this format?
+head(pizza1)
+
+#Need to "melt" the data
+pizza1.melt <- melt(pizza1, id.vars = "ID", measure.vars = c("Calm", "MildStressor", "StrongStressor"))
+
+#How's the format looking now?
+head(pizza1.melt)
+```
+
+
+#Check for assumptions! 
+```{r}
+#Assumption 1: IV is categorical & DV is continuous (HINT: There is no stats test for this. What other evidence can you use to check this?)
+pizza1$diff1 <- (pizza1$Calm - pizza1$MildStressor)
+pizza1$diff2 <- (pizza1$Calm - pizza1$StrongStressor)
+pizza1$diff3 <- (pizza1$MildStressor - pizza1$StrongStressor)
+```
+
+```{r}
+#Assumption 2: DV is normally distributed (across each difference score)
+# can just do the first describe since it's in wide format and it's easier to see the univariate normality assumptions for the difference scores
+describe(pizza1)
+
+# OR...
+describeBy(pizza1.melt, pizza1.melt$variable)
+hist(pizza1$diff1)
+hist(pizza1$diff2)
+hist(pizza1$diff3)
+
+#Hmmm...Isn't there another assumption? What about Mauchly's? Check in the ANOVA function below, similar to how we did Levene's with one-way.
+```
+
+```{r}
+model <- anovaRM(data = pizza1, 
+                 rm = list(list(label = 'RM Factor 1',
+                                levels = c('Calm', 'Mild Stressor', 'Strong Stressor'))), 
+                 rmCells = list(list(measure = 'Calm', cell = 'Calm'),
+                                list(measure = 'MildStressor', cell = 'Mild Stressor'),
+                                list(measure = 'StrongStressor', cell = 'Strong Stressor')),
+                 rmTerms = list('RM Factor 1'),
+                 effectSize = c('partEta', 'eta'),
+                 spherTests = TRUE,
+                 spherCorr = c('none','GG'),
+                 postHoc = list('RM Factor 1'),
+                 postHocCorr = 'holm',
+                 emMeans = list(NULL))
+model
+
+```
+
+
+```{r}
+# we need to find the standard errors here so we can have beautiful error bars --- always have error bars...always.
+summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                      conf.interval=.95, .drop=TRUE) {
+  library(plyr)
+  
+  # New version of length which can handle NA's: if na.rm==T, don't count them
+  length2 <- function (x, na.rm=FALSE) {
+    if (na.rm) sum(!is.na(x))
+    else       length(x)
+  }
+  
+  # This does the summary. For each group's data frame, return a vector with
+  # N, mean, and sd
+  datac <- ddply(data, groupvars, .drop=.drop,
+                 .fun = function(xx, col) {
+                   c(N    = length2(xx[[col]], na.rm=na.rm),
+                     mean = mean   (xx[[col]], na.rm=na.rm),
+                     sd   = sd     (xx[[col]], na.rm=na.rm)
+                   )
+                 },
+                 measurevar
+  )
+  
+  # Rename the "mean" column    
+  datac <- rename(datac, c("mean" = measurevar))
+  
+  datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+  
+  # Confidence interval multiplier for standard error
+  # Calculate t-statistic for confidence interval: 
+  # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
+  ciMult <- qt(conf.interval/2 + .5, datac$N-1)
+  datac$ci <- datac$se * ciMult
+  
+  return(datac)
+}
+```
+
+```{r}
+sumdat <- summarySE(pizza1.melt, measurevar="value", groupvars=c("variable"))
+
+```
+
+
+```{r}
+# creation of the bar graph - including specifications such as the color, title, addition of error bars, etc. 
+bar1 <- ggplot(sumdat, aes(x = variable, y = value)) +
+  geom_bar(stat='identity', fill = 'tomato3') +
+  theme_minimal() +
+  geom_errorbar(aes(ymin=value-se, ymax=value+se), width = .1)
+
+bar1 + ggtitle('Pizza Eaten by Grad Students by Stress Condition')
+
+```
+
+```{r}
+# creation of the line graph - including specifications such as the color, title, addition of error bars, etc. 
+bar1 <- ggplot(sumdat, aes(x = variable, y = value, group = 1)) +
+  geom_line(color = "blue", size = 1) + 
+  geom_point(color = "red", size = 2) +
+  theme_minimal() +
+  geom_errorbar(aes(ymin=value-se, ymax=value+se), width = .1)
+
+bar1 + ggtitle('Pizza Eaten by Grad Students by Stress Condition')
+
+```
+
+
+
+
+# Demo 2
+
+```{r}
+pizza2 <- read.csv("https://www.dropbox.com/s/dmx5rwf4ry8ma7h/RM.ANOVA.Demo2.csv?dl=1")
+```
+
+#Prep Data
+```{r}
+#Note that ID was read by R as an integer. ID 1 = 1, NOT ID 1 = scored 1
+class(pizza2$ID)
+
+#View data. Anything wrong with this format?
+head(pizza2)
+
+#Need to "melt" the data
+pizza2.melt <- melt(pizza2, id.vars = "ID", measure.vars = c("Calm", "MildStressor", "StrongStressor"))
+
+#How's the format looking now?
+head(pizza2.melt)
+```
+
+#Check for assumptions (AKA check yourself before you wreck yourself). 
+```{r}
+#Assumption 1: IV is categorical & DV is continuous (HINT: There is no stats test for this)
+
+#Assumption 2: DV is normally distributed
+pizza2$diff1 <- (pizza2$Calm - pizza2$MildStressor)
+pizza2$diff2 <- (pizza2$Calm - pizza2$StrongStressor)
+pizza2$diff3 <- (pizza2$MildStressor - pizza2$StrongStressor)
+
+describe(pizza2)
+
+describeBy(pizza2.melt, pizza2.melt$variable)
+
+hist(pizza2$diff1)
+hist(pizza2$diff2)
+hist(pizza2$diff3)
+```
+
+#Run the analysis
+```{r}
+model2 <- anovaRM(data = pizza2, 
+                 rm = list(list(label = 'RM Factor 1',
+                                levels = c('Calm', 'Mild Stressor', 'Strong Stressor'))), 
+                 rmCells = list(list(measure = 'Calm', cell = 'Calm'),
+                                list(measure = 'MildStressor', cell = 'Mild Stressor'),
+                                list(measure = 'StrongStressor', cell = 'Strong Stressor')),
+                 rmTerms = list('RM Factor 1'),
+                 effectSize = c('partEta', 'eta'),
+                 spherTests = TRUE,
+                 spherCorr = c('none','GG'),
+                 postHoc = list('RM Factor 1'),
+                 postHocCorr = 'holm',
+                 emMeans = list(NULL))
+model2
+
+```
+
+# Visualization
+
+```{r}
+# saving the summary data in an object
+sumdat2 <- summarySE(pizza2.melt, measurevar="value", groupvars=c("variable"))
+
+```
+
+```{r}
+# creation of the bar graph - including specifications such as the color, title, addition of error bars, etc. 
+bar2 <- ggplot(sumdat2, aes(x = variable, y = value)) +
+  geom_bar(stat='identity', fill = 'tomato1') +
+  theme_minimal() +
+  geom_errorbar(aes(ymin=value-se, ymax=value+se), width = .1)
+
+bar2 + ggtitle('Pizza Eaten by Grad Students by Stress Condition')
+
+```
+
+
+
+
+#Demo 3
+
+```{r}
+pizza3 <- read.csv("https://www.dropbox.com/s/h8qo8jam3h6owb9/RM.ANOVA.Demo3.csv?dl=1")
+```
+
+#Prep Data
+```{r}
+#Note that ID was read by R as an integer. ID 1 = 1, NOT ID 1 = scored 1
+class(pizza3$ID)
+
+#View data. Anything wrong with this format?
+head(pizza3)
+
+#Need to "melt" the data
+pizza3.melt <- melt(pizza3, id.vars = "ID", measure.vars = c("Calm", "MildStressor", "StrongStressor"))
+
+#How's the format looking now?
+head(pizza3.melt)
+```
+
+#Check for assumptions. 
+```{r}
+#Assumption 1: IV is categorical & DV is continuous (HINT: There is no stats test for this)
+
+#Assumption 2: DV is normally distributed
+pizza3$diff1 <- (pizza3$Calm - pizza3$MildStressor)
+pizza3$diff2 <- (pizza3$Calm - pizza3$StrongStressor)
+pizza3$diff3 <- (pizza3$MildStressor - pizza3$StrongStressor)
+
+describe(pizza3)
+
+describeBy(pizza3.melt, pizza3.melt$variable)
+
+hist(pizza3$diff1)
+hist(pizza3$diff2)
+hist(pizza3$diff3)
+```
+
+#Run the analysis
+```{r}
+# remember that the last assumption will print here!
+
+model3 <- anovaRM(data = pizza3, 
+                 rm = list(list(label = 'RM Factor 1',
+                                levels = c('Calm', 'Mild Stressor', 'Strong Stressor'))), 
+                 rmCells = list(list(measure = 'Calm', cell = 'Calm'),
+                                list(measure = 'MildStressor', cell = 'Mild Stressor'),
+                                list(measure = 'StrongStressor', cell = 'Strong Stressor')),
+                 rmTerms = list('RM Factor 1'),
+                 effectSize = c('partEta', 'eta'),
+                 spherTests = TRUE,
+                 spherCorr = c('none','GG'),
+                 postHoc = list('RM Factor 1'),
+                 postHocCorr = 'holm',
+                 emMeans = list(NULL))
+model3
+
+```
+
+# Visualization
+
+```{r}
+# saving the summary data in an object
+sumdat3 <- summarySE(pizza3.melt, measurevar="value", groupvars=c("variable"))
+
+
+```
+
+
+```{r}
+# creation of the bar graph - including specifications such as the color, title, addition of error bars, etc. 
+bar3 <- ggplot(sumdat3, aes(x = variable, y = value)) +
+  geom_bar(stat='identity', fill = 'tomato3') +
+  theme_minimal() +
+  geom_errorbar(aes(ymin=value-se, ymax=value+se), width = .1)
+
+bar3 + ggtitle('Pizza Eaten by Grad Students by Stress Condition')
+
+```

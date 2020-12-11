@@ -1,0 +1,149 @@
+---
+title: "Multi-Group SEM Example"
+author: "Dana Wanzer & Andrew Conway"
+date: "November 14, 2016"
+output:
+  html_document:
+    toc: yes
+    toc_depth: '2'
+  pdf_document:
+    fig_width: 7
+    toc: yes
+    toc_depth: 2
+---
+  
+  <!-- LEAVE THIS HERE, DO NOT PUT ANY CODE ABOVE IT -->
+```{r, echo=FALSE, results=FALSE, message=FALSE, warning=FALSE, cache=FALSE, set-options}
+library(knitr); opts_chunk$set(error=TRUE, cache=FALSE, warning=FALSE, tidy.opts=list(width.cutoff=80), tidy=TRUE); options(width=80)
+```
+
+
+
+# Set-up
+```{r}
+
+# Clear your working directory
+rm(list=ls())
+
+# Load libraries
+library(psych)
+library(lavaan)
+library(semPlot)
+library(multilevel)
+library(jpeg)
+
+# Read data
+dat <- read.csv("/Users/andrewconway/Downloads/ASPSurvey1516.csv", header = T)
+dim(dat)
+
+# Turn missing data (blank cells) into "NA" for R
+dat[dat==""] <- NA
+
+```
+
+# SEM Longitudinal Model
+    In this example, I look at how youth experiences in the program relate to their developmental assets. The Developmental Assets Profile, developed by the Search Institue, examines both internal and external assets as indicators of positive youth development. A group of low-income, Hispanic youth in a Los Angeles after-school program participated in this survey at both pre- and post-test. Thus, I look at how the two major factors (experiences and assets) relate to one another from pre- to post-test through a longitudinal SEM.
+  
+  Note that I used mean composites of the subscales as predictors instead of individual items (with first-order factors for the subscales and second-order factors for the scales). However, I was having issues with model convergence (e.g., negative residuals, beta values above one, both of which indicate a Heywood case). Heywood cases are more likely to occur with maximum likelihood estimation, which is what I use. It is also an indication of too many factors are being estimated.  
+```{r}
+
+structuralmodel <- '
+  # First-order latent variables
+  Experiences_Pre =~ 1*Peer_Pre + Staff_Pre + Skill_Pre + Voice_Pre + Active_Pre
+  Experiences_Post =~ 1*1*Peer_post + Staff_post + Skill_post + Voice_post + Active_post
+  DAP_Pre =~ 1*Social_pre + PosID_pre + ComLearn_pre + PosVal_pre +
+      Support_Pre + Empower_Pre + Bound_Pre + Construct_Pre
+  DAP_Post =~ 1*Social_post + PosID_post + ComLearn_post + PosVal_post +
+      Support_post + Empower_post + Bound_post + Construct_post
+
+  # Regression
+  Experiences_Post ~ Experiences_Pre + DAP_Pre
+  DAP_Post ~ Experiences_Pre + DAP_Pre
+
+  # Correlations among latent terms
+  Experiences_Pre ~~ DAP_Pre
+  Experiences_Post ~~ DAP_Post
+
+  # Correlations among residuals
+  Support_post ~~ Bound_post
+  Support_Pre ~~ Bound_Pre'
+
+fitstructuralmodel <- lavaan(structuralmodel, data = dat, auto.var = TRUE, missing = "ML", int.ov.free = TRUE)
+
+summary(fitstructuralmodel, fit.measures = TRUE, standardized = TRUE)
+
+```
+
+# Multi-group analysis: configural invariance
+  This is testing for configural invariance (see Kline, p. 396). I am looking at differences between two groups of youth: those that indicated they wanted to be in the program (internally motivated, code = 0) and those that indicated they were "forced" to be in the program by an adult or a peer (externally motivated, code = 1). Previous analyses over the years have indicated that internally motivated youth rate the program higher and report higher levels of positive youth development than externally motivated youth. I am thus testing to see whether the measurement model is valid in each group. This is our baseline model for moving forward.
+```{r}
+
+fitSEM.configural <- lavaan(structuralmodel, data = dat, auto.var = TRUE, missing = "ML", int.ov.free = TRUE, group = "RFJ_Dic_pre")
+
+summary(fitSEM.configural, fit.measures = TRUE, standardized = TRUE)
+
+anova(fitstructuralmodel, fitSEM.configural)
+
+```
+
+# Multi-group analysis: weak invariance
+  This is testing for weak invariance by constraining unstandardized factor loadings over the groups. Note what happens to the unstandardized factor loadings between groups!
+```{r}
+
+fitSEM.weak <- lavaan(structuralmodel, data = dat, auto.var = TRUE, missing = "ML", int.ov.free = TRUE, group = "RFJ_Dic_pre", group.equal = "loadings")
+
+summary(fitSEM.weak, fit.measures = TRUE, standardized = TRUE)
+
+```
+
+## Compare models and test for weak invariance
+  We are now going to compare the fit of the configural invariance model (no equality constraints) to the weak invariance model (equality constraints on factor loadings). There is a significant difference between models, but it is -almost- not significant and we have a large-ish sample size. Furthermore, the CFI actually improves from the configural invariance model (.947) to the weak invariance model (.949). Thus, we are going to assume we have support for weak invariance, meaning the constructs (latent variables) are manifested the same way in each group.
+```{r}
+
+anova(fitSEM.configural, fitSEM.weak)
+
+```
+
+# Multi-group analysis: structural invariance
+  This is testing for structural invariance by constraining both unstandardized factor loadings and unstandardized coefficients for direct effects over the groups. Note what now happens to the unstandardized estimates of the regression paths!
+```{r}
+
+fitSEM.structural <- lavaan(structuralmodel, data = dat, auto.var = TRUE, missing = "ML", int.ov.free = TRUE, group = "RFJ_Dic_pre", group.equal = c("loadings", "regressions"))
+
+summary(fitSEM.structural, fit.measures = TRUE, standardized = TRUE)
+
+```
+
+## Compare models to test for structural invariance
+  We are now going to compare the fit of the weak invariance model (equality constraints on factor loadings) to the structural invariance model (equality constraints on factor loadings and regression weights) to see if we have support for structural invariance. Kline (p. 420) says to test the structural invariance model with the unrestricted (e.g., configural) model ($\chi^2$ diff (26) = 42.22, *p* = .023) but that you need to test for the measurement model part first (n.s.). Despite the significant chi-square against the configural model, I would say we have structural invariance due to model fit otherwise not changing much; CFI is the same between the configural model and structural invariance model (.947). 
+```{r}
+
+anova(fitSEM.structural, fitSEM.weak)
+
+```
+
+# Multi-group analysis: Strong invariance
+  
+```{r}
+
+fitSEM.strong <- lavaan(structuralmodel, data = dat, auto.var = TRUE, missing = "ML", int.ov.free = TRUE, group = "RFJ_Dic_pre", group.equal = c("loadings", "regressions", "intercepts"))
+
+summary(fitSEM.strong, fit.measures = TRUE, standardized = TRUE)
+
+
+anova(fitSEM.structural, fitSEM.strong)
+
+```
+
+# Multi-group analysis: Strict invariance
+  
+```{r}
+
+fitSEM.strict <- lavaan(structuralmodel, data = dat, auto.var = TRUE, missing = "ML", int.ov.free = TRUE, group = "RFJ_Dic_pre", group.equal = c("loadings", "regressions", "intercepts", "residuals"))
+
+summary(fitSEM.strict, fit.measures = TRUE, standardized = TRUE)
+
+anova(fitSEM.strict, fitSEM.strong)
+
+
+```

@@ -1,0 +1,381 @@
+---
+title: "PSY 308c Homework 5"
+author: "Daniel Pinedo"
+output: word_document
+---
+  
+  <!-- LEAVE THIS HERE, DO NOT PUT ANY CODE ABOVE IT -->
+```{r, echo=FALSE, results=FALSE, message=FALSE, cache=FALSE}
+library(knitr); opts_chunk$set(error=TRUE, cache=FALSE)
+```
+
+
+*Instructions*
+----------
+You have been hired by a school-based intervention to figure out what predicts child aggression. The school created a short survey to be administered to students. Two classrooms were randomly chosen to participate. The study was conducted through a pen-and-paper survey at the beginning of first period they measured family adversity and positive peer relationships. They aren't too savvy on the literature, but some of the staff at the program have been noting (anecdotally) an interesting phenomenon which may be impacting that relationship. 
+
+Apparently, even when youth have a lot of familiy adversity, if they also have positive friendships then they don't act out quite as much. However, this doesn't seem to be the case for those who also have a lot of adversity in their family but don't have good peer relationships (they tend to act out a lot). 
+
+So, you have been tasked with accessing their data set and analyzing whether **positive peer relationships moderates the relationship between family adversity and child aggression**.
+
+  *Three variables for analysis:*
+    FA: Family adversity on a scale of 0-20.
+    AGG: Child aggression on a scale of 0-20. 
+    PPR: Positive peer relationships on a scale of 0-20. (outcome)
+    
+  *Demographics:*
+    Age: self-report; had to be at least 16 to participate.
+    Sex: self-report; male, female.
+    Family Income: $0.00 - $200,000.00.
+    Class Rank: Sophomore, Junior, Senior.
+  
+
+```{r echo = FALSE, message = FALSE}
+dat <- read.csv('https://www.dropbox.com/s/fgx1c4jv9ranjs7/PSY.308c.DA5.csv?dl=1')
+```
+
+```{r echo = FALSE, message = FALSE}
+library(pacman) #Package used to load all packages using p_load(); will install missing packages
+p_load(psych, jmv, car, Hmisc, MVN, mice, VIM, ggplot2, ggeffects, rockchalk)
+# psych is used for multivariate analysis
+# jmv is used for making outputs nice and here assists with hierarchical regression
+# car is used for ncvTest()
+# Hmisc is used for imputing values in impute() --> not used in this analysis
+# MVN is used for multivariate outlier detection
+# mice is used for imputing values in md.pattern()
+# VIM is used for visualizing imputed values
+# ggplot2 adds cool plots
+# ggefects is for ggpredict() and ggtitle()
+# rockchalk is used for moderation visualization
+```
+
+**Initial Data Diagnosis**
+```{r}
+# Descriptives to get an overall view of data
+desc <- descriptives(data = dat, 
+                        vars = c('FA', 'AGG', 'PPR', 'Age', 'Sex', 'FamIncome', 'Rank'),
+                        sd = TRUE, 
+                        range = TRUE,
+                        skew = TRUE, 
+                        kurt = TRUE,
+                        freq = TRUE) # for categorical variables
+desc
+
+corr.test(dat[2:4]) # Prerequisite: outcome and predictor variables are measured on the continuous level
+
+#MISSING DATA --> Different N's and the line that indicates missing items indicates missing cases 
+#Running dim(dat) indicates 40 rows/observations
+#Options: (1) delete list-wise (2) impute 
+```
+
+*Regression Diagnostics*
+1. Missing Data - **NONE**
+2. Univariate a. Normality, b. Linearity and c. Outliers
+3. Multivariate a. Normality and b.Outliers
+4. Heteroscedsticity
+5. Multi-collinearity
+6. Linearity between outcome and predictor(s)
+
+**2a. Univariate Normality**
+```{r}
+#ASSUMPTION: Normal Distribution for continuous variables X and Y (Child Aggression) [i.e. histogram, skew +-3, kurtosis +-10]
+
+desc <- descriptives(data = dat, 
+                              vars = c('FA', 'AGG', 'PPR'),
+                              sd = TRUE,
+                              range = TRUE,
+                              skew = TRUE, 
+                              kurt = TRUE,
+                              hist = TRUE) # for visual inspection
+desc
+
+# Histogram for Family Adversity (FA) is normal
+# Histogram for Child Agression (AGG) is bimodal
+# Histogram for Positive Peer Relationships (PPR) is normal
+    # Skewness - ALL PASS
+    # Kurtosis - ALL PASS  
+
+#Visual inspection indicates that there are no outliers
+```
+
+**2b. Univariate Linearity**
+```{r}
+# Scatterplots [Assumption 2 and 3a]
+plot(dat$FA, dat$AGG, abline(lm(dat$AGG ~ dat$FA)))
+plot(dat$PPR, dat$AGG, abline(lm(dat$AGG ~ dat$PPR)))
+
+#visual inspection indicates a likely non-linear relationship between Family Adversity and Child Aggression and is consistent with visual inspection of histograms (step 2a) for outliers
+
+#visual inspection indicates a likely linear relationship between Positive Peer Relationship and Child Aggression and is consistent with visual inspection of histograms (step 2a) for outliers
+```
+
+**2c. Univariate Outliers**
+```{r}
+#Identify outliers
+#scale() converts to z scores - "3" refers to standard deviations
+dat[abs(scale(dat$AGG)) > 3, ]
+dat[abs(scale(dat$FA)) > 3, ]
+dat[abs(scale(dat$PPR)) > 3, ]
+
+#Child Aggression (AGG) has 0 univariate outliers
+#Family Adversity (FA) has 0 univariate outliers
+#Positive Peer Relationships (PPR) has 0 univariate outliers
+
+#There are a total of 0 independent observations that contain outliers
+```
+
+**3a. Multivariate Normality**
+```{r}
+
+#look at residuals and the Q-Q plot
+#Observe Leverage (Mahalanobis' Distance) + Discrepancy (= Influence; Cook's Distance)
+
+model.multi_norm <- linReg(data = dat, 
+                dep = 'AGG', 
+                covs = c('FA', 'PPR'),
+                blocks = list(c('FA', 'PPR')), 
+                modelTest = TRUE, 
+                r2Adj = TRUE, 
+                stdEst = TRUE, 
+                ciStdEst = TRUE,
+                qqPlot = TRUE,  ##QQ plot
+                resPlots = TRUE) ##residuals plot 
+
+model.multi_norm
+
+#Alternate not using jvm library
+#model <- lm(Amount ~ Belief + Need, data = dat.no.uni)
+#plot(model)
+
+#inspection of plots of predictors vs residuals indicates possible multivariate normality and possible heteroscadasticity
+#inspection of theoretical quantiles vs standardized residuals indicates a possible problem with multivariate distance and leverage
+#as such, Cook's distance - a measure of influence - will be used to test for multivariate normality
+#for Mahalanobis' Distance (leverage only), see Regression_Diagnostics.Rmd for how-to
+```
+
+**3b. Multivariate Outliers**
+```{r}
+#Check and remove multivariate outliers based on Cook's distance (CD)
+#CD = Influence = Leverage + Discrepancy (Discrepancy = how much an observation deviates from the overall pattern of the model)
+
+#create model
+model.cook <- lm(dat$AGG ~ dat$FA + dat$PPR)
+model.cook
+summary(model.cook)
+
+#find cook's distance for that model
+dat$cook <- cooks.distance(model.cook)
+
+#create the cutoff [> 4/N]
+cook.cutoff <- 4/nrow(dat) 
+cook.cutoff
+
+# 4/40 --> cutoff = .10
+
+#plot it out
+plot(model.cook, which = 4, cook.levels = cook.cutoff)
+
+#Add a cutoff line
+abline(h = cook.cutoff, lty = 2) 
+
+#Show and remove all outliers above your cutoff line
+
+dat[(dat$cook) > cook.cutoff, ]
+dat.final <- dat[!(dat$cook) > cook.cutoff, ]
+
+#N is now 39 after removing 1 multivariate outlier observation(s)
+    #was 40 after removing 0 univariate outlier observation(s)
+    #was 40 after removing 0 observation(s) with missing parameters
+    #was 40 originally (total 1 observation(s) removed from orginal dataset - 3%)
+
+```
+
+**4. Heteroscedasticity**
+```{r}
+
+#Breusch-Pagan test 
+#H0 = no change in variance across residuals.
+model.breusch_pagan <- lm(dat.final$AGG ~ dat.final$FA + dat.final$PPR)
+ncvTest(model.breusch_pagan)
+
+#not significant = homoscedastic
+#If violated use Box-cox transformation [boxcox(model)] in library MASS
+
+```
+
+**5. Multi-collinearity**
+```{r}
+
+#Tolerance = 1 - R squared --> for our purpose < .4 is bad
+#VIF = 1/Tolerance ---> for our purpose > 2.5 is bad
+#Small VIF values (or higher Tolerance values) indicates low correlation among variables under ideal conditions
+
+#Multicollinearity occurs when two or more predictors in the model are correlated and provide redundant information about the response. Multicollinearity is measured by variance inflation factors (VIF) and tolerance. If VIF value exceeds 4.0, or tolerance less than 0.2 then there is a problem with multicollinearity according to Hair et al. (2010).
+
+model.multicoll <- linReg(data = dat.final, 
+                 dep = 'AGG', 
+                 cov = c('FA', 'PPR'),
+                 blocks = list(c('FA', 'PPR')), 
+                 modelTest = TRUE,
+                 r2Adj = TRUE,
+                 stdEst = TRUE,
+                 ciStdEst = TRUE, 
+                 collin = TRUE) #this line does the thing
+model.multicoll
+
+#Tolerance for all variables indicates low/no multicollinearity
+```
+
+*Data Analysis*
+1. Descriptive Statistics
+2. Correlations
+3. Center Data (if useful)
+4. Simple Regression
+5. Hierarchical Model Comparison
+6. Visualization
+
+**1. Descriptive Statistics**
+```{r}
+
+#Prerequisite: predictors and outcome all measured on continuous level
+#Assumptions:
+  #1. Normal Distribution for X and Y [i.e. histogram, skew +-3, kurtosis +-10]
+    # Histograms observed are normal
+    # Skewness - ALL PASS
+    # Kurtosis - ALL PASS
+    # N/A Observations with missing parameters were removed (see Diagnostics)
+    # N/A univariate outliers were removed (see Diagnostics)
+    # multivariate outliers were removed (see Diagnostics)
+  
+  #2. Linear Relationship beween X and Y
+   #visual inspection indicates a non-linear relationship between Family Adversity and Child Aggression
+   #visual inspection indicates a linear relationship between Positive Peer Relationship and Child Aggression
+  #3. Homoscedasticity - OK (see Diagnostics)
+  #4. Multicollearity - OK (see Diagnostics)
+
+#N is now 39 after removing 1 multivariate outlier observation(s)
+    #was 40 after removing 0 univariate outlier observation(s)
+    #was 40 after removing 0 observation(s) with missing parameters
+    #was 40 originally (total 1 observation(s) removed from orginal dataset - 3%)
+
+desc.final <- descriptives(data = dat.final, 
+                     vars = c('FA', 'AGG', 'PPR', 'Age', 'Sex', 'FamIncome', 'Rank'), 
+                     sd = TRUE, 
+                     range = TRUE, 
+                     skew = TRUE, 
+                     kurt = TRUE,
+                     freq = TRUE)
+desc.final
+```
+
+**2. Correlations**
+```{r}
+# Correlations of predictor and outcome variables
+cortable <- corrMatrix(data = dat.final, 
+                       vars = c('AGG', 'FA', 'PPR'), 
+                       flag = TRUE)
+cortable
+
+```
+
+**3. Center data (if useful)**
+```{r}
+# Center only predictor variables
+# centered = x - M
+# Centering only changes the intercept for regression equation
+  # Centering means, on average across all predictor variables Y intercept is [coefficient for X units]
+# Center predictors
+dat.final$FA.centered <- dat.final$FA - mean(dat.final$FA)
+dat.final$PPR.centered <- dat.final$PPR - mean(dat.final$PPR)
+
+#USEFUL - We will center data for models of these predictors, as aggression score across average of all predictors is useful
+```
+
+**4. Simple Regression**
+```{r}
+# Simple regression
+# R = correlation between observed scores and predicted scores
+# R squared = percentage of variance explained
+# t = Estimate / SE
+# df1 = k = number of predictors
+# df2 = N - k - 1 [k is number of predictors]
+# H0: B0 = 0; H0; R squared = 0
+
+model.wm <- linReg(data = dat.final,
+                 dep = 'AGG', 
+                 covs = c('FA'),
+                 blocks = list('FA'), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ci = TRUE)
+model.wm #1 fit
+
+model.process <- linReg(data = dat.final,
+                 dep = 'AGG',
+                 covs = c('PPR'),
+                 blocks = list('PPR'), 
+                 modelTest = TRUE, 
+                 stdEst = TRUE, 
+                 ci = TRUE)
+model.process #2 fit
+```
+
+**5. Hierarchical Model Comparison**
+```{r}
+# Model comparison
+# H0 = delta of R squared = 0
+
+# Multiple regression with Moderation
+# REMEMBER: Coefficient estimate for one predictor is slope across average of other predictors.
+#F test tests null hypothesis that null hypothesis is zero (is square of t score of product term)
+#T test test null hypothesis that product term is zero
+
+#create moderator variable
+dat.final$mod.centered <- dat.final$PPR.centered * dat.final$FA.centered
+
+comparison <- linReg(data = dat.final, 
+                 dep = 'AGG', 
+                 covs = c('PPR.centered', 'FA.centered', 'mod.centered'),
+                 blocks = list(
+                            list('PPR.centered'), 
+                            list('FA.centered'), 
+                            list('mod.centered') ), 
+                 modelTest = TRUE, 
+                 r2Adj = TRUE,
+                 stdEst = TRUE,
+                 ciStdEst = TRUE)
+comparison
+
+#model 1 = AGG ~ PPR
+#model 2 = AGG ~ PPR + FA
+#model 3 = AGG ~ PPR + FA + mod
+
+```
+
+**Moderation Analysis**
+```{r}
+
+# moderator is represented on the plot line that is in the legend
+# high positive peer relationships does not significantly "exaggerate" the relationship between family adversity and child aggression
+plot <- lm(AGG ~ PPR.centered + FA.centered + (PPR.centered * FA.centered), data = dat.final)
+plotSlopes(plot, plotx = "FA.centered", modx = "PPR.centered", modxVals = "std.dev.", main = "Moderation Analysis", col = c("red", "blue", "black"))
+
+```
+
+**6. Visualization**
+```{r}
+# plotting a regression model based on: 
+  # Model 2: AGG ~ PPR.centered + FA.centered
+
+# create linear model
+model.final <- lm(AGG ~ PPR + FA, data = dat.final)
+summary(model.final)
+model_p <- ggpredict(model.final, terms = c('PPR', 'FA'), full.data = TRUE, pretty = TRUE) #for single regression, remove terms = c("v1"", "v2", "vn")
+
+# plot predicted line - for single regression, change to aes(y = VAR, x = VAR)
+plot <- ggplot(model_p, aes(x, predicted)) +
+      geom_smooth(method = "lm", se = TRUE, fullrange=TRUE) + xlab("Score") + ggtitle("Model of Peer Relationships and Family Adversity Predicting Child Aggression") + ylab("Child Aggression") +
+      geom_point() + theme_minimal()
+
+plot
+```
