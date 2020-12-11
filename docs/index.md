@@ -44,7 +44,7 @@ sitemap:
 6. <a href="https://rpubs.com/odenipinedo/introduction-to-data-visualization-with-ggplot2" target="_blank" rel="noopener noreferrer">introduction to data visualization with ggplot2</a>
 7. <a href="https://rpubs.com/odenipinedo/intermediate-data-visualization-with-ggplot2" target="_blank" rel="noopener noreferrer">intermediate data visualization with ggplot2</a>
 8. <a href="https://rpubs.com/odenipinedo/introduction-to-importing-data-in-R" target="_blank" rel="noopener noreferrer">introduction to importing data in R</a>
-9. intermediate importing data in R
+9. <a href="https://rpubs.com/odenipinedo/intermediate-importing-data-in-R" target="_blank" rel="noopener noreferrer">intermediate importing data in R</a>
 10. cleaning data in R
 11. working with dates and times in R
 12. introduction to writing functions in R
