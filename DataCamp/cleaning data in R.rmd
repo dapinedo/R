@@ -512,20 +512,451 @@ sfo_survey %>%
 
 Mission accomplished! Thanks to your savvy string skills, the follow-up survey will be done in no time!
 
+## Uniformity
+
+![](_images/721.png)
+
+![](_images/722.png)
+
+![](_images/723.png)
+
+![](_images/724.png)
+
+![](_images/725.png)
+
+![](_images/726.png)
+
+![](_images/727.png)
+
+![](_images/728.png)
+
+![](_images/729.png)
+
+**Date uniformity**
+
+In this chapter, you work at an asset management company and you'll be working with the `accounts` dataset, which contains information about each customer, the amount in their account, and the date their account was opened. Your boss has asked you to calculate some summary statistics about the average value of each account and whether the age of the account is associated with a higher or lower account value. Before you can do this, you need to make sure that the `accounts` dataset you've been given doesn't contain any uniformity problems. In this exercise, you'll investigate the `date_opened` column and clean it up so that all the dates are in the same format.
+
+`dplyr` and `lubridate` are loaded and `accounts` is available.
+
+```{r}
+library(lubridate)
+accounts <- readRDS("_data/ch3_1_accounts.rds")
+
+# Check out the accounts data frame
+head(accounts)
+
+# Define the date formats
+formats <- c("%Y-%m-%d", "%B %d, %Y")
+
+# Convert dates to the same format
+accounts <- accounts %>%
+  mutate(date_opened_clean = parse_date_time(date_opened, orders = formats))
+
+accounts
+```
+
+Cunning calendar cleaning! Now that the `date_opened` dates are in the same format, you'll be able to use them for some plotting in the next exercise.
+
+**Currency uniformity**
+
+Now that your dates are in order, you'll need to correct any unit differences. When you first plot the data, you'll notice that there's a group of very high values, and a group of relatively lower values. The bank has two different offices - one in New York, and one in Tokyo, so you suspect that the accounts managed by the Tokyo office are in Japanese yen instead of U.S. dollars. Luckily, you have a data frame called `account_offices` that indicates which office manages each customer's account, so you can use this information to figure out which totals need to be converted from yen to dollars.
+
+The formula to convert yen to dollars is `USD = JPY / 104`.
+
+`dplyr` and `ggplot2` are loaded and the accounts and `account_offices` data frames are available.
+
+```{r}
+office <- as.character(factor(c(1,1,2,2,1,2,2,2,2,1,1,1,1,2,1,2,2,1,1,2,2,2,1,1,1,2,1,1,1,1,1,2,2,2,1,2,1,1,2,1,2,1,1,2,1,1,2,2,1,2,2,2,1,1,1,2, 2,2,2,2,1,2,1,1,2,2,1,2,1,2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1), levels = c(1, 2), labels = c("New York", "Tokyo")))
+
+account_offices <- data.frame(id = accounts$id, office)
+
+# Scatter plot of opening date and total amount
+accounts %>%
+  ggplot(aes(x = date_opened_clean, y = total)) +
+  geom_point()
+
+# Left join accounts and account_offices by id
+accounts %>%
+  left_join(account_offices, by = "id") %>%
+  # Convert totals from the Tokyo office to USD
+  mutate(total_usd = ifelse(office == "Tokyo", total/104, total)) %>%
+  # Scatter plot of opening date vs total_usd
+  ggplot(aes(x = date_opened_clean, y = total_usd)) +
+    geom_point()
+```
+
+Crafty currency conversion! The points in your last scatter plot all fall within a much smaller range now and you'll be able to accurately assess the differences between accounts from different countries.
+
+## Cross field validation
+
+![](_images/730.png)
+
+![](_images/731.png)
+
+![](_images/732.png)
+
+![](_images/733.png)
+
+![](_images/734.png)
+
+**Validating totals**
+
+In this lesson, you'll continue to work with the `accounts` data frame, but this time, you have a bit more information about each account. There are three different funds that account holders can store their money in. In this exercise, you'll validate whether the `total` amount in each account is equal to the sum of the amount in `fund_A`, `fund_B`, and `fund_C`. If there are any accounts that don't match up, you can look into them further to see what went wrong in the bookkeeping that led to inconsistencies.
+
+`dplyr` is loaded and `accounts` is available.
+
+```
+# Find invalid totals
+accounts %>%
+  # theoretical_total: sum of the three funds
+  mutate(theoretical_total = fund_A + fund_B + fund_C) %>%
+  # Find accounts where total doesn't match theoretical_total
+  filter(theoretical_total != total_usd)
+```
+```
+     id date_opened  total fund_A fund_B fund_C acct_age theoretical_total
+1 D5EB0F00  2001-04-16 130920  69487  48681  56408       19            174576
+2 92C237C6  2005-12-13  85362  72556  21739  19537       15            113832
+3 0E5B69F5  2018-05-07 134488  88475  44383  46475        2            179333
+```
+
+Great job! By using cross field validation, you've been able to detect values that don't make sense. How you choose to handle these values will depend on the dataset.
+
+**Validating age**
+
+Now that you found some inconsistencies in the `total` amounts, you're suspicious that there may also be inconsistencies in the `acct_age` column, and you want to see if these inconsistencies are related. Using the skills you learned from the video exercise, you'll need to validate the age of each account and see if rows with inconsistent `acct_age`s are the same ones that had inconsistent `total`s
+
+`dplyr` and `lubridate` are loaded, and `accounts` is available.
+
+```
+# Find invalid acct_age
+accounts %>%
+  # theoretical_age: age of acct based on date_opened
+  mutate(theoretical_age = floor(as.numeric(date_opened %--% today(), "years"))) %>%
+  # Filter for rows where acct_age is different from theoretical_age
+  filter(acct_age != theoretical_age)
+```
+```
+       id date_opened  total fund_A fund_B fund_C acct_age theoretical_age
+1 11C3C3C0  2017-12-24 180003  84295  31591  64117        1               2
+2 EA7FF83A  2004-11-02 111526  86856  19406   5264       15              16
+3 3627E08A  2008-04-01 238104  60475  89011  88618       11              12
+```
+
+Vigorous validating! There are three accounts that all have ages off by one year, but none of them are the same as the accounts that had `total` inconsistencies, so it looks like these two bookkeeping errors may not be related.
+
+## Completeness
+
+![](_images/735.png)
+
+![](_images/736.png)
+
+![](_images/737.png)
+
+![](_images/738.png)
+
+![](_images/739.png)
+
+- it appears that missing ozone data happens more when temperatures are high
+
+![](_images/740.png)
+
+![](_images/741.png)
+
+![](_images/742.png)
+
+![](_images/743.png)
+
+![](_images/744.png)
+
+**Visualizing missing data**
+
+Dealing with missing data is one of the most common tasks in data science. There are a variety of types of missingness, as well as a variety of types of solutions to missing data.
+
+You just received a new version of the `accounts` data frame containing data on the amount held and amount invested for new and existing customers. However, there are rows with missing `inv_amount` values.
+
+You know for a fact that most customers below 25 do not have investment accounts yet, and suspect it could be driving the missingness. The `dplyr` and `visdat` packages have been loaded and `accounts` is available.
+
+```
+# Visualize the missing values by column
+vis_miss(accounts)
+```
+![](_images/745.png)
+```
+accounts %>%
+  # missing_inv: Is inv_amount missing?
+  mutate(missing_inv = is.na(inv_amount)) %>%
+  # Group by missing_inv
+  group_by(missing_inv) %>%
+  # Calculate mean age for each missing_inv group
+  summarize(avg_age = mean(age))
+```
+```
+# A tibble: 97 x 8
+# Groups:   missing_inv [2]
+   cust_id   age acct_amount inv_amount account_opened last_transaction
+   <fct>   <int>       <dbl>      <dbl> <fct>          <fct>           
+ 1 8C3554~    54      44245.     35500. 03-05-18       30-09-19        
+ 2 D55366~    36      86507.     81922. 21-01-18       14-01-19        
+ 3 A63198~    49      77799.     46412. 26-01-18       06-10-19        
+ 4 93F2F9~    56      93875.     76563. 21-08-17       10-07-19        
+ 5 DE0A08~    21      99998.        NA  05-06-17       15-01-19        
+ 6 25E68E~    47     109738.     93553. 26-12-17       12-11-18        
+ 7 3FA929~    53      79744.     70358. 21-06-18       24-08-18        
+ 8 984403~    29      17940.     14430. 07-10-17       18-05-18        
+ 9 870A92~    58      63523.     51297. 02-09-18       22-02-19        
+10 166B05~    53      38175.     15053. 28-02-19       31-10-18        
+# ... with 87 more rows, and 2 more variables: missing_inv <lgl>, avg_age <dbl>
+```
+
+Since the average age for `TRUE` `missing_inv` is 22 and the average age for `FALSE` missing_inv is 44, it is likely that the `inv_amount` variable is missing mostly in young customers.
+
+```
+# Sort by age and visualize missing vals
+accounts %>%
+  arrange(age) %>%
+  vis_miss()
+```
+![](_images/746.png)
+
+Fabulous visualizations! Investigating summary statistics based on missingness is a great way to determine if data is missing completely at random or missing at random.
+
+**Treating missing data**
+
+In this exercise, you're working with another version of the `accounts` data that contains missing values for both the `cust_id` and `acct_amount` columns.
+
+You want to figure out how many unique customers the bank has, as well as the average amount held by customers. You know that rows with missing `cust_id` don't really help you, and that on average, the `acct_amount` is usually 5 times the amount of `inv_amount`.
+
+In this exercise, you will drop rows of `accounts` with missing `cust_id`s, and impute missing values of `inv_amount` with some domain knowledge. `dplyr` and `assertive` are loaded and `accounts` is available.
+
+```
+# Create accounts_clean
+accounts_clean <- accounts %>%
+  # Filter to remove rows with missing cust_id
+  filter(!is.na(cust_id)) %>%
+  # Add new col acct_amount_filled with replaced NAs
+  mutate(acct_amount_filled = ifelse(is.na(acct_amount), inv_amount * 5, acct_amount))
+
+# Assert that cust_id has no missing vals
+assert_all_are_not_na(accounts_clean$cust_id)
+
+# Assert that acct_amount_filled has no missing vals
+assert_all_are_not_na(accounts_clean$acct_amount_filled)
+```
+
+Great job! Since your assertions passed, there's no missing data left, and you can definitely *bank* on nailing your analysis!
+
+## Comparing strings
+
+![](_images/747.png)
+
+![](_images/748.png)
+
+![](_images/749.png)
+
+![](_images/750.png)
+
+**Types of edit distance**
+
+- Damerau-Levenshtein
+  - what you just learned
+- Levenshtein
+  - considers only substitution, insertion, and deletion
+- LCS (Longest Common Subsequence)
+  - considers only insertion and deletion
+- Others
+  - Jaro-Winkler
+  - Jaccard
+  
+*Which is best?*
+
+![](_images/751.png)
+
+![](_images/752.png)
+
+![](_images/753.png)
+
+![](_images/754.png)
+
+**Small distance, small difference**
+
+In the video exercise, you learned that there are multiple ways to calculate how similar or different two strings are. Now you'll practice using the `stringdist` package to compute string distances using various methods. It's important to be familiar with different methods, as some methods work better on certain datasets, while others work better on other datasets.
+
+The `stringdist` package has been loaded for you.
+
+```{r}
+library(stringdist)
+
+# Calculate Damerau-Levenshtein distance
+stringdist("las angelos", "los angeles", method = "dl")
+
+# Calculate LCS distance
+stringdist("las angelos", "los angeles", method = "lcs")
+
+# Calculate Jaccard distance
+stringdist("las angelos", "los angeles", method = "jaccard")
+```
+
+Superb `stringdist()` skills! In the next exercise, you'll use Damerau-Levenshtein distance to map typo-ridden cities to their true spellings.
+
+**Fixing typos with string distance**
+
+In this chapter, one of the datasets you'll be working with, `zagat`, is a set of restaurants in New York, Los Angeles, Atlanta, San Francisco, and Las Vegas. The data is from Zagat, a company that collects restaurant reviews, and includes the restaurant names, addresses, phone numbers, as well as other restaurant information.
+
+The `city` column contains the name of the city that the restaurant is located in. However, there are a number of typos throughout the column. Your task is to map each `city` to one of the five correctly-spelled cities contained in the `cities` data frame.
+
+`dplyr` and `fuzzyjoin` are loaded, and `zagat` and `cities` are available.
+
+```{r}
+library(fuzzyjoin)
+zagat <- readRDS("_data/zagat.rds")
+cities <- data.frame(city_actual = as.factor(c("new york", "los angeles", "atlanta", "san francisco", "las vegas")))
+
+# Count the number of each city variation
+zagat %>%
+  count(city)
+
+# Join zagat and cities and look at results
+zagat %>%
+  # Left join based on stringdist using city and city_actual cols
+  stringdist_left_join(cities, by = c("city" = "city_actual")) %>%
+  # Select the name, city, and city_actual cols
+  select(name, city, city_actual)
+```
+
+Fabulous fixing! Now that you've created consistent spelling for each city, it will be much easier to compute summary statistics by city.
+
+## Generating and comparing pairs
+
+![](_images/755.png)
+
+![](_images/756.png)
+
+![](_images/757.png)
+
+![](_images/758.png)
+
+- this method does not scale, however to comparisons between large datasets
+
+![](_images/759.png)
+
+![](_images/760.png)
+
+![](_images/761.png)
+
+`lcs()` = longest common subsequence method/function
 
 
+![](_images/762.png)
 
+`default_comparator`s: `lcs()`, `jaccard()`, `jaro_winkler()`
 
+**Pair blocking**
 
+Zagat and Fodor's are both companies that gather restaurant reviews. The `zagat` and `fodors` datasets both contain information about various restaurants, including addresses, phone numbers, and cuisine types. Some restaurants appear in both datasets, but don't necessarily have the same exact name or phone number written down. In this chapter, you'll work towards figuring out which restaurants appear in both datasets.
 
+The first step towards this goal is to generate pairs of records so that you can compare them. In this exercise, you'll first generate all possible pairs, and then use your newly-cleaned `city` column as a blocking variable.
 
+`zagat` and `fodors` are available.
 
+```{r}
+fodors <- readRDS("_data/fodors.rds")
+library(reclin)
 
+# Generate all possible pairs
+pair_blocking(zagat, fodors)
 
+# Generate pairs with same city
+pair_blocking(zagat, fodors, blocking_var = "city")
+```
 
+Perfect pairings! By using `city` as a blocking variable, you were able to reduce the number of pairs you'll need to compare from 165,230 pairs to 40,532.
 
+**Comparing pairs**
 
+Now that you've generated the pairs of restaurants, it's time to compare them. You can easily customize how you perform your comparisons using the `by` and `default_comparator` arguments. There's no right answer as to what each should be set to, so in this exercise, you'll try a couple options out.
 
+`dplyr` and `reclin` are loaded and `zagat` and `fodors` are available.
 
+```{r}
+# Generate pairs
+pair_blocking(zagat, fodors, blocking_var = "city") %>%
+  # Compare pairs by name using lcs()
+  compare_pairs(by = "name",
+      default_comparator = lcs())
 
+# Generate pairs
+pair_blocking(zagat, fodors, blocking_var = "city") %>%
+  # Compare pairs by name, phone, addr
+  compare_pairs(by = c("name", "phone", "addr"),
+      default_comparator = jaro_winkler())
+```
 
+Crafty comparisons! Choosing a comparator and the columns to compare is highly dataset-dependent, so it's best to try out different combinations to see which works best on the dataset you're working with. Next, you'll build on your string comparison skills and learn about record linkage!
+
+## Scoring and linking
+
+![](_images/763.png)
+
+![](_images/764.png)
+
+![](_images/765.png)
+
+![](_images/766.png)
+
+![](_images/767.png)
+
+![](_images/768.png)
+
+![](_images/769.png)
+
+**Putting it together**
+
+During this chapter, you've cleaned up the `city` column of `zagat` using string similarity, as well as generated and compared pairs of restaurants from `zagat` and `fodors`. The end is near - all that's left to do is score and select pairs and link the data together, and you'll be able to begin your analysis in no time!
+
+reclin and `dplyr` are loaded and `zagat` and `fodors` are available.
+
+```{r}
+# Create pairs
+pair_blocking(zagat, fodors, blocking_var = "city") %>%
+  # Compare pairs
+  compare_pairs(by = "name", default_comparator = jaro_winkler()) %>%
+  # Score pairs
+  score_problink()
+
+# Create pairs
+pair_blocking(zagat, fodors, blocking_var = "city") %>%
+  # Compare pairs
+  compare_pairs(by = "name", default_comparator = jaro_winkler()) %>%
+  # Score pairs
+  score_problink() %>%
+  # Select pairs
+  select_n_to_m()
+
+# Create pairs
+pair_blocking(zagat, fodors, blocking_var = "city") %>%
+  # Compare pairs
+  compare_pairs(by = "name", default_comparator = jaro_winkler()) %>%
+  # Score pairs
+  score_problink() %>%
+  # Select pairs
+  select_n_to_m() %>%
+  # Link data 
+  link()
+```
+
+Lovely linking! Now that your two datasets are merged, you can use the data to figure out if there are certain characteristics that make a restaurant more likely to be reviewed by Zagat or Fodor's.
+
+## Congratulations!
+
+![](_images/770.png)
+
+![](_images/771.png)
+
+![](_images/772.png)
+
+![](_images/773.png)
+
+![](_images/774.png)
+
+![](_images/775.png)
