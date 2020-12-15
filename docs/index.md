@@ -45,7 +45,7 @@ sitemap:
 8. <a href="https://rpubs.com/odenipinedo/introduction-to-importing-data-in-R" target="_blank" rel="noopener noreferrer">introduction to importing data in R</a>
 9. <a href="https://rpubs.com/odenipinedo/intermediate-importing-data-in-R" target="_blank" rel="noopener noreferrer">intermediate importing data in R</a>
 10. <a href="https://rpubs.com/odenipinedo/cleaning-data-in-R" target="_blank" rel="noopener noreferrer">cleaning data in R</a>
-11. working with dates and times in R
+11. <a href="https://rpubs.com/odenipinedo/working-with-dates-and-times-in-R" target="_blank" rel="noopener noreferrer">working with dates and times in R</a>
 12. introduction to writing functions in R
 13. exploratory data analysis in R
 14. case study: exploratory data analysis in R
@@ -79,7 +79,7 @@ sitemap:
 2. project: Dr. Semmelweis and the discovery of handwashing
 3. <a href="https://rpubs.com/odenipinedo/data-manipulation-with-dplyr" target="_blank" rel="noopener noreferrer">data manipulation with dplyr</a>
 4. writing efficient R code
-5. working with dates and times in R
+5. <a href="https://rpubs.com/odenipinedo/working-with-dates-and-times-in-R" target="_blank" rel="noopener noreferrer">working with dates and times in R</a>
 6. project: drunken datetimes in Ames, Iowa
 7. string manipulation with stringr in R
 8. working with web data in R
