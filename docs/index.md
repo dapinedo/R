@@ -22,7 +22,7 @@ sitemap:
 4. <a href="https://github.com/dapinedo/R/tree/master/CGU/Statistics/Factor" target="_blank" rel="noopener noreferrer">Factor Analysis</a>
 5. <a href="https://github.com/dapinedo/R/tree/master/CGU/Statistics/SEM" target="_blank" rel="noopener noreferrer">Structural Equation Modeling</a>
 
-## DataCamp
+## <a href="https://www.datacamp.com/profile/odenipinedo" target="_blank" rel="noopener noreferrer">DataCamp</a> 
 
 #### Analyzing Genomic Data in R
 
