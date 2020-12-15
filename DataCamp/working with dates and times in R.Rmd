@@ -12,5 +12,1227 @@ options(repos="https://CRAN.R-project.org")
 
 ## Introduction to dates
 
+**Dates**
 
-![](_images/671.png)
+27th Feb 2013
+
+- NZ: 27/2/2013
+- USA: 2/27/2013
+
+![](_images/776.png)
+
+**ISO 8601 YYYY-MM-DD**
+
+- values ordered from the largest to smallest unit of time
+- each has a fixed number of digits, must be padded with leading zeros
+- either, no separators for computers, or `-` in dates
+- 1st of January 2011 -> 2011-01-01
+
+![](_images/777.png)
+
+**Specifying dates**
+
+As you saw in the video, R doesn't know something is a date unless you tell it. If you have a character string that represents a date in the ISO 8601 standard you can turn it into a [Date](https://www.rdocumentation.org/packages/base/versions/3.4.1/topics/Dates) using the [as.Date()](https://www.rdocumentation.org/packages/base/topics/as.Date) function. Just pass the character string (or a vector of character strings) as the first argument.
+
+In this exercise you'll convert a character string representation of a date to a `Date` object.
+
+```{r}
+# The date R 3.0.0 was released
+x <- "2013-04-03"
+
+# Examine structure of x
+str(x)
+
+# Use as.Date() to interpret x as a date
+x_date <- as.Date(x)
+
+# Examine structure of x_date
+str(x_date)
+
+# Store April 10 2014 as a Date
+april_10_2014 <- as.Date("2014-04-10")
+```
+
+Fantastic work! What if your string isn't in ISO 8601 format? Don't worry, you'll learn how to parse all sorts of formats in Chapter 2.
+
+**Automatic import**
+
+Sometimes you'll need to input a couple of dates by hand using [as.Date()](https://www.rdocumentation.org/packages/base/topics/as.Date) but it's much more common to have a column of dates in a data file.
+
+Some functions that read in data will automatically recognize and parse dates in a variety of formats. In particular the import functions, like [read_csv()](https://www.rdocumentation.org/packages/readr/topics/read_csv), in the `readr` package will recognize dates in a few common formats.
+
+There is also the [anytime()](https://www.rdocumentation.org/packages/anytime/topics/anytime) function in the `anytime` package whose sole goal is to automatically parse strings as dates regardless of the format.
+
+Try them both out in this exercise.
+
+```{r}
+# Load the readr package
+library(readr)
+
+# Use read_csv() to import rversions.csv
+releases <- read_csv("_data/rversions.csv")
+
+# Examine the structure of the date column
+str(releases$date)
+
+# Load the anytime package
+library(anytime)
+
+# Various ways of writing Sep 10 2009
+sep_10_2009 <- c("September 10 2009", "2009-09-10", "10 Sep 2009", "09-10-2009")
+
+# Use anytime() to parse sep_10_2009
+anytime(sep_10_2009)
+```
+
+Nice, you're already importing dates into R! Sometimes these functions won't work, especially if dates are ambiguous (e.g. Is `2004-10-4`, Oct 4th or April 10th?) but you'll learn how to handle these cases in Chapter 2.
+
+## Why use dates?
+
+![](_images/778.png)
+
+![](_images/779.png)
+
+![](_images/780.png)
+
+![](_images/781.png)
+
+**Plotting**
+
+If you plot a `Date` on the axis of a plot, you expect the dates to be in calendar order, and that's exactly what happens with [plot()](https://www.rdocumentation.org/packages/graphics/topics/plot) or [ggplot()](https://www.rdocumentation.org/packages/ggplot2/topics/ggplot).
+
+In this exercise you'll make some plots with the R version `releases` data from the previous exercises using `ggplot2`. There are two big differences when a `Date` is on an axis:
+
+1. If you specify limits they must be `Date` objects.
+
+2. To control the behavior of the scale you use the `scale_x_date()` function.
+
+Have a go in this exercise where you explore how often R releases occur.
+
+```{r}
+library(ggplot2)
+
+# Set the x axis to the date column
+ggplot(releases, aes(x = date, y = type)) +
+  geom_line(aes(group = 1, color = factor(major)))
+
+# Limit the axis to between 2010-01-01 and 2014-01-01
+ggplot(releases, aes(x = date, y = type)) +
+  geom_line(aes(group = 1, color = factor(major))) +
+  xlim(as.Date("2010-01-01"), as.Date("2014-01-01"))
+
+# Specify breaks every ten years and labels with "%Y"
+ggplot(releases, aes(x = date, y = type)) +
+  geom_line(aes(group = 1, color = factor(major)))  +
+  scale_x_date(date_breaks = "10 years", date_labels = "%Y")
+```
+
+Super! You'll use ggplot2 quite a lot in Chapter 2. We'll provide the code you need, but if you want to learn more about ggplot2, take the [Data Visualization with ggplot2](https://www.datacamp.com/courses/data-visualization-with-ggplot2-1) course.
+
+**Arithmetic and logical operators**
+
+Since `Date` objects are internally represented as the number of days since 1970-01-01 you can do basic math and comparisons with dates. You can compare dates with the usual [logical operators](https://www.rdocumentation.org/packages/base/topics/Comparison) (`<`, `==`, `>` etc.), find extremes with [min()](https://www.rdocumentation.org/packages/base/topics/min) and [max()](https://www.rdocumentation.org/packages/base/topics/max), and even subtract two dates to find out the time between them.
+
+In this exercise you'll see how these operations work by exploring the last R release. You'll see [Sys.date()](https://www.rdocumentation.org/packages/base/topics/Sys.date()) in the code, it simply returns today's date.
+
+```{r}
+library(dplyr)
+
+# Find the largest date
+last_release_date <- max(releases$date)
+
+# Filter row for last release
+last_release <- filter(releases, date == last_release_date)
+
+# Print last_release
+last_release
+
+# How long since last release?
+Sys.Date() - last_release_date
+```
+
+Great job! Did you notice that the time since last release was reported in days? You'll learn a ton more about controlling the units of time differences and doing calculations with dates in Chapter 3.
+
+## What about times?
+
+**ISO 8601**
+
+HH:MM:SS
+
+- largest unit to smallest
+- fixed digits
+  - hours: 00 -- 24
+  - minutes: 00 -- 59
+  - seconds: 00 -- 60 (60 only for leap seconds)
+- no separator or `:`
+
+![](_images/782.png)
+
+![](_images/783.png)
+
+**Datetimes behave nicely too**
+
+Once a `POSIXct` object, datetimes can be:
+
+- compared
+- subtracted
+- plotted
+
+**Getting datetimes into R**
+
+Just like dates without times, if you want R to recognize a string as a datetime you need to convert it, although now you use [as.POSIXct()](https://www.rdocumentation.org/packages/base/topics/as.POSIXct()). [as.POSIXct()](https://www.rdocumentation.org/packages/base/topics/as.POSIXct()) expects strings to be in the format `YYYY-MM-DD HH:MM:SS`.
+
+The only tricky thing is that times will be interpreted in local time based on your machine's set up. You can check your timezone with [Sys.timezone()](https://www.rdocumentation.org/packages/base/topics/Sys.timezone). If you want the time to be interpreted in a different timezone, you just set the `tz` argument of [as.POSIXct()](https://www.rdocumentation.org/packages/base/topics/as.POSIXct()). You'll learn more about time zones in Chapter 4.
+
+In this exercise you'll input a couple of datetimes by hand and then see that [read_csv()](https://www.rdocumentation.org/packages/readr/topics/read_csv) also handles datetimes automatically in a lot of cases.
+
+```{r}
+# Use as.POSIXct to enter the datetime 
+as.POSIXct("2010-10-01 12:12:00")
+
+# Use as.POSIXct again but set the timezone to `"America/Los_Angeles"`
+as.POSIXct("2010-10-01 12:12:00", tz = "America/Los_Angeles")
+
+# Use readr to import rversions.csv
+releases <- read_csv("_data/rversions.csv")
+
+# Examine structure of datetime column
+str(releases$datetime)
+```
+
+Nice work! Did you take a look at the release times? I wonder how quickly people download new versions…
+
+**Datetimes behave nicely too**
+
+Just like `Date` objects, you can plot and do math with `POSIXct` objects.
+
+As an example, in this exercise you'll see how quickly people download new versions of R, by examining the download logs from the RStudio CRAN mirror.
+
+R 3.2.0 was released at "2015-04-16 07:13:33" so `cran-logs_2015-04-17.csv` contains a random sample of downloads on the 16th, 17th and 18th.
+
+```{r}
+# Import "cran-logs_2015-04-17.csv" with read_csv()
+logs <- read_csv("_data/cran-logs_2015-04-17.csv")
+
+# Print logs
+logs
+
+# Store the release time as a POSIXct object
+release_time <- as.POSIXct("2015-04-16 07:13:33", tz = "UTC")
+
+# When is the first download of 3.2.0?
+logs %>% 
+  filter(datetime > release_time,
+    r_version == "3.2.0")
+
+# Examine histograms of downloads by version
+ggplot(logs, aes(x = datetime)) +
+  geom_histogram() +
+  geom_vline(aes(xintercept = as.numeric(release_time)))+
+  facet_wrap(~ r_version, ncol = 1)
+```
+
+Cool plot! Did you see how it takes about two days for downloads of the new version (3.2.0) to overtake downloads of the old version (3.1.3)?
+
+## Why lubridate?
+
+**lubridate**
+
+- make working with dates and times in R easy!
+- `tidyverse` package
+  - plays nicely with builtin datetime objects
+  - designed for humans not computers
+- plays nicely with other `tidyverse` packages
+- consistent behaviour regardless of underlying object
+
+![](_images/784.png)
+
+![](_images/785.png)
+
+![](_images/786.png)
+
+**Other lubridate features**
+
+- handling timezones
+- fast parsing of standard formats
+- outputting datetimes
+
+## Parsing dates with lubridate
+
+![](_images/787.png)
+
+![](_images/788.png)
+
+![](_images/789.png)
+
+![](_images/790.png)
+
+**Selecting the right parsing function**
+
+`lubridate` provides a set of functions for parsing dates of a known order. For example, [ymd()](https://www.rdocumentation.org/packages/lubridate/topics/ymd) will parse dates with year first, followed by month and then day. The parsing is flexible, for example, it will parse the `m` whether it is numeric (e.g. `9` or `09`), a full month name (e.g. `September`), or an abbreviated month name (e.g. `Sep`).
+
+All the functions with `y`, `m` and `d` in any order exist. If your dates have times as well, you can use the functions that start with `ymd`, `dmy`, `mdy` or `ydm` and are followed by any of `_h`, `_hm` or `_hms`.
+
+To see all the functions available look at [ymd()](https://www.rdocumentation.org/packages/lubridate/topics/ymd) for dates and [ymd_hms()](https://www.rdocumentation.org/packages/lubridate/topics/ymd_hms) for datetimes.
+
+Here are some challenges. In each case we've provided a date, your job is to choose the correct function to parse it.
+
+```{r}
+library(lubridate)
+
+# Parse x 
+x <- "2010 September 20th" # 2010-09-20
+ymd(x)
+
+# Parse y 
+y <- "02.01.2010"  # 2010-01-02
+dmy(y)
+
+# Parse z 
+z <- "Sep, 12th 2010 14:00"  # 2010-09-12T14:00
+mdy_hm(z)
+```
+
+Terrific! Did you notice the message after you called `library(lubridate)`? Whenever you see an object “`is masked by`”, it means an object in the package, in this case the `date()` function in `lubridate` has the same name as an object in another loaded package, in this case `date()` in the `base` package. If you ask for `date()` you'll get the `lubridate` one, you can always get the one it masked with `base::date()`.
+
+**Specifying an order with `parse_date_time()`**
+What about if you have something in a really weird order like `dym_msh`? There's no named function just for that order, but that is where [parse_date_time()](https://www.rdocumentation.org/packages/lubridate/topics/parse_date_time) comes in. [parse_date_time()](https://www.rdocumentation.org/packages/lubridate/topics/parse_date_time) takes an additional argument, `orders`, where you can specify the order of the components in the date.
+
+For example, to parse "`2010 September 20th`" you could say `parse_date_time("2010 September 20th", orders = "ymd")` and that would be equivalent to using the `ymd()` function from the previous exercise.
+
+One advantage of `parse_date_time()` is that you can use more format characters. For example, you can specify weekday names with `A`, `I` for 12 hour time, am/pm indicators with `p` and many others. You can see a whole list on the help page [?parse_date_time](https://www.rdocumentation.org/packages/lubridate/topics/parse_date_time).
+
+Another big advantage is that you can specify a vector of orders, and that allows parsing of dates where multiple formats might be used.
+
+You'll try it out in this exercise.
+
+```{r}
+# Specify an order string to parse x
+x <- "Monday June 1st 2010 at 4pm"
+parse_date_time(x, orders = "ABdyIp")
+
+# Specify order to include both "mdy" and "dmy"
+two_orders <- c("October 7, 2001", "October 13, 2002", "April 13, 2003", 
+  "17 April 2005", "23 April 2017")
+parse_date_time(two_orders, orders = c("mdy", "dmy"))
+
+# Specify order to include "dOmY", "OmY" and "Y"
+short_dates <- c("11 December 1282", "May 1372", "1253")
+parse_date_time(short_dates, orders = c("dOmY", "OmY", "Y"))
+
+```
+
+Fantastic job! Did you notice that when a date component is missing, it's just set to `1`? For example, the input `1253` resulted in the date `1253-01-01`.
+
+## Weather in Auckland
+
+![](_images/791.png)
+
+**dplyr review**
+
+- `mutate()` - add new columns (or overwrite old ones)
+- `filter()` - subset rows
+- `select()` - subset columns
+- `arrange()` - order rows
+- `summarise()` - summarise rows
+- `group_by()` - useful in conjunction with `summarise()`
+
+![](_images/792.png)
+
+**Import daily weather data**
+
+In practice you won't be parsing isolated dates and times, they'll be part of a larger dataset. Throughout the chapter after you've mastered a skill with a simpler example (the release times of R for example), you'll practice your `lubridate` skills in context by working with weather data from Auckland NZ.
+
+There are two data sets: `akl_weather_daily.csv` a set of once daily summaries for 10 years, and `akl_weather_hourly_2016.csv` observations every half hour for 2016. You'll import the daily data in this exercise and the hourly weather in the next exercise.
+
+You'll be using functions from `dplyr`, so if you are feeling rusty, you might want to review [filter()](https://www.rdocumentation.org/packages/dplyr/topics/filter), [select()](https://www.rdocumentation.org/packages/dplyr/topics/select) and [mutate()](https://www.rdocumentation.org/packages/dplyr/topics/mutate).
+
+```{r}
+library(lubridate)
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+# Import CSV with read_csv()
+akl_daily_raw <- read_csv("_data/akl_weather_daily.csv")
+
+# Print akl_daily_raw
+akl_daily_raw
+
+# Parse date 
+akl_daily <- akl_daily_raw %>%
+  mutate(date = ymd(date))
+
+# Print akl_daily
+akl_daily
+
+# Plot to check work
+ggplot(akl_daily, aes(x = date, y = max_temp)) +
+  geom_line()
+
+```
+
+Perfect! Can you see when it is hot in Auckland? Those temperatures are in farenheit. Yup, summer falls in Dec-Jan-Feb.
+
+**Import hourly weather data**
+
+The hourly data is a little different. The date information is spread over three columns `year`, `month` and `mday`, so you'll need to use `make_date()` to combine them.
+
+Then the time information is in a separate column again, `time`. It's quite common to find date and time split across different variables. One way to construct the datetimes is to paste the `date` and `time` together and then parse them. You'll do that in this exercise.
+
+```{r}
+library(lubridate)
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+# Import "akl_weather_hourly_2016.csv"
+akl_hourly_raw <- read_csv("_data/akl_weather_hourly_2016.csv")
+
+# Print akl_hourly_raw
+akl_hourly_raw
+
+# Use make_date() to combine year, month and mday 
+akl_hourly  <- akl_hourly_raw  %>% 
+  mutate(date = make_date(year = year, month = month, day = mday))
+
+# Parse datetime_string 
+akl_hourly <- akl_hourly  %>% 
+  mutate(
+    datetime_string = paste(date, time, sep = "T"),
+    datetime = ymd_hms(datetime_string)
+  )
+
+# Print date, time and datetime columns of akl_hourly
+akl_hourly %>% select(date, time, datetime)
+
+# Plot to check work
+ggplot(akl_hourly, aes(x = datetime, y = temperature)) +
+  geom_line()
+
+```
+
+Nice job! It's interesting how the day to day variation is about half the size of the yearly variation.
+
+## Extracting parts of a datetime
+
+![](_images/793.png)
+
+![](_images/794.png)
+
+![](_images/795.png)
+
+![](_images/796.png)
+
+**What can you extract?**
+
+As you saw in the video, components of a datetime can be extracted by `lubridate` functions with the same name like [year()](https://www.rdocumentation.org/packages/lubridate/topics/year), [month()](https://www.rdocumentation.org/packages/lubridate/topics/month), [day()](https://www.rdocumentation.org/packages/lubridate/topics/day), [hour()](https://www.rdocumentation.org/packages/lubridate/topics/hour), [minute()](https://www.rdocumentation.org/packages/lubridate/topics/minute) and [second()](https://www.rdocumentation.org/packages/lubridate/topics/second). They all work the same way just pass in a datetime or vector of datetimes.
+
+There are also a few useful functions that return other aspects of a datetime like if it occurs in the morning [am()](https://www.rdocumentation.org/packages/lubridate/topics/am), during daylight savings [dst()](https://www.rdocumentation.org/packages/lubridate/topics/dst), in a [leap_year()](https://www.rdocumentation.org/packages/lubridate/topics/leap_year), or which [quarter()](https://www.rdocumentation.org/packages/lubridate/topics/quarter) or [semester()](https://www.rdocumentation.org/packages/lubridate/topics/semester) it occurs in.
+
+Try them out by exploring the release times of R versions using the data from Chapter 1.
+
+```{r}
+
+release_time <- releases$datetime
+
+# Examine the head() of release_time
+head(release_time)
+
+# Examine the head() of the months of release_time
+head(month(release_time))
+
+# Extract the month of releases 
+month(release_time) %>% table()
+
+# Extract the year of releases
+year(release_time) %>% table()
+
+# How often is the hour before 12 (noon)?
+mean(hour(release_time) < 12)
+
+# How often is the release in am?
+mean(am(release_time))
+```
+
+Fantastic! R versions have historically been released most in April, June, October and December, 1998 saw 10 releases and about 75% of releases happen in the morning (at least according to UTC).
+
+**Adding useful labels**
+
+In the previous exercise you found the month of releases:
+
+```
+head(month(release_time))
+```
+
+and received numeric months in return. Sometimes it's nicer (especially for plotting or tables) to have named months. Both the [month()](https://www.rdocumentation.org/packages/lubridate/topics/month) and [wday()](https://www.rdocumentation.org/packages/lubridate/topics/wday) (day of the week) functions have additional arguments `label` and `abbr` to achieve just that. Set `label = TRUE` to have the output labelled with month (or weekday) names, and `abbr = FALSE` for those names to be written in full rather than abbreviated.
+
+For example, try running:
+
+```
+head(month(release_time, label = TRUE, abbr = FALSE))
+```
+
+Practice by examining the popular days of the week for R releases.
+
+```{r}
+library(ggplot2)
+
+# Use wday() to tabulate release by day of the week
+wday(releases$datetime) %>% table()
+
+# Add label = TRUE to make table more readable
+wday(releases$datetime, label = TRUE) %>% table()
+
+# Create column wday to hold week days
+releases$wday <- wday(releases$datetime, label = TRUE)
+
+# Plot barchart of weekday by type of release
+ggplot(releases, aes(wday)) +
+  geom_bar() +
+  facet_wrap(~ type, ncol = 1, scale = "free_y")
+```
+
+Good work! Looks like not too many releases occur on the weekends, and there is quite a different weekday pattern between minor and patch releases.
+
+**Extracting for plotting**
+
+Extracting components from a datetime is particularly useful when exploring data. Earlier in the chapter you imported daily data for weather in Auckland, and created a time series plot of ten years of daily maximum temperature. While that plot gives you a good overview of the whole ten years, it's hard to see the annual pattern.
+
+In this exercise you'll use components of the dates to help explore the pattern of maximum temperature over the year. The first step is to create some new columns to hold the extracted pieces, then you'll use them in a couple of plots.
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(ggridges)
+
+# Add columns for year, yday and month
+akl_daily <- akl_daily %>%
+  mutate(
+    year = year(date),
+    yday = yday(date),
+    month = month(date, label = TRUE))
+
+# Plot max_temp by yday for all years
+ggplot(akl_daily, aes(x = yday, y = max_temp)) +
+  geom_line(aes(group = year), alpha = 0.5)
+
+# Examine distribution of max_temp by month
+ggplot(akl_daily, aes(x = max_temp, y = month, height = ..density..)) +
+  geom_density_ridges(stat = "density")
+  
+```
+
+Super! Both plots give a great view into both the expected temperatures and how much they vary. Looks like Jan, Feb and Mar are great months to visit if you want warm temperatures. Did you notice the warning messages? These are a consequence of some missing values in the `max_temp` column. They are a reminder to think carefully about what you might miss by ignoring missing values.
+
+**Extracting for filtering and summarizing**
+
+Another reason to extract components is to help with filtering observations or creating summaries. For example, if you are only interested in observations made on weekdays (i.e. not on weekends) you could extract the weekdays then filter out weekends, e.g. `wday(date) %in% 2:6`.
+
+In the last exercise you saw that January, February and March were great times to visit Auckland for warm temperatures, but will you need a raincoat?
+
+In this exercise you'll find out! You'll use the hourly data to calculate how many days in each month there was any rain during the day.
+
+```{r}
+# Create new columns hour, month and rainy
+akl_hourly <- akl_hourly %>%
+  mutate(
+    hour = hour(datetime),
+    month = month(datetime, label = TRUE),
+    rainy = weather == "Precipitation"
+  )
+
+# Filter for hours between 8am and 10pm (inclusive)
+akl_day <- akl_hourly %>% 
+  filter(hour >= 8, hour <= 22)
+
+# Summarise for each date if there is any rain
+rainy_days <- akl_day %>% 
+  group_by(month, date) %>%
+  summarise(
+    any_rain = any(rainy)
+  )
+
+# Summarise for each month, the number of days with rain
+rainy_days %>% 
+  summarise(
+    days_rainy = sum(any_rain)
+  )
+```
+
+Nice! At least in 2016, it looks like you'll still need to pack a raincoat if you visit in Jan, Feb or March. Months of course are different lengths so we should really correct for that, take a look at [days_in_month()](https://www.rdocumentation.org/packages/lubridate/topics/days_in_month) for helping with that.
+
+## Rounding datetimes
+
+![](_images/797.png)
+
+**Rounding in lubridate**
+
+- `round_date()` - round to **nearest**
+- `ceiling_date()` - round **up**
+- `floor_date()` - round **down**
+- possible values of `unit`:
+  - `"second"`, `"minute"`, `"hour"`, `"day"`, `"week"`, `"month"`, `"bimonth"`, `"quarter"`, `"halfyear"`, or `"year"`
+  - or multiples, e.g. `"2 years"`, `"5 minutes"`
+  
+**Practice rounding**
+
+As you saw in the video, [round_date()](https://www.rdocumentation.org/packages/lubridate/topics/round_date) rounds a date to the nearest value, [floor_date()](https://www.rdocumentation.org/packages/lubridate/topics/floor_date) rounds down, and [ceiling_date()](https://www.rdocumentation.org/packages/lubridate/topics/ceiling_date) rounds up.
+
+All three take a `unit` argument which specifies the resolution of rounding. You can specify `"second"`, `"minute"`, `"hour"`, `"day"`, `"week"`, `"month"`, `"bimonth"`, `"quarter"`, `"halfyear"`, or `"year"`. Or, you can specify any multiple of those units, e.g. `"5 years"`, `"3 minutes"` etc.
+
+Try them out with the release datetime of R 3.4.1.
+
+```{r}
+r_3_4_1 <- ymd_hms("2016-05-03 07:13:28 UTC")
+
+# Round down to day
+floor_date(r_3_4_1, unit = "day")
+
+# Round to nearest 5 minutes
+round_date(r_3_4_1, unit = "5 minutes")
+
+# Round up to week
+ceiling_date(r_3_4_1, unit = "week")
+
+# Subtract r_3_4_1 rounded down to day
+r_3_4_1 - floor_date(r_3_4_1, unit = "day")
+```
+
+Awesome! That last technique of subtracting a rounded datetime from an unrounded one is a really useful trick to remember.
+
+**Rounding with the weather data**
+
+When is rounding useful? In a lot of the same situations extracting date components is useful. The advantage of rounding over extracting is that it maintains the context of the unit. For example, extracting the hour gives you the hour the datetime occurred, but you lose the day that hour occurred on (unless you extract that too), on the other hand, rounding to the nearest hour maintains the day, month and year.
+
+As an example you'll explore how many observations per hour there really are in the hourly Auckland weather data.
+
+```{r}
+# Create day_hour, datetime rounded down to hour
+akl_hourly <- akl_hourly %>%
+  mutate(
+    day_hour = floor_date(datetime, unit = "hour")
+  )
+
+# Count observations per hour  
+akl_hourly %>% 
+  count(day_hour) 
+
+# Find day_hours with n != 2 
+akl_hourly %>% 
+  count(day_hour) %>%
+  filter(n != 2) %>% 
+  arrange(desc(n))
+```
+
+Yay! 92 hours that don't have two measurements. Interestingly there are four measurements on 2016-04-03 and 2016-09-25, they happen to be the days Daylight Saving starts and ends.
+
+## Taking differences of datetimes
+
+**Arithmetic for datetimes**
+
+- `datetime_1 - datetime_2`: subtraction for time elapsed
+- `datetime_1 + (2 * timespan)`: addition and multiplication for generating new datetimes in the past or future
+- `timespan1 / timespan2`: division for change of units
+
+![](_images/798.png)
+
+![](_images/799.png)
+
+![](_images/800.png)
+
+**How long has it been?**
+
+To get finer control over a difference between datetimes use the `base` function [difftime()](https://www.rdocumentation.org/packages/base/topics/difftime). For example instead of `time1 - time2`, you use `difftime(time1, time2)`.
+
+[difftime()](https://www.rdocumentation.org/packages/base/topics/difftime) takes an argument `units` which specifies the units for the difference. Your options are `"secs"`, `"mins"`, `"hours"`, `"days"`, or `"weeks"`.
+
+To practice you'll find the time since the first man stepped on the moon. You'll also see the `lubridate` functions [today()](https://www.rdocumentation.org/packages/lubridate/topics/today) and [now()](https://www.rdocumentation.org/packages/lubridate/topics/now) which when called with no arguments return the current date and time in your system's timezone.
+
+```{r}
+# The date landing and moment of step
+date_landing <- mdy("July 20, 1969")
+moment_step <- mdy_hms("July 20, 1969, 02:56:15", tz = "UTC")
+
+# How many days since the first man on the moon?
+difftime(today(), date_landing, units = "days")
+
+# How many seconds since the first man on the moon?
+difftime(now(), moment_step, units = "secs")
+```
+
+Great job! That's one small step towards understanding time spans.
+
+**How many seconds are in a day?**
+
+How many seconds are in a day? There are 24 hours in a day, 60 minutes in an hour, and 60 seconds in a minute, so there should be `24*60*60` = `86400` seconds, right?
+
+Not always! In this exercise you'll see a counter example, can you figure out what is going on?
+
+```{r}
+# Three dates
+mar_11 <- ymd_hms("2017-03-11 12:00:00", 
+  tz = "America/Los_Angeles")
+mar_12 <- ymd_hms("2017-03-12 12:00:00", 
+  tz = "America/Los_Angeles")
+mar_13 <- ymd_hms("2017-03-13 12:00:00", 
+  tz = "America/Los_Angeles")
+
+# Difference between mar_13 and mar_12 in seconds
+difftime(mar_13, mar_12, units = "secs")
+
+# Difference between mar_12 and mar_11 in seconds
+difftime(mar_12, mar_11, units = "secs")
+
+```
+
+Good work. Why would a day only have 82800 seconds? At 2am on Mar 12th 2017, Daylight Savings started in the Pacific timezone. That means a whole hour of seconds gets skipped between noon on the 11th and noon on the 12th.
+
+## Time spans.
+
+![](_images/801.png)
+
+![](_images/802.png)
+
+![](_images/803.png)
+
+![](_images/804.png)
+
+**Adding or subtracting a time span to a datetime**
+
+A common use of time spans is to add or subtract them from a moment in time. For, example to calculate the time one day in the future from `mar_11` (from the previous exercises), you could do either of:
+
+```
+mar_11 + days(1)
+mar_11 + ddays(1)
+```
+
+Try them in the console, you get different results! But which one is the right one? It depends on your intent. If you want to account for the fact that time units, in this case days, have different lengths (i.e. due to daylight savings), you want a period [days()](https://www.rdocumentation.org/packages/lubridate/topics/days). If you want the time 86400 seconds in the future you use a duration [ddays()](https://www.rdocumentation.org/packages/lubridate/topics/ddays).
+
+In this exercise you'll add and subtract timespans from dates and datetimes.
+
+```{r}
+# Add a period of one week to mon_2pm
+mon_2pm <- dmy_hm("27 Aug 2018 14:00")
+mon_2pm + weeks(1)
+
+# Add a duration of 81 hours to tue_9am
+tue_9am <- dmy_hm("28 Aug 2018 9:00")
+tue_9am + hours(81)
+
+# Subtract a period of five years from today()
+today() - years(5)
+
+# Subtract a duration of five years from today()
+today() - dyears(5)
+```
+
+Sweet! Why did subtracting a duration of five years from today, give a different answer to subtracting a period of five years? Periods know about leap years, and since five years ago includes at least one leap year (assuming you aren't taking this course in 2100) the period of five years is longer than the duration of 365*5 days.
+
+**Arithmetic with timespans**
+
+You can add and subtract timespans to create different length timespans, and even multiply them by numbers. For example, to create a duration of three days and three hours you could do: `ddays(3) + dhours(3)`, or `3*ddays(1) + 3*dhours(1)` or even `3*(ddays(1) + dhours(1))`.
+
+There was an eclipse over North America on 2017-08-21 at 18:26:40. It's possible to predict the next eclipse with similar geometry by calculating the time and date one [Saros](https://eclipse.gsfc.nasa.gov/SEsaros/SEsaros.html) in the future. A Saros is a length of time that corresponds to 223 Synodic months, a Synodic month being the period of the Moon's phases, a duration of 29 days, 12 hours, 44 minutes and 3 seconds.
+
+Do just that in this exercise!
+
+```{r}
+# Time of North American Eclipse 2017
+eclipse_2017 <- ymd_hms("2017-08-21 18:26:40")
+
+# Duration of 29 days, 12 hours, 44 mins and 3 secs
+synodic <- ddays(29) + dhours(12) + dminutes(44) + dseconds(3)
+
+# 223 synodic months
+saros <- 223*synodic
+
+# Add saros to eclipse_2017
+eclipse_2017 + saros
+```
+
+Neat! 2035 is a long way away for an eclipse, but luckily there are eclipses on different Saros cycles, so you can see one much sooner.
+
+**Generating sequences of datetimes**
+
+By combining addition and multiplication with sequences you can generate sequences of datetimes. For example, you can generate a sequence of periods from 1 day up to 10 days with,
+
+```
+1:10 * days(1)
+```
+
+Then by adding this sequence to a specific datetime, you can construct a sequence of datetimes from 1 day up to 10 days into the future
+
+```
+today() + 1:10 * days(1)
+```
+
+You had a meeting this morning at 8am and you'd like to have that meeting at the same time and day every two weeks for a year. Generate the meeting times in this exercise.
+
+```{r}
+# Add a period of 8 hours to today
+today_8am <- today() + hours(8) 
+
+# Sequence of two weeks from 1 to 26
+every_two_weeks <- 1:26 * weeks(2)
+
+# Create datetime for every two weeks for a year
+today_8am + every_two_weeks
+
+```
+
+**The tricky thing about months**
+
+What should `ymd("2018-01-31") + months(1)` return? Should it be 30, 31 or 28 days in the future? Try it. In general `lubridate` returns the same *day of the month* in the next month, but since the 31st of February doesn't exist `lubridate` returns a missing value, `NA`.
+
+There are alternative addition and subtraction operators: `%m+%` and `%m-%` that have different behavior. Rather than returning an `NA` for a non-existent date, they roll back to the last existing date.
+
+You'll explore their behavior by trying to generate a sequence for the last day in every month this year.
+
+```{r}
+jan_31 <- ymd("2020-01-31")
+
+# A sequence of 1 to 12 periods of 1 month
+month_seq <- 1:12 * months(1)
+
+# Add 1 to 12 months to jan_31
+jan_31 + month_seq 
+
+# Replace + with %m+%
+jan_31 %m+% month_seq
+
+# Replace + with %m-%
+jan_31 %m-% month_seq
+
+```
+
+Nice! But use these operators with caution, unlike `+` and `-`, you might not get `x` back from `x %m+% months(1) %m-% months(1)`. If you'd prefer that the date was rolled forward check out `add_with_rollback()` which has `roll_to_first` argument.
+
+## Intervals
+
+![](_images/805.png)
+
+![](_images/806.png)
+
+![](_images/807.png)
+
+![](_images/808.png)
+
+**Which kind of time span?**
+
+Use:
+
+- **Intervals** when you have a *start* and *end*
+- **Periods** when you are interested in human units
+- **Durations** if you are interested in seconds elapsed
+
+![](_images/809.png)
+
+![](_images/810.png)
+
+**Examining intervals. Reigns of kings and queens**
+
+You can create an interval by using the operator `%--%` with two datetimes. For example `ymd("2001-01-01") %--% ymd("2001-12-31")` creates an interval for the year of 2001.
+
+Once you have an interval you can find out certain properties like its start, end and length with [int_start()](https://www.rdocumentation.org/packages/lubridate/topics/int_start), [int_end()](https://www.rdocumentation.org/packages/lubridate/topics/int_end) and [int_length()](https://www.rdocumentation.org/packages/lubridate/topics/int_length) respectively.
+
+Practice by exploring the reigns of kings and queens of Britain (and its historical dominions).
+
+```
+# Print monarchs
+monarchs
+```
+```
+# A tibble: 131 x 4
+   name                     from                to                  dominion    
+   <chr>                    <dttm>              <dttm>              <chr>       
+ 1 Elizabeth II             1952-02-06 00:00:00 2020-12-14 00:00:00 United King~
+ 2 Victoria                 1837-06-20 00:00:00 1901-01-22 00:00:00 United King~
+ 3 George V                 1910-05-06 00:00:00 1936-01-20 00:00:00 United King~
+ 4 George III               1801-01-01 00:00:00 1820-01-29 00:00:00 United King~
+ 5 George VI                1936-12-11 00:00:00 1952-02-06 00:00:00 United King~
+ 6 George IV                1820-01-29 00:00:00 1830-06-26 00:00:00 United King~
+ 7 Edward VII               1901-01-22 00:00:00 1910-05-06 00:00:00 United King~
+ 8 William IV               1830-06-26 00:00:00 1837-06-20 00:00:00 United King~
+ 9 Edward VIII              1936-01-20 00:00:00 1936-12-11 00:00:00 United King~
+10 George III(also United ~ 1760-10-25 00:00:00 1801-01-01 00:00:00 Great Brita~
+# ... with 121 more rows
+```
+```
+# Create an interval for reign
+monarchs <- monarchs %>%
+  mutate(reign = from %--% to) 
+
+# Find the length of reign, and arrange
+monarchs %>%
+  mutate(length = int_length(reign)) %>% 
+  arrange(desc(length)) %>%
+  select(name, length, dominion)
+```
+```
+# A tibble: 131 x 3
+   name                   length dominion      
+   <chr>                   <dbl> <chr>         
+ 1 Elizabeth II       2172873600 United Kingdom
+ 2 Victoria           2006726400 United Kingdom
+ 3 James VI           1820102400 Scotland      
+ 4 Gruffudd ap Cynan  1767139200 Gwynedd       
+ 5 Edward III         1590624000 England       
+ 6 William I          1545868800 Scotland      
+ 7 Llywelyn the Great 1428796800 Gwynedd       
+ 8 Elizabeth I        1399507200 England       
+ 9 Constantine II     1356912000 Scotland      
+10 David II           1316304000 Scotland      
+# ... with 121 more rows
+```
+
+Great! The current queen, Elizabeth II, has ruled for 2070144000 seconds…you'll see a better way to display the length later. If you know your British monarchs, you might notice George III doesn't appear in the the top 5. In this data, his reign is spread over two rows for U.K. And Great Britain and you would need to add their lengths to see his total reign.
+
+**Comparing intervals and datetimes**
+
+A common task with intervals is to ask if a certain time is inside the interval or whether it overlaps with another interval.
+
+The operator [%within%](https://www.rdocumentation.org/packages/lubridate/versions/1.6.0/topics/%25within%25) tests if the datetime (or interval) on the left hand side is within the interval of the right hand side. For example, if `y2001` is the interval covering the year 2001,
+
+```
+y2001 <- ymd("2001-01-01") %--% ymd("2001-12-31")
+```
+
+Then` ymd("2001-03-30") %within% y2001` will return `TRUE` and `ymd("2002-03-30") %within% y2001` will return `FALSE`.
+
+[int_overlaps()](https://www.rdocumentation.org/packages/lubridate/topics/int_overlaps) performs a similar test, but will return true if two intervals overlap at all.
+
+Practice to find out which monarchs saw Halley's comet around 1066.
+
+```
+# Print halleys
+halleys
+```
+```
+# A tibble: 27 x 6
+   designation     year perihelion_date start_date end_date   distance
+   <chr>          <int> <date>          <date>     <date>     <chr>   
+ 1 1P/66 B1, 66      66 66-01-26        66-01-25   66-01-26   <NA>    
+ 2 1P/141 F1, 141   141 141-03-25       141-03-22  141-03-25  <NA>    
+ 3 1P/218 H1, 218   218 218-04-06       218-04-06  218-05-17  <NA>    
+ 4 1P/295 J1, 295   295 295-04-07       295-04-07  295-04-20  <NA>    
+ 5 1P/374 E1, 374   374 374-02-13       374-02-13  374-02-16  0.09 AU 
+ 6 1P/451 L1, 451   451 451-07-03       451-06-28  451-07-03  <NA>    
+ 7 1P/530 Q1, 530   530 530-11-15       530-09-27  530-11-15  <NA>    
+ 8 1P/607 H1, 607   607 607-03-26       607-03-15  607-03-26  0.09 AU 
+ 9 1P/684 R1, 684   684 684-11-26       684-10-02  684-11-26  <NA>    
+10 1P/760 K1, 760   760 760-06-10       760-05-20  760-06-10  <NA>    
+# ... with 17 more rows
+```
+```
+# New column for interval from start to end date
+halleys <- halleys %>% 
+  mutate(visible = start_date %--% end_date)
+
+# The visitation of 1066
+halleys_1066 <- halleys[14, ] 
+
+# Monarchs in power on perihelion date
+monarchs %>% 
+  filter(halleys_1066$perihelion_date %within% reign) %>%
+  select(name, from, to, dominion)
+```
+```
+# A tibble: 2 x 4
+  name        from                to                  dominion
+  <chr>       <dttm>              <dttm>              <chr>   
+1 Harold II   1066-01-05 00:00:00 1066-10-14 00:00:00 England 
+2 Malcolm III 1058-03-17 00:00:00 1093-11-13 00:00:00 Scotland
+```
+```
+# Monarchs whose reign overlaps visible time
+monarchs %>% 
+  filter(int_overlaps(halleys_1066$visible, reign)) %>%
+  select(name, from, to, dominion)
+
+```
+```
+# A tibble: 3 x 4
+  name                 from                to                  dominion
+  <chr>                <dttm>              <dttm>              <chr>   
+1 Edward the Confessor 1042-06-08 00:00:00 1066-01-05 00:00:00 England 
+2 Harold II            1066-01-05 00:00:00 1066-10-14 00:00:00 England 
+3 Malcolm III          1058-03-17 00:00:00 1093-11-13 00:00:00 Scotland
+```
+
+Great job! Looks like the Kings of England Edward the Confessor and Harold II would have been able to see the comet. It may have been a bad omen, neither were in power by 1067.
+
+**Converting to durations and periods**
+
+Intervals are the most specific way to represent a span of time since they retain information about the exact start and end moments. They can be converted to periods and durations exactly: it's possible to calculate both the exact number of seconds elapsed between the start and end date, as well as the perceived change in clock time.
+
+To do so you use the [as.period()](https://www.rdocumentation.org/packages/lubridate/topics/as.period), and [as.duration()](https://www.rdocumentation.org/packages/lubridate/topics/as.duration) functions, parsing in an interval as the only argument.
+
+Try them out to get better representations of the length of the monarchs reigns.
+
+```
+# New columns for duration and period
+monarchs <- monarchs %>%
+  mutate(
+    duration = as.duration(reign),
+    period = as.period(reign)) 
+    
+# Examine results    
+monarchs %>%
+  select(name, duration, period)
+```
+```
+# A tibble: 131 x 3
+   name                           duration                   period             
+   <chr>                          <Duration>                 <Period>           
+ 1 Elizabeth II                   2172873600s (~68.85 years) 68y 10m 8d 0H 0M 0S
+ 2 Victoria                       2006726400s (~63.59 years) 63y 7m 2d 0H 0M 0S 
+ 3 George V                       811296000s (~25.71 years)  25y 8m 14d 0H 0M 0S
+ 4 George III                     601948800s (~19.07 years)  19y 0m 28d 0H 0M 0S
+ 5 George VI                      478224000s (~15.15 years)  15y 1m 26d 0H 0M 0S
+ 6 George IV                      328406400s (~10.41 years)  10y 4m 28d 0H 0M 0S
+ 7 Edward VII                     292982400s (~9.28 years)   9y 3m 14d 0H 0M 0S 
+ 8 William IV                     220406400s (~6.98 years)   6y 11m 25d 0H 0M 0S
+ 9 Edward VIII                    28166400s (~46.57 weeks)   10m 21d 0H 0M 0S   
+10 George III(also United Kingdo~ 1268092800s (~40.18 years) 40y 2m 7d 0H 0M 0S 
+# ... with 121 more rows
+```
+
+Nice job! See how much easier it is to interpret the length of their reigns as periods or durations.
+
+## Time zones
+
+![](_images/811.png)
+
+![](_images/812.png)
+
+**I**nternet **A**ssigned **N**umbers **A**uthority
+
+![](_images/813.png)
+
+![](_images/814.png)
+
+**Setting the timezone**
+
+If you import a datetime and it has the wrong timezone, you can set it with [force_tz()](https://www.rdocumentation.org/packages/lubridate/topics/force_tz). Pass in the datetime as the first argument and the appropriate timezone to the `tzone` argument. Remember the timezone needs to be one from [OlsonNames()](https://www.rdocumentation.org/packages/base/topics/OlsonNames).
+
+I wanted to watch New Zealand in the Women's World Cup Soccer games in 2015, but the times listed on the [FIFA website](http://www.fifa.com/womensworldcup/matches/index.html) were all in times local to the venues. In this exercise you'll help me set the timezones, then in the next exercise you'll help me figure out what time I needed to tune in to watch them.
+
+```{r}
+# Game2: CAN vs NZL in Edmonton
+game2 <- mdy_hm("June 11 2015 19:00")
+
+# Game3: CHN vs NZL in Winnipeg
+game3 <- mdy_hm("June 15 2015 18:30")
+
+# Set the timezone to "America/Edmonton"
+game2_local <- force_tz(game2, tzone = "America/Edmonton")
+game2_local
+
+# Set the timezone to "America/Winnipeg"
+game3_local <- force_tz(game3, tzone = "America/Winnipeg")
+game3_local
+
+# How long does the team have to rest?
+as.period(game2_local %--% game3_local)
+
+```
+
+Great work! Edmonton and Winnipeg are in different timezones, so even though the start times of the games only look 30 minutes apart, they are in fact 1 hour and 30 minutes apart, and the team only has 3 days, 22 hours and 30 minutes to prepare.
+
+**Viewing in a timezone**
+
+To view a datetime in another timezone use [with_tz()](https://www.rdocumentation.org/packages/lubridate/topics/with_tz). The syntax of [with_tz()](https://www.rdocumentation.org/packages/lubridate/topics/with_tz) is the same as [force_tz()](https://www.rdocumentation.org/packages/lubridate/topics/force_tz), passing a datetime and set the `tzone` argument to the desired timezone. Unlike [force_tz()](https://www.rdocumentation.org/packages/lubridate/topics/force_tz), [with_tz()](https://www.rdocumentation.org/packages/lubridate/topics/with_tz) isn't changing the underlying moment of time, just how it is displayed.
+
+For example, the difference between `now()` displayed in the "America/Los_Angeles" timezone and "Pacific/Auckland" timezone is 0:
+
+```
+now <- now()
+with_tz(now, "America/Los_Angeles") - 
+  with_tz(now,  "Pacific/Auckland")
+```
+
+Help me figure out when to tune into the games from the previous exercise.
+
+```{r}
+# What time is game2_local in NZ?
+with_tz(game2_local, tzone = "Pacific/Auckland")
+
+# What time is game2_local in Corvallis, Oregon?
+with_tz(game2_local, tzone = "America/Los_Angeles")
+
+# What time is game3_local in NZ?
+with_tz(game3_local, tzone = "Pacific/Auckland")
+```
+
+Nice! Looks like neither me, nor most NZ fans needed to get up in the middle of the night.
+
+**Timezones in the weather data**
+
+Did you ever notice that in the hourly Auckland weather data there was another datetime column, `date_utc`? Take a look:
+
+```
+tibble::glimpse(akl_hourly)
+```
+
+The `datetime` column you created represented local time in Auckland, NZ. I suspect this additional column, `date_utc` represents the observation time in UTC (the name seems a big clue). But does it really?
+
+Use your new timezone skills to find out.
+
+```{r}
+# Examine datetime and date_utc
+head(akl_hourly$datetime)
+head(akl_hourly$date_utc)
+  
+# Force datetime to Pacific/Auckland
+akl_hourly <- akl_hourly %>%
+  mutate(
+    datetime = force_tz(datetime, tzone = "Pacific/Auckland"))
+
+# Reexamine datetime
+head(akl_hourly$datetime)
+  
+# Are datetime and date_utc the same moments
+table(akl_hourly$datetime - akl_hourly$date_utc)
+
+```
+
+Super job! Looks like for 17,450 rows `datetime` and `date_utc` describe the same moment, but for 4 rows they are different. Can you guess which? Yup, the times where DST kicks in.
+
+**Times without dates**
+
+For this entire course, if you've ever had a time, it's always had an accompanying date, i.e. a datetime. But sometimes you just have a time without a date.
+
+If you find yourself in this situation, the [hms](https://www.rdocumentation.org/packages/hms) package provides an `hms` class of object for holding times without dates, and the best place to start would be with [as.hms()](https://www.rdocumentation.org/packages/hms/topics/as.hms).
+
+In fact, you've already seen an object of the `hms` class, but I didn't point it out to you. Take a look in this exercise.
+
+```{r}
+# Import auckland hourly data 
+akl_hourly <- read_csv("_data/akl_weather_hourly_2016.csv")
+
+# Examine structure of time column
+str(akl_hourly$time)
+
+# Examine head of time column
+head(akl_hourly$time)
+
+# A plot using just time
+ggplot(akl_hourly, aes(x = time, y = temperature)) +
+  geom_line(aes(group = make_date(year, month, mday)), alpha = 0.2)
+
+```
+
+Terrific! Using time without date is a great way to examine daily patterns.
+
+## More on importing and exporting datetimes
+
+![](_images/815.png)
+
+![](_images/816.png)
+
+![](_images/817.png)
+
+![](_images/818.png)
+
+**Fast parsing with fasttime**
+
+The `fasttime` package provides a single function [fastPOSIXct()](https://www.rdocumentation.org/packages/fasttime/topics/fastPOSIXct), designed to read in datetimes formatted according to ISO 8601. Because it only reads in one format, and doesn't have to guess a format, it is really fast!
+
+You'll see how fast in this exercise by comparing how fast it reads in the dates from the Auckland hourly weather data (over 17,000 dates) to `lubridate`s [ymd_hms()](https://www.rdocumentation.org/packages/lubridate/topics/ymd_hms).
+
+To compare run times you'll use the [microbenchmark()](https://www.rdocumentation.org/packages/microbenchmark/topics/microbenchmark) function from the package of the same name. You pass in as many arguments as you want each being an expression to time.
+
+```{r}
+library(microbenchmark)
+library(fasttime)
+
+dates <- as.character(with_tz(akl_hourly$date_utc, tzone = "Pacific/Auckland"))
+
+# Examine structure of dates
+str(dates)
+
+# Use fastPOSIXct() to parse dates
+fastPOSIXct(dates) %>% str()
+
+# Compare speed of fastPOSIXct() to ymd_hms()
+microbenchmark(
+  ymd_hms = ymd_hms(dates),
+  fasttime = fastPOSIXct(dates),
+  times = 20)
+
+```
+
+Great job! To compare speed, you can compare the average run time in the mean column. You should see `fasttime` is about 20 times faster than `ymd_hms()`.
+
+**Fast parsing with lubridate::fast_strptime**
+
+`lubridate` provides its own fast datetime parser: [fast_strptime()](https://www.rdocumentation.org/packages/lubridate/topics/fast_strptime). Instead of taking an `order` argument like `parse_date_time()` it takes a `format` argument and the format must comply with the [strptime()](https://www.rdocumentation.org/packages/base/topics/strptime) style.
+
+As you saw in the video that means any character that represents a datetime component must be prefixed with a `%` and any non-whitespace characters must be explicitly included.
+
+Try parsing `dates` with `fast_strptime()` and then compare its speed to the other methods you've seen.
+
+```{r}
+# Head of dates
+head(dates)
+
+# Parse dates with fast_strptime
+fast_strptime(dates, 
+    format = "%Y-%m-%d %H:%M:%S") %>% str()
+
+# Comparse speed to ymd_hms() and fasttime
+microbenchmark(
+  ymd_hms = ymd_hms(dates),
+  fasttime = fastPOSIXct(dates),
+  fast_strptime = fast_strptime(dates, 
+    format = "%Y-%m-%d %H:%M:%S"),
+  times = 20)
+```
+
+Fantastic! `fast_strptime()` is much faster than `ymd_hms()` but just a little slower than `fasttime`.
+
+**Outputting pretty dates and times**
+
+An easy way to output dates is to use the [stamp()](https://www.rdocumentation.org/packages/lubridate/topics/stamp) function in `lubridate`. [stamp()](https://www.rdocumentation.org/packages/lubridate/topics/stamp) takes a string which should be an example of how the date should be formatted, and returns a function that can be used to format dates.
+
+In this exercise you'll practice outputting `today()` in a nice way.
+
+```{r}
+finished <- "I finished 'Dates and Times in R' on Thursday, September 4, 2017!"
+
+# Create a stamp based on "Saturday, Jan 1, 2000"
+date_stamp <- stamp("Saturday, Jan 1, 2000")
+
+# Print date_stamp
+date_stamp
+
+# Call date_stamp on today
+date_stamp(today())
+
+# Create and call a stamp based on "12/31/1999"
+stamp("12/31/1999")(today())
+
+# Use string finished for stamp()
+stamp(finished)(today())
+```
+
+## Wrap-up
+
+**Wrapping-up**
+
+- Chapter 1: base R objects `Date`, `POSIXct`
+- Chapter 2: importing and manipulating datetimes
+- Chapter 3: arithmetic with datetimes, periods, durations and intervals
+- Chapter 4: time zones, fast parsing, outputting datetimes
+
+**Next steps**
+
+![](_images/819.png)
+
+**Next steps**
+
+- `ggplot2`
+- `dplyr`
+- `stringr`
+- courses that combine multiple packages

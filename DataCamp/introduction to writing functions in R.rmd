@@ -1,0 +1,16 @@
+---
+title: "Introduction to Writing Functions in R"
+author: "DataCamp - Richie Cotton"
+date: "12/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## Why you should use functions
+
+
+![](_images/776.png)
