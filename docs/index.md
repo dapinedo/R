@@ -137,4 +137,14 @@ sitemap:
 #### RMarkdown
 - <a href="https://github.com/dapinedo/R/tree/master/DataCamp" target="_blank" rel="noopener noreferrer">All Files</a>
 
+## <a href="https://www.tidymodels.org/learn/" target="_blank" rel="noopener noreferrer">Tidymodels</a> 
+
+#### Statistics
+
+#### Models
+
+#### Work
+
+#### Develop
+
 <!-- <a href="" target="_blank" rel="noopener noreferrer"></a> -->
