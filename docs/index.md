@@ -139,12 +139,12 @@ sitemap:
 
 ## <a href="https://www.tidymodels.org/learn/" target="_blank" rel="noopener noreferrer">Tidymodels</a> 
 
-#### Statistics
+#### <a href="https://www.tidymodels.org/learn/statistics/" target="_blank" rel="noopener noreferrer">Statistics</a>
 
-#### Models
+#### <a href="https://www.tidymodels.org/learn/models/" target="_blank" rel="noopener noreferrer">Models</a>
 
-#### Work
+#### <a href="https://www.tidymodels.org/learn/work" target="_blank" rel="noopener noreferrer">Work</a>
 
-#### Develop
+#### <a href="https://www.tidymodels.org/learn/develop/" target="_blank" rel="noopener noreferrer">Develop</a>
 
 <!-- <a href="" target="_blank" rel="noopener noreferrer"></a> -->
