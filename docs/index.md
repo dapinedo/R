@@ -137,4 +137,33 @@ sitemap:
 #### RMarkdown
 - <a href="https://github.com/dapinedo/R/tree/master/DataCamp" target="_blank" rel="noopener noreferrer">All Files</a>
 
+## <a href="https://www.tidymodels.org/learn/" target="_blank" rel="noopener noreferrer">Tidymodels</a> 
+
+#### <a href="https://www.tidymodels.org/learn/statistics/" target="_blank" rel="noopener noreferrer">Statistics</a>
+- Correlation and regression fundamentals with tidy data principles
+- K-means clustering with tidy data principles
+- Bootstrap resampling and tidy regression models
+- Hypothesis testing using resampling and tidy data
+- Statistical analysis of contingency tables
+
+#### <a href="https://www.tidymodels.org/learn/models/" target="_blank" rel="noopener noreferrer">Models</a>
+- Regression models two ways
+- Classification models using a neural network
+- Subsampling for class imbalances
+- Modeling time series with tidy resampling
+- Multivariate analysis using partial least squares
+
+#### <a href="https://www.tidymodels.org/learn/work" target="_blank" rel="noopener noreferrer">Work</a>
+- Model tuning via grid search
+- Nested resampling
+- Iterative Bayesian optimization of a classification model
+- Tuning text models
+
+#### <a href="https://www.tidymodels.org/learn/develop/" target="_blank" rel="noopener noreferrer">Develop</a>
+- Create your own recipe step function
+- How to build a parsnip model
+- Custom performance metrics
+- How to create a tuning parameter function
+- Create your own broom tidier methods
+
 <!-- <a href="" target="_blank" rel="noopener noreferrer"></a> -->
