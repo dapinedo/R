@@ -46,7 +46,7 @@ sitemap:
 9. <a href="https://rpubs.com/odenipinedo/intermediate-importing-data-in-R" target="_blank" rel="noopener noreferrer">intermediate importing data in R</a>
 10. <a href="https://rpubs.com/odenipinedo/cleaning-data-in-R" target="_blank" rel="noopener noreferrer">cleaning data in R</a>
 11. <a href="https://rpubs.com/odenipinedo/working-with-dates-and-times-in-R" target="_blank" rel="noopener noreferrer">working with dates and times in R</a>
-12. introduction to writing functions in R
+12. <a href="https://rpubs.com/odenipinedo/introduction-to-writing-functions-in-R" target="_blank" rel="noopener noreferrer">introduction to writing functions in R</a>
 13. exploratory data analysis in R
 14. case study: exploratory data analysis in R
 15. correlation and regression in R
@@ -83,7 +83,7 @@ sitemap:
 6. project: drunken datetimes in Ames, Iowa
 7. string manipulation with stringr in R
 8. working with web data in R
-9. introduction to writing functions in R
+9. <a href="https://rpubs.com/odenipinedo/introduction-to-writing-functions-in-R" target="_blank" rel="noopener noreferrer">introduction to writing functions in R</a>
 10. project: clustering Bustabit gamling behavior
 11. introduction to shell
 12. parallel programming in R
