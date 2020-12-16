@@ -74,6 +74,8 @@ sitemap:
 4. case studies: network analysis in R
 - Certificate
 
+#### Probability and Distributions with R
+
 #### R Programmer
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
 2. project: Dr. Semmelweis and the discovery of handwashing
@@ -122,6 +124,19 @@ sitemap:
 13. inference for categorical data in R
 14. Bayesian modeling with RJAGS
 - Certificate
+
+#### Statistics courses (misc)
+- inference for linear regression in R
+- multivariate probability distributions in R
+- generalized linear models in R
+- hierarchical and mixed effects models in R
+- factor analysis in R
+- nonlinear modeling in R with GAMs
+- bayesian regression modeling with rstanarm
+- structural equation modeling with lavaan in R
+- mixture models in R
+- anomaly detection in R
+- data privacy and anonymization in R
 
 #### Text Mining with R
 
