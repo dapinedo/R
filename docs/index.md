@@ -150,7 +150,7 @@ sitemap:
 -  <a href="https://github.com/odenipinedo/R/blob/master/DataCamp/_certificates/time-series-with-R.pdf" target="_blank" rel="noopener noreferrer">Certificate</a>
 
 #### RMarkdown
-- <a href="https://github.com/dapinedo/R/tree/master/DataCamp" target="_blank" rel="noopener noreferrer">All Files</a>
+- <a href="https://github.com/dapinedo/R/tree/master/DataCamp" target="_blank" rel="noopener noreferrer">All DataCamp Files</a>
 
 ## <a href="https://www.tidymodels.org/learn/" target="_blank" rel="noopener noreferrer">Tidymodels</a> 
 
@@ -180,5 +180,8 @@ sitemap:
 - Custom performance metrics
 - How to create a tuning parameter function
 - Create your own broom tidier methods
+
+#### RMarkdown
+- All Tidymodels Files
 
 <!-- <a href="" target="_blank" rel="noopener noreferrer"></a> -->
