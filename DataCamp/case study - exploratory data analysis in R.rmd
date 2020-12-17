@@ -1,0 +1,32 @@
+---
+title: 'Case Study: Exploratory Data Analysis in R'
+author: "DataCamp - David Robinson"
+date: "12/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## The United Nations Voting Dataset
+
+
+
+
+
+
+
+
+
+
+![](_images/880.png)
+
+
+
+
+
+
+
+
