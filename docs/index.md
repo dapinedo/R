@@ -47,7 +47,7 @@ sitemap:
 10. <a href="https://rpubs.com/odenipinedo/cleaning-data-in-R" target="_blank" rel="noopener noreferrer">cleaning data in R</a>
 11. <a href="https://rpubs.com/odenipinedo/working-with-dates-and-times-in-R" target="_blank" rel="noopener noreferrer">working with dates and times in R</a>
 12. <a href="https://rpubs.com/odenipinedo/introduction-to-writing-functions-in-R" target="_blank" rel="noopener noreferrer">introduction to writing functions in R</a>
-13. exploratory data analysis in R
+13. <a href="https://rpubs.com/odenipinedo/exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">exploratory data analysis in R</a>
 14. case study: exploratory data analysis in R
 15. correlation and regression in R
 16. supervised learning in R: classification
@@ -110,7 +110,7 @@ sitemap:
 
 #### Statistician with R
 1. introduction to data in R
-2. exploratory data analysis in R
+2. <a href="https://rpubs.com/odenipinedo/exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">exploratory data analysis in R</a>
 3. modeling with data in the tidyverse
 4. correlation and regression in R
 5. multiple and logistic regression in R
@@ -127,15 +127,15 @@ sitemap:
 
 #### Statistics courses (misc)
 - inference for linear regression in R
-- multivariate probability distributions in R
-- generalized linear models in R
-- hierarchical and mixed effects models in R
-- factor analysis in R
-- nonlinear modeling in R with GAMs
 - bayesian regression modeling with rstanarm
+- hierarchical and mixed effects models in R
+- generalized linear models in R
+- nonlinear modeling in R with GAMs
+- factor analysis in R
 - structural equation modeling with lavaan in R
 - mixture models in R
 - anomaly detection in R
+- multivariate probability distributions in R
 - data privacy and anonymization in R
 
 #### Text Mining with R
