@@ -48,7 +48,7 @@ sitemap:
 11. <a href="https://rpubs.com/odenipinedo/working-with-dates-and-times-in-R" target="_blank" rel="noopener noreferrer">working with dates and times in R</a>
 12. <a href="https://rpubs.com/odenipinedo/introduction-to-writing-functions-in-R" target="_blank" rel="noopener noreferrer">introduction to writing functions in R</a>
 13. <a href="https://rpubs.com/odenipinedo/exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">exploratory data analysis in R</a>
-14. case study: exploratory data analysis in R
+14. <a href="https://rpubs.com/odenipinedo/case-study-exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">case study: exploratory data analysis in R</a>
 15. correlation and regression in R
 16. supervised learning in R: classification
 17. supervised learning in R: regression
