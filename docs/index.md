@@ -49,7 +49,7 @@ sitemap:
 12. <a href="https://rpubs.com/odenipinedo/introduction-to-writing-functions-in-R" target="_blank" rel="noopener noreferrer">introduction to writing functions in R</a>
 13. <a href="https://rpubs.com/odenipinedo/exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">exploratory data analysis in R</a>
 14. <a href="https://rpubs.com/odenipinedo/case-study-exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">case study: exploratory data analysis in R</a>
-15. correlation and regression in R
+15. <a href="https://rpubs.com/odenipinedo/correlation-and-regression-in-R" target="_blank" rel="noopener noreferrer">correlation and regression in R</a>
 16. supervised learning in R: classification
 17. supervised learning in R: regression
 18. unsupervised learning in R
@@ -112,7 +112,7 @@ sitemap:
 1. introduction to data in R
 2. <a href="https://rpubs.com/odenipinedo/exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">exploratory data analysis in R</a>
 3. modeling with data in the tidyverse
-4. correlation and regression in R
+4. <a href="https://rpubs.com/odenipinedo/correlation-and-regression-in-R" target="_blank" rel="noopener noreferrer">correlation and regression in R</a>
 5. multiple and logistic regression in R
 6. foundations of inference
 7. <a href="https://rpubs.com/odenipinedo/foundations-of-probability-in-R" target="_blank" rel="noopener noreferrer">foundations of probability in R</a>
