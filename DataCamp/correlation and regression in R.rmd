@@ -674,19 +674,242 @@ ggplot(data = bdims, aes(x = hgt, y = wgt)) +
 
 ## Assessing Model Fit
 
+![](_images/980.png)
 
+![](_images/981.png)
 
+**RMSE**
 
+$RMSE= \sqrt{\frac{\sum_ie^2_i}{d.f}} = \sqrt{\frac{SSE}{n-2}}$
 
+![](_images/982.png)
 
+**RMSE**
 
+The residual standard error reported for the regression model for poverty rate of U.S. counties in terms of high school graduation rate is 4.67. This means that the typical difference between the observed poverty rate and the poverty rate predicted by the model is about 4.67 percentage points.
 
+**Standard error of residuals**
 
+One way to assess strength of fit is to consider how far off the model is for a typical case. That is, for some observations, the fitted value will be very close to the actual value, while for others it will not. The magnitude of a typical residual can give us a sense of generally how close our estimates are.
 
+However, recall that some of the residuals are positive, while others are negative. In fact, it is guaranteed by the least squares fitting procedure that the mean of the residuals is zero. Thus, it makes more sense to compute the square root of the mean squared residual, or *root mean squared error* ($RMSE$). R calls this quantity the *residual standard error*.
 
+To make this estimate unbiased, you have to divide the sum of the squared residuals by the degrees of freedom in the model. Thus,
 
+$RMSE= \sqrt{\frac{\sum_ie^2_i}{d.f}} = \sqrt{\frac{SSE}{n-2}}$ 
+ 
+You can recover the residuals from `mod` with `residuals()`, and the degrees of freedom with `df.residual()`.
 
+```{r}
+# View summary of model
+summary(mod)
 
+# Compute the mean of the residuals
+mean(residuals(mod))
 
+# Compute RMSE
+sqrt(sum(residuals(mod)^2) / df.residual(mod))
+```
 
+## Comparing model fits
 
+**Null (average) model**
+
+$\hat{y} = \bar{y}$
+
+![](_images/983.png)
+
+![](_images/984.png)
+
+![](_images/985.png)
+
+**Coefficient of determination**
+
+$R^2 = 1 - \frac{SSE}{SST} = 1 - \frac{Var(e)}{Var(y)}$
+
+SST (Sum or Squares Total) is the SSE for the null model
+
+The proportion of variability in our response variable that is explained by our model
+
+**Connection to correlation**
+
+- for simple linear regression
+
+$r^2_{x,y} = R^2$
+
+![](_images/986.png)
+
+![](_images/987.png)
+
+**Assessing simple linear model fit**
+
+Recall that the coefficient of determination ($R^2$), can be computed as
+
+$R^2 = 1 - \frac{SSE}{SST} = 1 - \frac{Var(e)}{Var(y)}$
+ 
+where $e$ is the vector of residuals and $y$ is the response variable. This gives us the interpretation of $R^2$ as the percentage of the variability in the response that is explained by the model, since the residuals are the part of that variability that remains unexplained by the model.
+
+```{r}
+# View model summary
+summary(mod)
+
+# Compute R-squared
+bdims_tidy %>%
+  summarize(var_y = var(wgt), var_e = var(.resid)) %>%
+  mutate(R_squared = 1 - var_e / var_y)
+```
+
+Great work! This means that 51.4% of the variability in weight is explained by height.
+
+**Interpretation of R^2**
+
+The $R^2$ reported for the regression model for poverty rate of U.S. counties in terms of high school graduation rate is 0.464.
+
+```
+lm(formula = poverty ~ hs_grad, data = countyComplete) %>%
+  summary()
+```
+
+This is interpreted as: 46.4% of the variability in poverty rate among U.S. counties can be explained by high school graduation rate.
+
+**Linear vs. average**
+
+The $R^2$ gives us a numerical measurement of the strength of fit relative to a null model based on the average of the response variable:
+
+$\hat{y}_{null} = \bar{y}$
+
+This model has an $R^2$ of zero because $SSE = SST$. That is, since the fitted values ($\hat{y}_{null}$) are all equal to the average ($\bar{y}$), the residual for each observation is the distance between that observation and the mean of the response. Since we can always fit the null model, it serves as a baseline against which all other models will be compared.
+
+In the graphic, we visualize the residuals for the null model (`mod_null` at left) vs. the simple linear regression model (`mod_hgt` at right) with height as a single explanatory variable. Try to convince yourself that, if you squared the lengths of the grey arrows on the left and summed them up, you would get a larger value than if you performed the same operation on the grey arrows on the right.
+
+It may be useful to preview these `augment()`-ed data frames with `glimpse()`:
+
+```
+glimpse(mod_null)
+glimpse(mod_hgt)
+```
+
+![](_images/988.png)
+
+```{r}
+mod_hgt <- bdims_tidy
+
+mod_null <- augment(lm(wgt ~ 1, data = bdims))
+
+# Compute SSE for null model
+mod_null %>%
+  summarize(SSE = sum(.resid^2))
+
+# Compute SSE for regression model
+mod_hgt %>%
+  summarize(SSE = sum(.resid^2))
+```
+
+## Unusual Points
+
+**Leverage**
+
+$h_i = \frac{1}{h} + \frac{(x_i-\bar{x})^2}{\sum^n_{i=1}(x_i-\bar{x})^2}$
+
+- a function of the distance between the value of the explanatory variable and the mean of the explanatory variable
+  - higher leverage is higher distance
+  - lower leverage is lower distance
+
+![](_images/989.png)
+
+Combination of high leverage, plus high residual, determine influence
+
+![](_images/990.png)
+
+![](_images/991.png)
+
+**Leverage**
+
+The *leverage* of an observation in a regression model is defined entirely in terms of the distance of that observation from the mean of the explanatory variable. That is, observations close to the mean of the explanatory variable have low leverage, while observations far from the mean of the explanatory variable have high leverage. Points of high leverage may or may not be influential.
+
+The `augment()` function from the `broom` package will add the leverage scores (`.hat`) to a model data frame.
+
+![](_images/992.png)
+
+```{r}
+mod_baseball <- lm(slg ~ obp, data = mlbbat10)
+
+# Rank points of high leverage
+mod_baseball %>%
+  augment() %>%
+  arrange(desc(.hat)) %>%
+  head()
+```
+
+**Influence**
+
+As noted previously, observations of high leverage may or may not be *influential*. The influence of an observation depends not only on its leverage, but also on the magnitude of its residual. Recall that while leverage only takes into account the explanatory variable ($x$), the residual depends on the response variable ($y$) and the fitted value ($\hat{y}$).
+
+Influential points are likely to have high leverage and deviate from the general relationship between the two variables. We measure influence using Cook's distance, which incorporates both the leverage and residual of each observation.
+
+```{r}
+# Rank influential points
+mod_baseball %>%
+  augment() %>%
+  arrange(desc(.cooksd)) %>%
+  head()
+```
+
+## Dealing with Outliers
+
+![](_images/993.png)
+
+![](_images/994.png)
+
+**Removing outliers**
+
+Observations can be outliers for a number of different reasons. Statisticians must always be careful—and more importantly, transparent—when dealing with outliers. Sometimes, a better model fit can be achieved by simply removing outliers and re-fitting the model. However, one must have strong justification for doing this. A desire to have a higher $R^2$ is not a good enough reason!
+
+In the `mlbBat10` data, the outlier with an OBP of 0.550 is [Bobby Scales](https://en.wikipedia.org/wiki/Bobby_Scales), an infielder who had four hits in 13 at-bats for the Chicago Cubs. Scales also walked seven times, resulting in his unusually high OBP. The justification for removing Scales here is weak. While his performance was unusual, there is nothing to suggest that it is not a valid data point, nor is there a good reason to think that somehow we will learn more about Major League Baseball players by excluding him.
+
+Nevertheless, we can demonstrate how removing him will affect our model.
+
+```{r}
+# Create nontrivial_players
+nontrivial_players <- mlbbat10 %>%
+  filter(at_bat >= 10, obp < 0.5)
+
+# Fit model to new data
+mod_cleaner <- lm(slg ~ obp, data = nontrivial_players)
+
+# View model summary
+summary(mod_cleaner)
+
+# Visualize new model
+ggplot(data = nontrivial_players, aes(x = obp, y = slg)) +
+  geom_point() + 
+  geom_smooth(method = "lm")
+```
+
+**High leverage points**
+
+Not all points of high leverage are influential. While the high leverage observation corresponding to Bobby Scales in the previous exercise is influential, the three observations for players with OBP and SLG values of 0 are not influential.
+
+This is because they happen to lie right near the regression anyway. Thus, while their extremely low OBP gives them the power to exert influence over the slope of the regression line, their low SLG prevents them from using it.
+
+```{r}
+# Rank high leverage points
+mod_baseball %>%
+  augment() %>%
+  arrange(desc(.hat), .cooksd) %>%
+  head()
+```
+
+Fantastic! Congratulations on finishing the last exercise of the course!
+
+## Conclusion
+
+![](_images/995.png)
+
+![](_images/996.png)
+
+![](_images/997.png)
+
+![](_images/998.png)
+
+![](_images/999.png)
