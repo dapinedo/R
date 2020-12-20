@@ -12,6 +12,423 @@ options(repos="https://CRAN.R-project.org")
 
 ## Welcome and Introduction
 
+**What is regression?**
+
+**regression: predict a numerical outcome ("dependent variable") from a set of inputs ("independent variables").**
+
+- *statistical sense*: predicting the expected value of the outcome.
+- *casual sense*: predicting a numerical outcome, rather than a discrete one.
+
+- *how many units will we sell?* (**Regression**)
+- *will this customer buy our product (yes/no)?* (**Classification**)
+- *what price will the customer pay for our product?* (**Regression**)
+
+**Regression from a machine learning perspective**
+
+- *scientific mindset*: modeling to understand the data generation process
+  - *engineering mindset*: modeling to predict accurately
+  
+machine learning: engineering mindset
+
+## Linear regression - the fundamental method
+
+**Linear regression**
+
+$y = \beta_0 + \beta_1x_1 + \beta_2x_2 + \ldots$
+
+- $y$ is *linearly* related to each $x_i$
+- each $x_i$ contributes *additively* to $y$
+
+**Linear regression in R: lm()**
+
+```r
+cmodel <- lm(temperature ~ chirps_per_sec, data = cricket)
+```
+
+- formula: `temperature ~ chirps_per_sec`
+- data frame: `cricket`
+
+**formulas**
+
+- LHS: outcome
+- RHS: inputs
+  - use `+` for multiple inputs
+  
+`fmla_1 <- as.formula("temperature ~ chirps_per_sec")`
+
+![](_images/1043.png)
+
+For every unit increase in chirp rate, temperature should increase 3.291 degrees, everything else held constant.
+
+![](_images/1044.png)
+
+```r
+broom::glance(cmodel)
+sigr::wrapFTest(cmodel)
+```
+
+**Code a simple one-variable regression**
+
+For the first coding exercise, you'll create a formula to define a one-variable modeling task, and then fit a linear model to the data. You are given the rates of male and female unemployment in the United States over several years ([Source](http://college.cengage.com/mathematics/brase/understandable_statistics/7e/students/datasets/slr/frames/slr04.html)).
+
+The task is to predict the rate of female unemployment from the observed rate of male unemployment. The outcome is `female_unemployment`, and the input is `male_unemployment`.
+
+The sign of the variable coefficient tells you whether the outcome increases (+) or decreases (-) as the variable increases.
+
+Recall the calling interface for [lm()](https://www.rdocumentation.org/packages/stats/topics/lm) is:
+
+```r
+lm(formula, data = ___)
+```
+
+```{r}
+unemployment <- readRDS("_data/unemployment.rds")
+
+# unemployment is loaded in the workspace
+summary(unemployment)
+
+# Define a formula to express female_unemployment as a function of male_unemployment
+fmla <- female_unemployment ~ male_unemployment
+
+# Print it
+fmla
+
+# Use the formula to fit a model: unemployment_model
+unemployment_model <-  lm(fmla, data = unemployment)
+
+# Print it 
+unemployment_model
+```
+
+Good work. The coefficient for male unemployment is positive, so female unemployment increases as male unemployment does. Linear regression is the most basic of regression approaches. You can think of this course as ways to address its limitations.
+
+**Examining a model**
+
+Let's look at the model `unemployment_model` that you have just created. There are a variety of different ways to examine a model; each way provides different information. We will use [summary()](https://www.rdocumentation.org/packages/base/topics/summary), [broom::glance()](https://www.rdocumentation.org/packages/broom/topics/glance), and [sigr::wrapFTest()](https://www.rdocumentation.org/packages/sigr/topics/wrapFTest).
+
+```{r}
+library(broom)
+library(sigr)
+
+# broom and sigr are already loaded in your workspace
+# Print unemployment_model
+unemployment_model
+
+# Call summary() on unemployment_model to get more details
+summary(unemployment_model)
+
+# Call glance() on unemployment_model to see the details in a tidier form
+glance(unemployment_model)
+
+# Call wrapFTest() on unemployment_model to see the most relevant details
+wrapFTest(unemployment_model)
+```
+
+Great! There are several different ways to get diagnostics for your model. Use the one that suits your needs or preferences the best.
+
+## Predicting once you fit a model
+
+![](_images/1045.png)
+
+**Predicting from the unemployment model**
+
+In this exercise, you will use your unemployment model `unemployment_model` to make predictions from the `unemployment` data, and compare predicted female unemployment rates to the actual observed female unemployment rates on the training data, `unemployment`. You will also use your model to predict on the new data in `newrates`, which consists of only one observation, where male unemployment is 5%.
+
+The [predict()](https://www.rdocumentation.org/packages/stats/topics/predict.lm) interface for lm models takes the form
+
+```
+predict(model, newdata)
+```
+
+You will use the `ggplot2` package to make the plots, so you will add the prediction column to the `unemployment` data frame. You will plot outcome versus prediction, and compare them to the line that represents perfect predictions (that is when the outcome is equal to the predicted value).
+
+The `ggplot2` command to plot a scatterplot of `dframe$outcome` versus `dframe$pred` (`pred` on the *x* axis, `outcome` on the *y* axis), along with a blue line where `outcome == pred` is as follows:
+
+```
+ggplot(dframe, aes(x = pred, y = outcome)) + 
+       geom_point() +  
+       geom_abline(color = "blue")
+```
+
+```{r}
+# unemployment is in your workspace
+summary(unemployment)
+
+# newrates is in your workspace
+newrates <- data.frame(male_unemployment = 5)
+newrates
+
+# Predict female unemployment in the unemployment data set
+unemployment$prediction <-  predict(unemployment_model)
+
+# load the ggplot2 package
+library(ggplot2)
+
+# Make a plot to compare predictions to actual (prediction on x axis)
+ggplot(unemployment, aes(x = prediction, y = female_unemployment)) + 
+  geom_point() +
+  geom_abline(color = "blue")
+
+# Predict female unemployment rate when male unemployment is 5%
+pred <- predict(unemployment_model, newdata = newrates)
+# Print it
+pred
+```
+
+Good job! While all the modeling algorithms in R implement the `predict()` method, the call may be a little different for each one.
+
+**Multivariate linear regression (Part 1)**
+
+In this exercise, you will work with the blood pressure dataset ([Source](http://college.cengage.com/mathematics/brase/understandable_statistics/7e/students/datasets/mlr/frames/frame.html)), and model `blood_pressure` as a function of `weight` and `age`.
+
+```{r}
+bloodpressure <- readRDS("_data/bloodpressure.rds")
+
+# bloodpressure is in the workspace
+summary(bloodpressure)
+
+# Create the formula and print it
+fmla <- blood_pressure ~ age + weight
+fmla
+
+# Fit the model: bloodpressure_model
+bloodpressure_model <- lm(fmla, data = bloodpressure)
+
+# Print bloodpressure_model and call summary()
+bloodpressure_model
+summary(bloodpressure_model)
+```
+
+Good! One of the advantages of linear regression is that you can interpret the effects of each variable on the input – to a certain extent. In this case the coefficients for both age and weight are positive, which indicates that blood pressure tends to increase as both age and weight increase.
+
+**Multivariate linear regression (Part 2)**
+
+Now you will make predictions using the blood pressure model `bloodpressure_model` that you fit in the previous exercise.
+
+You will also compare the predictions to outcomes graphically. `ggplot2` is already loaded in your workspace. Recall the plot command takes the form:
+
+```
+ggplot(dframe, aes(x = pred, y = outcome)) + 
+     geom_point() + 
+     geom_abline(color = "blue")
+```
+
+```{r}
+# bloodpressure is in your workspace
+summary(bloodpressure)
+
+# bloodpressure_model is in your workspace
+bloodpressure_model
+
+# predict blood pressure using bloodpressure_model :prediction
+bloodpressure$prediction <- predict(bloodpressure_model)
+
+# plot the results
+ggplot(bloodpressure, aes(x = prediction, y = blood_pressure)) + 
+    geom_point() +
+    geom_abline(color = "blue")
+```
+
+Good! The results stay fairly close to the line of perfect prediction, indicating that the model fits the training data well. From a prediction perspective, multivariate linear regression behaves much as simple (one-variable) linear regression does.
+
+## Wrapping up linear regression
+
+**Pros and cons of linear regression**
+
+- Pros
+  - easy to fit and apply
+  - concise
+  - less prone to overfitting
+  - interpretable
+- Cons
+  - can only express linear and additive relationships
+  
+**Collinearity**
+
+- when variables are partially correlated
+- coefficients may change sign
+- high collinearity:
+  - coefficients (or standard errors) look too large
+  - model may be unstable
+  
+**Coming next**
+
+- evaluating a regression model
+- properly training a model
+
+## Evaluating a model graphically
+
+![](_images/1046.png)
+
+![](_images/1047.png)
+
+![](_images/1048.png)
+
+![](_images/1049.png)
+
+**Graphically evaluate the unemployment model**
+
+In this exercise you will graphically evaluate the unemployment model, `unemployment_model`, that you fit to the `unemployment` data in the previous chapter. Recall that the model predicts `female_unemployment` from `male_unemployment`.
+
+You will plot the model's predictions against the actual `female_unemployment`; recall the command is of the form
+
+```r
+ggplot(dframe, aes(x = pred, y = outcome)) + 
+       geom_point() +  
+       geom_abline()
+```
+
+Then you will calculate the residuals:
+
+```r
+residuals <- actual outcome - predicted outcome
+```
+
+and plot predictions against residuals. The residual graph will take a slightly different form: you compare the residuals to the horizontal line $x=0$  (using `geom_hline()`) rather than to the line $x = y$. The command will be provided.
+
+The data frame `unemployment` and model `unemployment_model` are available in the workspace.
+
+```{r}
+# unemployment, unemployment_model are in the workspace
+summary(unemployment)
+summary(unemployment_model)
+
+# Make predictions from the model
+unemployment$predictions <- predict(unemployment_model)
+
+# Fill in the blanks to plot predictions (on x-axis) versus the female_unemployment rates
+ggplot(unemployment, aes(x = predictions, y = female_unemployment)) + 
+  geom_point() + 
+  geom_abline()
+
+# From previous step
+unemployment$predictions <- predict(unemployment_model)
+
+# Calculate residuals
+unemployment$residuals <- unemployment$female_unemployment - unemployment$predictions
+
+# Fill in the blanks to plot predictions (on x-axis) versus the residuals
+ggplot(unemployment, aes(x = predictions, y = residuals)) + 
+  geom_pointrange(aes(ymin = 0, ymax = residuals)) + 
+  geom_hline(yintercept = 0, linetype = 3) + 
+  ggtitle("residuals vs. linear model prediction")
+```
+
+Congratulations! You have now evaluated model predictions by comparing them to ground truth, and by examining prediction error.
+
+**The gain curve to evaluate the unemployment model**
+
+In the previous exercise you made predictions about `female_unemployment` and visualized the predictions and the residuals. Now, you will also plot the gain curve of the `unemployment_model`'s predictions against actual `female_unemployment` using the [WVPlots::GainCurvePlot()](https://www.rdocumentation.org/packages/WVPlots/topics/GainCurvePlot) function.
+
+For situations where order is more important than exact values, the gain curve helps you check if the model's predictions sort in the same order as the true outcome.
+
+Calls to the function `GainCurvePlot()` look like:
+
+```r
+GainCurvePlot(frame, xvar, truthvar, title)
+```
+
+where
+
+- `frame` is a data frame
+- `xvar` and `truthvar` are strings naming the prediction and actual outcome columns of frame
+- `title` is the title of the plot
+
+When the predictions sort in exactly the same order, the relative Gini coefficient is 1. When the model sorts poorly, the relative Gini coefficient is close to zero, or even negative.
+
+```{r}
+# unemployment is in the workspace (with predictions)
+summary(unemployment)
+
+# unemployment_model is in the workspace
+summary(unemployment_model)
+
+# Load the package WVPlots
+library(WVPlots)
+
+# Plot the Gain Curve
+GainCurvePlot(unemployment, "predictions", "female_unemployment", "Unemployment model")
+```
+
+Congratulations! A relative gini coefficient close to one shows that the model correctly sorts high unemployment situations from lower ones.
+
+## Root Mean Squared Error (RMSE)
+
+**What is Root Mean Squared Error (RMSE)?**
+
+$RMSE = \sqrt{\overline{(pred-y)^2}}$
+
+where
+- $pred - y$: the error, or residuals vector
+- $\overline{(pred-y)^2}$: mean value of $(pred - y)^2$
+
+![](_images/1050.png)
+
+![](_images/1051.png)
+
+$RMSE < sd_{(outcome)}$ indicates that the model performs better than simply taking the average of the outcome variable
+
+**Calculate RMSE**
+
+In this exercise you will calculate the RMSE of your unemployment model. In the previous coding exercises, you added two columns to the `unemployment` dataset:
+
+- the model's predictions (`predictions` column)
+- the residuals between the predictions and the outcome (`residuals` column)
+
+You can calculate the RMSE from a vector of residuals, $res$, as:
+
+$RMSE = \sqrt{mean(res^2)}$
+
+You want RMSE to be small. How small is "small"? One heuristic is to compare the RMSE to the standard deviation of the outcome. With a good model, the RMSE should be smaller.
+
+```{r}
+# unemployment is in the workspace
+summary(unemployment)
+
+# For convenience put the residuals in the variable res
+res <- unemployment$residuals
+
+# Calculate RMSE, assign it to the variable rmse and print it
+(rmse <- sqrt(mean(res^2)))
+
+# Calculate the standard deviation of female_unemployment and print it
+(sd_unemployment <- sd(unemployment$female_unemployment))
+```
+
+Good job! An RMSE much smaller than the outcome's standard deviation suggests a model that predicts well.
+
+## R-Squared
+
+**What is $R^2$?**
+
+A measure of how well the model fits or explains the data
+
+- a value between 0-1
+  - near 1: model fits well
+  - near 0: no better than guessing the average value
+  
+**Calculating $R^2$**
+
+$R^2$ is the *variance explained by the model*
+
+$R^2 = 1 - \frac{RSS}{SS_{Tot}}$
+
+where
+
+- $RSS = \sum(y - prediction)^2$
+  - residual sum of squares (variance from model)
+  
+- $SS_{Tot} = \sum(y-\bar{y})^2$
+  - total sum of squares (variance of data)
+
+**Correlation and R^2**
+
+- square of the correlation between outcome and predicted value $= R^2$
+- true for models that minimize squared error:
+  - linear regression
+  - GAM regression
+  - tree-based algorithms that minimize squared error
+- true for training data; **NOT** true for future application data
 
 
 
@@ -20,5 +437,4 @@ options(repos="https://CRAN.R-project.org")
 
 
 
-![](_images/1000.png)
 
