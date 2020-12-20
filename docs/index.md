@@ -50,7 +50,7 @@ sitemap:
 13. <a href="https://rpubs.com/odenipinedo/exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">exploratory data analysis in R</a>
 14. <a href="https://rpubs.com/odenipinedo/case-study-exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">case study: exploratory data analysis in R</a>
 15. <a href="https://rpubs.com/odenipinedo/correlation-and-regression-in-R" target="_blank" rel="noopener noreferrer">correlation and regression in R</a>
-16. supervised learning in R: classification
+16. <a href="https://rpubs.com/odenipinedo/supervised-learning-in-R-classification" target="_blank" rel="noopener noreferrer">supervised learning in R: classification</a>
 17. supervised learning in R: regression
 18. unsupervised learning in R
 19. cluster analysis in R
@@ -66,6 +66,21 @@ sitemap:
 #### Interactive Data Visualization in R
 
 #### Machine Learning Scientist with R
+1. <a href="https://rpubs.com/odenipinedo/supervised-learning-in-R-classification" target="_blank" rel="noopener noreferrer">supervised learning in R: classification</a>
+2. supervised learning in R: regression
+3. unsupervised learning in R
+4. machine learning in the tidyverse
+5. multiple and logistic regression in R
+6. cluster analysis in R
+7. machine learning with caret in R
+8. tree-based models in R
+9. support vector machines in R
+10. advanced dimensionality reduction in R
+11. fundamentals of Bayesian data analysis in R
+12. topic modeling in R
+13. hyperparameter tuning in R
+14. Bayesian regression modeling with rstanarm
+15. introduction to Spark with sparklyr in R
 
 #### Network Analysis with R
 1. <a href="https://rpubs.com/odenipinedo/network-analysis-in-R" target="_blank" rel="noopener noreferrer">network analysis in R</a>
@@ -127,7 +142,6 @@ sitemap:
 
 #### Statistics courses (misc)
 - inference for linear regression in R
-- bayesian regression modeling with rstanarm
 - hierarchical and mixed effects models in R
 - generalized linear models in R
 - nonlinear modeling in R with GAMs
