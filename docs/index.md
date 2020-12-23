@@ -25,8 +25,20 @@ sitemap:
 ## <a href="https://www.datacamp.com/profile/odenipinedo" target="_blank" rel="noopener noreferrer">DataCamp</a> 
 
 #### Analyzing Genomic Data in R
+1. introduction to Bioconductor in R
+2. RNA-seq with Bioconductor in R
+3. differential expressiion analysis with limma in R
+4. single cell RNA-seq with Bioconductor in R
+5. ChIP-seq with Bioconductor in R
+- Certificate
 
 #### Data Manipulation with R
+1. <a href="https://rpubs.com/odenipinedo/data-manipulation-with-dplyr" target="_blank" rel="noopener noreferrer">data manipulation with dplyr</a>
+2. <a href="https://rpubs.com/odenipinedo/joining-data-with-dplyr" target="_blank" rel="noopener noreferrer">joining data with dplyr</a>
+3. <a href="https://rpubs.com/odenipinedo/case-study-exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">case study: exploratory data analysis in R</a>
+4. data manipulation with data.table in R
+5. joining data with data.table in R
+- Certificate
 
 #### Data Visualization with R
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-data-visualization-with-ggplot2" target="_blank" rel="noopener noreferrer">introduction to data visualization with ggplot2</a>
@@ -62,8 +74,19 @@ sitemap:
 2. designing and analyzing clinical trials in R
 
 #### Importing & Cleaning Data with R
+1. <a href="https://rpubs.com/odenipinedo/introduction-to-importing-data-in-R" target="_blank" rel="noopener noreferrer">introduction to importing data in R</a>
+2. <a href="https://rpubs.com/odenipinedo/intermediate-importing-data-in-R" target="_blank" rel="noopener noreferrer">intermediate importing data in R</a>
+3. <a href="https://rpubs.com/odenipinedo/cleaning-data-in-R" target="_blank" rel="noopener noreferrer">cleaning data in R</a>
+4. working with data in the tidyverse
+- Certificate
 
 #### Interactive Data Visualization in R
+1. interactive maps with leaflet in R
+2. interactive data visualization with plotly in R
+3. intermediate interactive data visualization with plotly in R
+4. visualizing big data with Trelliscope in R
+5. interactive data visualization with rbokeh
+- Certificate
 
 #### Machine Learning Scientist with R
 1. <a href="https://rpubs.com/odenipinedo/supervised-learning-in-R-classification" target="_blank" rel="noopener noreferrer">supervised learning in R: classification</a>
@@ -90,6 +113,11 @@ sitemap:
 - Certificate
 
 #### Probability and Distributions with R
+1. <a href="https://rpubs.com/odenipinedo/foundations-of-probability-in-R" target="_blank" rel="noopener noreferrer">foundations of probability in R</a>
+2. multivariate probability distributions in R
+3. probability puzzles in R
+4. mixture models in R
+- Certificate
 
 #### R Programmer
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
@@ -153,6 +181,11 @@ sitemap:
 - data privacy and anonymization in R
 
 #### Text Mining with R
+1. introduction to text analysis in R
+2. string manipulation with stringr in R
+3. text mining with bag-of-words in R
+4. sentiment analysis in R
+- Certificate
 
 #### Time Series
 1. <a href="https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R" target="_blank" rel="noopener noreferrer"> manipulating time series data with xts and zoo in R</a>
