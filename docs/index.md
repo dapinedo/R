@@ -175,9 +175,7 @@ sitemap:
 - nonlinear modeling in R with GAMs
 - factor analysis in R
 - structural equation modeling with lavaan in R
-- mixture models in R
 - anomaly detection in R
-- multivariate probability distributions in R
 - data privacy and anonymization in R
 
 #### Text Mining with R
