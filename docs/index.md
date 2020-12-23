@@ -52,7 +52,7 @@ sitemap:
 15. <a href="https://rpubs.com/odenipinedo/correlation-and-regression-in-R" target="_blank" rel="noopener noreferrer">correlation and regression in R</a>
 16. <a href="https://rpubs.com/odenipinedo/supervised-learning-in-R-classification" target="_blank" rel="noopener noreferrer">supervised learning in R: classification</a>
 17. <a href="https://pinedo.org/R/supervised-learning-in-R---regression.html " target="_blank" rel="noopener noreferrer">supervised learning in R: regression</a>
-18. unsupervised learning in R
+18. <a href="https://rpubs.com/odenipinedo/unsupervised-learning-in-R" target="_blank" rel="noopener noreferrer">unsupervised learning in R</a>
 19. cluster analysis in R
 - Certificate
   
@@ -68,7 +68,7 @@ sitemap:
 #### Machine Learning Scientist with R
 1. <a href="https://rpubs.com/odenipinedo/supervised-learning-in-R-classification" target="_blank" rel="noopener noreferrer">supervised learning in R: classification</a>
 2. <a href="https://pinedo.org/R/supervised-learning-in-R---regression.html " target="_blank" rel="noopener noreferrer">supervised learning in R: regression</a>
-3. unsupervised learning in R
+3. <a href="https://rpubs.com/odenipinedo/unsupervised-learning-in-R" target="_blank" rel="noopener noreferrer">unsupervised learning in R</a>
 4. machine learning in the tidyverse
 5. multiple and logistic regression in R
 6. cluster analysis in R
