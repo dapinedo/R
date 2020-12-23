@@ -70,7 +70,7 @@ sitemap:
   
 #### Epidemiology
 1. <a href="https://rpubs.com/odenipinedo/survival-analysis-in-R" target="_blank" rel="noopener noreferrer">survival analysis in R</a>
-     - <a href="https://github.com/odenipinedo/R/blob/master/DataCamp/_certificates/survival-analysis-in-R.pdf" target="_blank" rel="noopener noreferrer">Certificate</a>
+     - <a href="https://www.datacamp.com/statement-of-accomplishment/course/a33337a0f51da442affde252cf98ed0ee2ed79f8" target="_blank" rel="noopener noreferrer">Certificate</a>
 2. designing and analyzing clinical trials in R
 
 #### Importing & Cleaning Data with R
@@ -192,7 +192,7 @@ sitemap:
 4. <a href="https://rpubs.com/odenipinedo/forecasting-in-R" target="_blank" rel="noopener noreferrer">forecasting in R</a>
 5. <a href="https://rpubs.com/odenipinedo/visualizing-time-series-data-in-R" target="_blank" rel="noopener noreferrer">visualizing time series data in R</a>
 6. <a href="https://rpubs.com/odenipinedo/case-studies-manipulating-time-series-data-in-R" target="_blank" rel="noopener noreferrer">case studies - manipulating time series data in R</a>
--  <a href="https://github.com/odenipinedo/R/blob/master/DataCamp/_certificates/time-series-with-R.pdf" target="_blank" rel="noopener noreferrer">Certificate</a>
+-  <a href="https://www.datacamp.com/statement-of-accomplishment/track/bc62af00e2dd28e937de0070de19a98aa4afca1c" target="_blank" rel="noopener noreferrer">Certificate</a>
 
 #### RMarkdown
 - <a href="https://github.com/dapinedo/R/tree/master/DataCamp" target="_blank" rel="noopener noreferrer">All DataCamp Files</a>
