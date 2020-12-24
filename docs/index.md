@@ -66,7 +66,7 @@ sitemap:
 17. <a href="https://pinedo.org/R/supervised-learning-in-R---regression.html " target="_blank" rel="noopener noreferrer">supervised learning in R: regression</a>
 18. <a href="https://rpubs.com/odenipinedo/unsupervised-learning-in-R" target="_blank" rel="noopener noreferrer">unsupervised learning in R</a>
 19. <a href="https://rpubs.com/odenipinedo/cluster-analysis-in-R" target="_blank" rel="noopener noreferrer">cluster analysis in R</a>
-- Certificate
+- <a href="https://www.datacamp.com/statement-of-accomplishment/track/76c44361a97cda3b2e815bdbbdfac8de2d7ed2d0" target="_blank" rel="noopener noreferrer">Certificate</a>
   
 #### Epidemiology
 1. <a href="https://rpubs.com/odenipinedo/survival-analysis-in-R" target="_blank" rel="noopener noreferrer">survival analysis in R</a>
