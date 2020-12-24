@@ -65,7 +65,7 @@ sitemap:
 16. <a href="https://rpubs.com/odenipinedo/supervised-learning-in-R-classification" target="_blank" rel="noopener noreferrer">supervised learning in R: classification</a>
 17. <a href="https://pinedo.org/R/supervised-learning-in-R---regression.html " target="_blank" rel="noopener noreferrer">supervised learning in R: regression</a>
 18. <a href="https://rpubs.com/odenipinedo/unsupervised-learning-in-R" target="_blank" rel="noopener noreferrer">unsupervised learning in R</a>
-19. cluster analysis in R
+19. <a href="https://rpubs.com/odenipinedo/cluster-analysis-in-R" target="_blank" rel="noopener noreferrer">cluster analysis in R</a>
 - Certificate
   
 #### Epidemiology
@@ -94,7 +94,7 @@ sitemap:
 3. <a href="https://rpubs.com/odenipinedo/unsupervised-learning-in-R" target="_blank" rel="noopener noreferrer">unsupervised learning in R</a>
 4. machine learning in the tidyverse
 5. multiple and logistic regression in R
-6. cluster analysis in R
+6. <a href="https://rpubs.com/odenipinedo/cluster-analysis-in-R" target="_blank" rel="noopener noreferrer">cluster analysis in R</a>
 7. machine learning with caret in R
 8. tree-based models in R
 9. support vector machines in R
