@@ -1,0 +1,30 @@
+---
+title: "Predictive Analytics using Networked Data in R"
+author: "Datacamp - Maria Oskarsdottir"
+date: "12/23/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## Motivation: social networks and predictive analytics
+
+
+
+
+
+
+
+
+
+
+
+![](_images/1187.png)
+
+
+
+
+
