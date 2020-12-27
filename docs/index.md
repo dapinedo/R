@@ -107,7 +107,7 @@ sitemap:
 
 #### Network Analysis with R
 1. <a href="https://rpubs.com/odenipinedo/network-analysis-in-R" target="_blank" rel="noopener noreferrer">network analysis in R</a>
-2. predictive analytics using networked data in R
+2. <a href="https://rpubs.com/odenipinedo/predictive-analytics-using-networked-data-in-R" target="_blank" rel="noopener noreferrer">predictive analytics using networked data in R</a>
 3. network analysis in the tidyverse
 4. case studies: network analysis in R
 - Certificate
