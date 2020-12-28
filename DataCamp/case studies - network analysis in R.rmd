@@ -12,15 +12,627 @@ options(repos="https://CRAN.R-project.org")
 
 ## Exploring your data set
 
+**Dyads**
+
+![](_images/1349.png)
+
+**Triads**
+
+![](_images/1350.png)
+
+*3-digit code*
+
+1. count of vertices connected by a bidirectional symmetric edge
+2. count of pairs of vertices connected by an asymmetric edge
+3. count of pairs of unconnected vertices
+
+*Letter code*
+
+C. Cyclic
+D. Single edges go **D**own
+U. Single edges come **U**p
+T. Transitive
+  - if any two vertices in a triad are connected to each other, then there must exist a connection between the third
+  
+- Patterns 1, 2, 3 are dyad patterns
+
+
+**Finding Dyads and Triads**
+
+Let's think a little bit more about what we can learn from dyad and triad censuses of the overall graph. Because we are interested in understanding how items are purchased together and whether or not they are reciprocally purchased, dyad and triad censuses can provide a useful initial look. A dyad census will tell us how many items are purchased reciprocally vs. asymmetrically. The triad census will tell us which items might be important, specifically patterns 4, 9, and 12. All of these have one vertex that has 2 out degree edges and no in degree edges. Edge density should also give some insight we expect for graph clustering.
+
+The Amazon co-purchase graph, `amzn_g`, is available.
+
+```{r}
+library(igraph)
+
+amzn_g <- read.graph("_data/amzn_g.gml",format=c("gml"))
+
+# The graph, amzn_g, is available
+amzn_g
+
+# Perform dyad census
+dyad_census(amzn_g)
+
+# Perform triad census
+triad_census(amzn_g)
+
+# Find the edge density
+edge_density(amzn_g)
+```
+
+The dyad census shows us there were 3199 mutual connections, meaning items were bought together. There were also 215 out star triad patterns, or items that drive other purchases.
+
+**Clustering and Reciprocity**
+
+Our previous work looking at the dyad census should give some intuition about how we expect other graph level metrics like reciprocity and clustering in our co-purchase graph to look. Recall that there are 10,754 edges in our graph of 10,245 vertices, and of those, more than 3,000 are mutual, meaning that almost 60 percent of the vertices have a mutual connection. What do you expect the clustering and reciprocity measures to look like given this information? We can test our intuition against a null model by simulating random graphs. In light of the results of our previous simulation, what do you expect to see here? Will reciprocity also be much higher than expected by chance?
+
+**reciprocity** is a measure of the likelihood of vertices in a directed network to be mutually linked
+
+The graph, `amzn_g` is available.
+
+```{r}
+# Calculate reciprocity
+actual_recip <- reciprocity(amzn_g)
+
+# Calculate the order
+n_nodes <- gorder(amzn_g)
+
+# Calculate the edge density
+(edge_dens <- edge_density(amzn_g))
+
+# Run the simulation
+simulated_recip <- rep(NA, 1000)
+for(i in 1:1000) {
+  # Generate an Erdos-Renyi simulated graph
+  simulated_graph <- erdos.renyi.game(n_nodes, edge_dens, directed = TRUE)
+  # Calculate the reciprocity of the simulated graph
+  simulated_recip[i] <- reciprocity(simulated_graph)
+}
+
+# Reciprocity of the original graph
+actual_recip
+
+# Calculate quantile of simulated reciprocity
+quantile(simulated_recip , c(0.025, 0.5, 0.975))
+```
+
+Resplendent reciprocity calculating! Weirdly though, notice how the reciprocity of the simulations is much lower than the reciprociy of the original graph.
+
+**Important Products**
+
+We've now seen that there's a clear pattern in our graph. Let's take the next step and move beyond just understanding the structure. Given the context of graph structure, what can we learn from it? For example, what drives purchases? A place to start might be to look for "important products", e.g. those products that someone purchases and then purchases something else. We can make inferences about this using in degree and out degree. First, we'll look at our graph and see the distribution of in degree and out degree, and then use that to set up a working definition for what an "important product" is (something that has > X out degrees and < Z in degrees). We'll then make a subgraph to visualize what these subgraphs look like.
+
+For a directed graph and a vertex, the **Out-Degree** refers to the number of arcs directed away from the vertex. The **In-Degree** refers to the number of arcs directed towards the vertex.
+
+```{r}
+# Calculate the "out" degrees
+out_degree <- degree(amzn_g, mode = "out")
+
+## ... and "in" degrees
+in_degree <- degree(amzn_g, mode = "in")
+
+# See the distribution of out_degree
+table(out_degree)
+
+## ... and of in_degree
+table(in_degree)
+
+# Create condition of out degree greater than 3
+# and in degree less than 3
+is_important <- out_degree > 3 & in_degree < 3
+
+# Subset vertices by is_important
+imp_prod <- V(amzn_g)[is_important]
+
+# Output the vertices
+print(imp_prod)
+```
+
+Awesome, now you can use in-degree and out-degree to infer what products are important!
+
+**What Makes an Important Product?**
+
+Now that we've come up with a working definition of an important product, let's see if they have any properties that might be correlated. One candidate pairing is `salesrank.from` and `salesrank.to`. We can ask if important products tend to have higher sales ranks than the products people purchase downstream. We'll look at this by first subsetting out the important vertices, joining those back to the initial dataframe, and then creating a new dataframe using the package `dplyr`. We'll create a new graph, and color the edges blue for high ranking (1, 2, 3) to low ranking (20, 21, 22) and red for the opposite. If rank is correlated with downstream purchasing, then we'll see mostly blue links, and if there's no relationship, it will be about equally red and blue.
+
+The dataset `ip_df` contains the information about important products.
+
+```
+# Select the from and to columns from ip_df
+ip_df_from_to <- ip_df[c("from", "to")]
+
+# Create a directed graph from the data frame
+ip_g <- graph_from_data_frame(ip_df_from_to, directed = TRUE)
+
+# Set the edge color. If salesrank.from is less than or 
+# equal to salesrank.to then blue else red.
+edge_color <- ifelse(
+  ip_df$salesrank.from <= ip_df$salesrank.to, 
+  yes = "blue", 
+  no = "red"
+)
+
+plot(
+  # Plot the graph
+  ip_g, 
+  # Set the edge color
+  edge.color = edge_color,
+  edge.arrow.width = 1, edge.arrow.size = 0, edge.width = 4, 
+  vertex.label = NA, vertex.size = 4, vertex.color = "black"
+)
+legend(
+  "bottomleft", 
+  # Set the edge color
+  fill = unique(edge_color), 
+  legend = c("Lower to Higher Rank", "Higher to Lower Rank"), cex = 0.7
+)
+```
+![](_images/1351.png)
+
+Congratulations! You can see that sales rank is correlated with product importance
+
+## Exploring temporal structure
+
+![](_images/1352.png)
+
+**Metrics through time**
+
+So far, we have been looking at products that drive other purchases by examining their out degree. However, up until the last lesson we've just been looking at a single snapshot in time. One question is, do these products show similar out degrees at each time step? After all, a product driving other purchases could just be idiosyncratic, or it if were more stable through time it might indicate that product could be responsible for driving co-purchases. To get at this question, we're going to build off the code we've already walked through that generates a list with a graph at each time step.
+
+```{r}
+d <- as.Date(c("2003-03-02", "2003-03-12", "2003-05-05", "2003-06-01"))
+
+# Loop over time graphs calculating out degree
+degree_count_list <- lapply(time_graph, degree, mode = "out")
+
+# Flatten it
+degree_count_flat <- unlist(degree_count_list)
+
+degree_data <- data.frame(
+  # Use the flattened counts
+  degree_count = degree_count_flat,
+  # Use the names of the flattened counts
+  vertex_name = names(degree_count_flat),
+  # Use the lengths of the count list
+  date = rep(d, lengths(degree_count_list))
+)
+
+important_vertices <- c(1629, 132757, 117841)
+
+important_degree_data <- degree_data %>% 
+  # Filter for rows where vertex_name is
+  # in the set of important vertices
+  dplyr::filter(vertex_name %in% important_vertices)
+
+# Using important_degree_data, plot degree_count vs. date, colored by vertex_name 
+library(ggplot2)
+ggplot(important_degree_data, aes(x = date, y = degree_count, color = vertex_name)) + 
+  # Add a path layer
+  geom_path()
+```
+
+Transcendent temporal analysis! Only one product, 132757, has a consistently high out degree, indicating it may be consistently driving secondary transactions. The other two might just be having high out degree by chance.
+
+**Plotting Metrics Over Time**
+We can also examine how metrics for the overall graph change (or don't) through time. Earlier we looked at two important ones, clustering and reciprocity. Each were quite high, as we expected after visually inspecting the graph structure. However, over time, each of these might change. Are global purchasing patterns on Amazon stable? If we think so, then we expect plots of these metrics to essentially be horizontal lines, indicating that reciprocity is about the same every day and there's a high degree of clustering structure. Let's see what we can find here.
+
+Code to calculate the transitivity by graph is shown.
+
+**Transitivity** of a relation means that when there is a tie from i to j, and also from j to h, then there is also a tie from i to h: friends of my friends are my friends. Transitivity depends on triads, subgraphs formed by 3 nodes.
+
+```
+# Examine this code
+transitivity_by_graph <- data.frame(
+  date = d,
+  metric = "transitivity",
+  score = sapply(all_graphs, transitivity)
+)
+
+# Calculate reciprocity by graph
+reciprocity_by_graph <- data.frame(
+  date = d,
+  metric = "reciprocity",
+  score = sapply(all_graphs, reciprocity)
+)
+
+metrics_by_graph <- bind_rows(transitivity_by_graph, reciprocity_by_graph)
+
+# Using metrics_by_graph, plot score  vs. date, colored by metric
+ggplot(metrics_by_graph, aes(x = date, y = score, color = metric)) +
+  # Add a path layer
+  geom_path()
+```
+![](_images/1353.png)
+
+Marvelous metric plotting! Reciprocity was fairly stable over time. Transitivity decreased after the first time point. This supports the idea that co-purchase networks are relatively stable over this time window.
+
+## Creating your retweet graph
+
+**Exploring the data**
+
+- data is several days of all the tweets mentioning #rstats
+- key attributes for building a graph are:
+  - screen name
+  - raw text of the tweet
+  
+ ![](_images/1354.png) 
+
+ ![](_images/1355.png) 
+
+![](_images/1356.png) 
+
+![](_images/1357.png) 
+
+**Visualize the graph**
+
+Now that we've thought a bit about how we constructed our network, let's size our graph and make an initial visualization. Before you make the plot, you'll calculate the number of vertices and edges. This allows you to know if you can actually plot the entire network. Also, the ratio of nodes to edges will give you an intuition of just how dense or sparse your plot might be. As you create your plot, take a moment to hypothesize what you think the plot will look like based on these metrics.
+
+```{r} 
+retweet_graph <- read.graph("_data/rt_g.gml", format=c("gml"))
+
+# Count the number of nodes in retweet_graph
+gorder(retweet_graph)
+
+# Count the number of edges in retweet_graph
+gsize(retweet_graph)
+
+# Calculate the graph density of retweet_graph
+graph.density(retweet_graph)
+
+# Plot retweet_graph
+plot(retweet_graph)
+```
+
+Cool! This is the basic graph now let's check it out with some more visual information.
+
+**Visualize nodes by degree**
+
+Now that we've taken a look at our graph and explored some of the basic properties of it, let's think a bit more about our network. We observed that there are some highly connected nodes and many outlier points. We visualize this by conditionally plotting the graph and coloring some of the nodes by in and out degree. Let's think about the nodes as three different types:
+
+- high retweeters and highly retweeted.
+- users who retweeted only once (have an in-degree of 0 and an out-degree of 1).
+- users who were retweeted only once (have an in-degree of 1 and an out-degree of 0).
+
+This will help us get more information about what's going on in the ring around the cluster of highly connected nodes.
+
+```{r}
+# Calculate the "in" degree distribution
+in_deg <- degree(retweet_graph, mode = "in")
+
+# Calculate the "out" degree distribution
+out_deg <- degree(retweet_graph, mode = "out")
+
+# Find the case with one "in" degree and zero "out" degrees
+has_tweeted_once_never_retweeted <- in_deg == 1 & out_deg == 0
+
+# Find the case with zero "in" degrees and one "out" degree
+has_never_tweeted_retweeted_once <- in_deg == 0 & out_deg == 1
+
+# The default color is set to black
+vertex_colors <- rep("black", gorder(retweet_graph))
+
+# Set the color of nodes that were retweeted just once to blue
+vertex_colors[has_tweeted_once_never_retweeted] <- "blue"
+
+# Set the color of nodes that were retweeters just once to green 
+vertex_colors[has_never_tweeted_retweeted_once] <- "green"
+
+# See the result
+head(vertex_colors)
+
+plot(
+  # Plot the network
+  retweet_graph, 
+  # Set the vertex colors
+  vertex.color = vertex_colors
+)
+```
+
+Looks awesome! Now we can quantify this visual information a bit more.
+
+**What's the distribution of centrality?**
+
+Recall that there are many ways that you can assess centrality of a graph. We will use two different methods you learned earlier: betweenness and eigen-centrality. Remember that betweenness is a measure of how often a given vertex is on the shortest path between other vertices, whereas eigen-centrality is a measure of how many other important vertices a given vertex is connected to. Before we overlay centrality on our graph plots, let's get a sense of how centrality is distributed.
+
+Note that due to algorithmic rounding errors, we can't check for eigen-centrality equaling a specific value; instead, we check a range.
+
+```{r}
+# Calculate directed betweenness of vertices
+retweet_btw <- betweenness(retweet_graph, directed = TRUE)
+
+# Get a summary of retweet_btw
+summary(retweet_btw)
+
+# Calculate proportion of vertices with zero betweenness
+mean(retweet_btw == 0)
+
+# Calculate eigen-centrality using eigen_centrality()
+retweet_ec <- eigen_centrality(retweet_graph, directed = TRUE)$vector
+
+# Get a summary of retweet_ec
+summary(retweet_ec)
+
+# Calc proportion of vertices with eigen-centrality close to zero
+almost_zero <- 1e-10
+mean(retweet_ec < almost_zero)
+```
+
+Wow! The distributions are highly skewed. 95% of nodes have zero betweenness, but a few have a large value (with the highest close to 70k). Likewise, 97% of vertices have eigen-centrality close to zero.
+
+**Who is important in the conversation?**
+
+Different measures of centrality all try to get at the similar concept of "which vertices are most important." As we discussed earlier, these two metrics approach it slightly differently. Keep in mind that while each may give a similar distribution of centrality measures, how an individual vertex ranks according to both may be different. Now we're going to compare the top ranking vertices of Twitter users.
+
+The vectors that store eigen and betweenness centrality are stored respectively as `retweet_ec` and `retweet_btw`.
+
+```{r}
+# Get 0.99 quantile of betweenness 
+betweenness_q99 <- quantile(retweet_btw, 0.99)
+
+# Get top 1% of vertices by betweenness
+top_btw <- retweet_btw[retweet_btw > betweenness_q99]
+
+# Get 0.99 quantile of eigen-centrality
+eigen_centrality_q99 <- quantile(retweet_ec, 0.99)
+
+# Get top 1% of vertices by eigen-centrality
+top_ec <- retweet_ec[retweet_ec > eigen_centrality_q99]
+
+# See the results as a data frame
+data.frame(
+  Rank = seq_along(top_btw), 
+  Betweenness = names(sort(top_btw, decreasing = TRUE)), 
+  EigenCentrality = names(sort(top_ec, decreasing = TRUE))
+)
+```
+
+Awesome job, now you can see who the most central screen names are.
+
+**Plotting important vertices**
+
+Lastly, we'll visualize the graph with the size of the vertex corresponding to centrality. However, we already know the graph is highly skewed, so there will likely be a lot of visual noise. So next, we'll want to look at how connected the most central vertices are. We can do this by creating a subgraph based on centrality criteria. This is an important technique when dealing with large graphs. Later, we'll look at alternative visualization methods, but another powerful technique is visualizing subgraphs.
+
+The graph, `retweet_graph`, its vertex betweenness, `retweet_btw`, and the 0.99 betweenness quantile, `betweenness_q99` are available.
+
+```{r}
+# Transform betweenness: add 2 then take natural log
+transformed_btw <- log(retweet_btw + 2)
+
+# Make transformed_btw the size attribute of the vertices
+V(retweet_graph)$size <- transformed_btw
+
+# Plot the graph
+plot(
+  retweet_graph, vertex.label = NA, edge.arrow.width = 0.2,
+  edge.arrow.size = 0.0, vertex.color = "red"
+)
+
+# Subset nodes for betweenness greater than 0.99 quantile
+vertices_high_btw <- V(retweet_graph)[retweet_btw > betweenness_q99]
+
+# Induce a subgraph of the vertices with high betweenness
+retweet_subgraph <- induced_subgraph(retweet_graph, vertices_high_btw)
+
+# Plot the subgraph
+plot(retweet_subgraph)
+```
+
+You can see that the most central vertices are all highly connected to each other, and by creating a sub-graph, we can more easily visualize the network. Now that we've explored the retweet graph let's move on to looking at another type of Twitter graph.
+
+## Building a mentions graph
+
+![](_images/1358.png) 
+
+![](_images/1359.png) 
+
+**Comparing mention and retweet graph**
+
+By looking at the ratio of in degree to out degree, we can learn something slightly different about each network. In the case of a retweet network, it will show us users who are often retweeted but don't retweet (high values), or those who often retweet but aren't retweeted (low values). Similarly, if you have a in/out ratio of close to 1 in a mention graph, then the conversation is relatively equitable. However, a low ratio would imply that a given user often starts conversations but they aren't responded to. When you compare the density plots of the different networks, consider what you'd expect. Which network do you expect to be more skewed and which do you expect to have a ratio closer to 1?
+
+
+
+
+
+```{r}
+library(tidyverse)
+mention_graph <- read.graph("_data/ment_g.gml", format=c("gml"))
+
+# Read this code
+(mention_data <- tibble(
+  graph_type = "mention",
+  degree_in = degree(mention_graph, mode = "in"),
+  degree_out = degree(mention_graph, mode = "out"),
+  io_ratio = degree_in / degree_out
+))
+
+# Create a dataset of retweet ratios
+(retweet_data <- tibble(
+  graph_type = "retweet",
+  degree_in = degree(retweet_graph, mode = "in"),
+  degree_out = degree(retweet_graph, mode = "out"),
+  io_ratio = degree_in / degree_out
+))
+
+# Bind the datasets by row
+io_data <- bind_rows(mention_data, retweet_data) %>% 
+  # Filter for finite, positive io_ratio
+  filter(is.finite(io_ratio), io_ratio > 0)
+
+# Using io_data, plot io_ratio colored by graph_type
+ggplot(io_data, aes(x = io_ratio, color = graph_type)) + 
+  # Add a geom_freqpoly layer
+  geom_freqpoly() + 
+  scale_x_continuous(breaks = 0:10, limits = c(0, 10))
+
+io_data %>% 
+  # Group by graph_type
+  group_by(graph_type) %>% 
+  summarize(
+    # Calculate the mean of io_ratio
+    mean_io_ratio = mean(io_ratio),
+    # Calculate the median of io_ratio
+    median_io_ratio = median(io_ratio)
+  )
+```
+
+Congratulations! Now you can see the difference in the ratio of in and out degrees of mention and retweet graphs.
+
+**Assortativity and reciprocity**
+
+Another two key components of understanding our graphs are reciprocity and degree assortativity. Recall that reciprocity is the number of vertices that have connections going in each direction. Therefore, in the retweet graph, reciprocity is measuring the overall amount of nodes that retweet each other. In the mention graph, it will tell us how many nodes are conversing back and forth.
+
+Assortitivity is a bit less obvious. Values greater than 0 indicate that vertices with high degrees tend to be connected to each other. However, values less than zero indicate a more degree disassortative graph. If you visualize the graph and see a hub and spoke type pattern, this is likely to be disassortative.
+
+**Assortativity**, or assortative mixing is a preference for a network's nodes to attach to others that are similar in some way. For instance, in social networks, nodes tend to be connected with other nodes with similar degree values. This tendency is referred to as assortative mixing, or assortativity.
+
+```{r}
+# Find the reciprocity of the retweet graph
+reciprocity(retweet_graph) 
+
+# Find the reciprocity of the mention graph
+reciprocity(mention_graph)
+
+# Find the directed assortivity of the retweet graph
+assortativity.degree(retweet_graph, directed = TRUE)
+
+# Find the directed assortivity of the mention graph
+assortativity.degree(mention_graph, directed = TRUE)
+```
+
+Great job! Reciprocity is higher in the mention graph compared to the retweet graph, and both graphs have negative assortativity.
+
+**Finding who is talking to whom**
+
+Recall from the first lesson that cliques are complete subgraphs within a larger undirected graph. When we look at the clique structure of a conversational graph in Twitter, it tells us who is talking to whom. One way we can use this information is to see who might be interested in talking to other people. It's easy to see how this basic information could be used to construct models of suggested users to follow or interact with.
+
+```{r}
+# Get size 3 cliques
+list_of_clique_vertices <- cliques(mention_graph, min = 3, max = 3)
+
+# Loop over cliques, getting IDs
+clique_ids <- lapply(list_of_clique_vertices, as_ids)
+
+# See the result
+head(clique_ids)
+
+# Loop over cliques, finding cases where revodavid is in the clique
+has_revodavid <- sapply(
+  clique_ids, 
+  function(clique) {
+    "revodavid" %in% clique
+  }
+)
+
+# Subset cliques that have revodavid
+cliques_with_revodavid <- clique_ids[has_revodavid]
+
+# Unlist cliques_with_revodavid and get unique values
+(people_in_cliques_with_revodavid <- unique(unlist(cliques_with_revodavid)))
+
+# Induce subgraph of mention_graph with people_in_cliques_with_revodavid 
+revodavid_cliques_graph <- induced_subgraph(mention_graph, people_in_cliques_with_revodavid)
+
+# Plot the subgraph
+plot(revodavid_cliques_graph)
+```
+
+Classy clique analysis! Revodavid is in six cliques of size three.
+
+## Finding communities
+
+![](_images/1360.png) 
+
+![](_images/1361.png) 
+
+![](_images/1362.png) 
+
+![](_images/1363.png) 
+
+variance in information (how much variation is there in community membership for each vertex?)
+
+![](_images/1364.png) 
+
+![](_images/1365.png) 
+
+**Comparing community algorithms**
+
+There are many ways that you can find a community in a graph (you can [read more about them here](http://igraph.org/c/doc/igraph-Community.html)). Unfortunately, different community detection algorithms will give different results, and the best algorithm to choose depends on some of the properties of your graph [Yang et. al.](https://www.nature.com/articles/srep30750).
+
+You can compare the resulting communities using `compare()`. This returns a score ("the variance in information"), which counts whether or not any two vertices are members of the same community. A lower score means that the two community structures are more similar.
+
+You can see if two vertices are in the same community using `membership()`. If the vertices have the same membership number, then they are in the same community.
+
+```{r}
+# Make retweet_graph undirected
+retweet_graph_undir <- as.undirected(retweet_graph)
+
+# Find communities with fast greedy clustering
+communities_fast_greedy <- cluster_fast_greedy(retweet_graph_undir)
+
+# Find communities with infomap clustering
+communities_infomap <- cluster_infomap(retweet_graph_undir)
+
+# Find communities with louvain clustering
+communities_louvain <- cluster_louvain(retweet_graph_undir)
+
+# Compare fast greedy communities with infomap communities
+compare(communities_fast_greedy, communities_infomap)
+
+# Compare fast greedy with louvain
+compare(communities_fast_greedy, communities_louvain)
+
+# Compare infomap with louvain
+compare(communities_infomap, communities_louvain)
+
+two_users <- c("bass_analytics", "big_data_flow")
+
+# Subset membership of communities_fast_greedy by two_users
+membership(communities_fast_greedy)[two_users]
+
+# Subset membership of communities_infomap by two_users
+membership(communities_infomap)[two_users]
+
+# Subset membership of communities_louvain by two_users
+membership(communities_louvain)[two_users]
+```
+
+Delightful community detection! `compare()` returned a smaller distance between Infomap and Louvain communities, meaning that those algorithms gave more similar results than “Fast and Greedy”. In “Fast and Greedy”, the users `bass_analytics` and `big_data_flow` were placed in the same community but the other algorithms placed them in different communities.
+
+**Visualizing the communities**
+
+Now that we've found communities, we'll visualize our results. Before we plot, we'll assign each community membership to each vertex and a crossing value to each edge. The `crossing()` function in `igraph` will return true if a particular edge crosses communities. This is useful when we want to see certain vertices that are bridges between communities. You may just want to look at certain communities because the whole graph is a bit of a hairball. In this case, we'll create a subgraph of communities only of a certain size (number of members).
+
+```{r}
+# Color vertices by community membership, as a factor
+V(retweet_graph)$color <- factor(membership(communities_louvain))
+
+# Find edges that cross between commmunities
+is_crossing <- igraph::crossing(communities_louvain, retweet_graph)
+
+# Set edge linetype: solid for crossings, dotted otherwise 
+E(retweet_graph)$lty <- ifelse(is_crossing, "solid", "dotted")
+
+# Get the sizes of each community
+community_size <- sizes(communities_louvain)
+
+# Find some mid-size communities
+in_mid_community <- unlist(communities_louvain[community_size > 50 & community_size < 90])
+
+# Induce a subgraph of retweet_graph using in_mid_community
+retweet_subgraph <- induced_subgraph(retweet_graph, in_mid_community)
+
+# Plot those mid-size communities
+plot(retweet_subgraph, vertex.label = NA, edge.arrow.width = 0.8, edge.arrow.size = 0.2, 
+  coords = layout_with_fr(retweet_subgraph), margin = 0, vertex.size = 3)
+```
+
+Wow! Most of the edges connect members of a community to each other. There are only a few lines connecting each community to other communities.
 
 
 
 
 
 
-
-
-![](_images/1316.png)
 
 
 
