@@ -1,0 +1,31 @@
+---
+title: 'Case Studies: Network Analysis in R'
+author: "Datacamp - Ted Hart"
+date: "12/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## Exploring your data set
+
+
+
+
+
+
+
+
+
+![](_images/1316.png)
+
+
+
+
+
+
+
+
