@@ -109,8 +109,8 @@ sitemap:
 1. <a href="https://rpubs.com/odenipinedo/network-analysis-in-R" target="_blank" rel="noopener noreferrer">network analysis in R</a>
 2. <a href="https://rpubs.com/odenipinedo/predictive-analytics-using-networked-data-in-R" target="_blank" rel="noopener noreferrer">predictive analytics using networked data in R</a>
 3. <a href="https://pinedo.org/R/network-analysis-in-the-Tidyverse.html" target="_blank" rel="noopener noreferrer">network analysis in the tidyverse</a>
-4. case studies: network analysis in R
-- Certificate
+4. <a href="https://rpubs.com/odenipinedo/case-studies-network-analysis-in-R" target="_blank" rel="noopener noreferrer">case studies: network analysis in R</a>
+- <a href="https://www.datacamp.com/statement-of-accomplishment/track/4bff229b1fdc0f33241c9981762fb66c6dc4af6e" target="_blank" rel="noopener noreferrer">Certificate</a>
 
 #### Probability and Distributions with R
 1. <a href="https://rpubs.com/odenipinedo/foundations-of-probability-in-R" target="_blank" rel="noopener noreferrer">foundations of probability in R</a>
