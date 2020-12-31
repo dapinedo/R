@@ -180,6 +180,8 @@ Congratulations! You can see that sales rank is correlated with product importan
 So far, we have been looking at products that drive other purchases by examining their out degree. However, up until the last lesson we've just been looking at a single snapshot in time. One question is, do these products show similar out degrees at each time step? After all, a product driving other purchases could just be idiosyncratic, or it if were more stable through time it might indicate that product could be responsible for driving co-purchases. To get at this question, we're going to build off the code we've already walked through that generates a list with a graph at each time step.
 
 ```{r}
+time_graph <- readRDS("_data/time_graph.rds")
+
 d <- as.Date(c("2003-03-02", "2003-03-12", "2003-05-05", "2003-06-01"))
 
 # Loop over time graphs calculating out degree
@@ -628,12 +630,814 @@ plot(retweet_subgraph, vertex.label = NA, edge.arrow.width = 0.8, edge.arrow.siz
 
 Wow! Most of the edges connect members of a community to each other. There are only a few lines connecting each community to other communities.
 
+## Creating our graph from raw data
 
+![](_images/1366.png) 
 
+![](_images/1367.png) 
 
+![](_images/1368.png) 
 
+![](_images/1369.png) 
 
+- many self-loops in this graph, meaning many bikes were returned to the same station.
 
+**Making Graphs of Different User Types**
+
+Let's compare graphs of people who subscribe to the divvy bike vs. more casual non-subscribing customers.
+
+It's convenient to use `dplyr` to manipulate the data before using `graph_from_data_frame()` to create the graph. One useful `dplyr` function you'll need is `n()`, which gives the number of rows in that group of the data frame.
+
+```{r}
+bike_dat <- read.csv("_data/divvy_bike_sample.csv", stringsAsFactors = TRUE)
+
+subscribers <- bike_dat %>% 
+  # Filter for rows where usertype is Subscriber
+  filter(usertype == "Subscriber")
+
+# Count the number of subscriber trips
+n_subscriber_trips <- nrow(subscribers)
+
+subscriber_trip_graph <- subscribers %>% 
+  # Group by from_station_id and to_station_id
+  group_by(from_station_id, to_station_id) %>% 
+  # Calculate summary statistics
+  summarize(
+    # Set weights as proportion of total trips 
+    weights = n() / n_subscriber_trips
+  ) %>%
+  # Make a graph from the data frame
+  graph_from_data_frame()
+
+customers <- bike_dat %>% 
+  # Filter for rows where usertype is Customer
+  filter(usertype == "Customer")
+
+# Count the number of customer trips
+n_customer_trips <- nrow(customers)
+
+customer_trip_graph <- customers %>% 
+  # Group by from_station_id and to_station_id
+  group_by(from_station_id, to_station_id) %>% 
+  # Calculate summary statistics
+  summarize(
+    # Set weights as proportion of total trips 
+    weights = n() / n_customer_trips
+  ) %>%
+  # Make a graph from the data frame
+  graph_from_data_frame()
+
+# Calculate number of different trips by subscribers
+gsize(subscriber_trip_graph)
+
+# Calculate number of different trips by customers
+gsize(customer_trip_graph)
+```
+
+Keep on pedalling! Subscribers made over 14 thousand different trips, compared to over 9 thousand for (non-subscribing) customers.
+
+**Compare Graphs of Different User Types**
+
+One of the easiest ways we can see differences between the graphs is by plotting a small subgraph of each one. If different patterns are strong, they should be easy to visually detect. As you look at these two different plots, what stands out? It's worth taking a moment to think about the differences between these two populations. While there's doubtless overlap between these two groups, what are some different traits between each population? Subscribers are probably regular users, local, and might be more likely to travel to more remote parts of the graph. Customers are likely tourists or locals who don't bike regularly. Their use is probably more centered in major stations, and they might ride more for leisure in some of the touristy parts of the city.
+
+```{r}
+# Induce a subgraph from subscriber_trip_graph of the first 12 vertices
+twelve_subscriber_trip_graph <- induced_subgraph(subscriber_trip_graph, 1:12)
+
+# Plot the subgraph
+plot(
+  twelve_subscriber_trip_graph, 
+  main = "Subscribers"
+)
+
+# Induce a subgraph from customer_trip_graph of the first 12 vertices
+twelve_customer_trip_graph <- induced_subgraph(customer_trip_graph, 1:12)
+
+# Plot the subgraph
+plot(
+  twelve_customer_trip_graph, 
+  main = "Customers"
+)
+```
+
+That was loop of fun, but let's look at the full distance.
+
+## Compare graph distance vs. geographic distance
+
+![](_images/1370.png) 
+
+![](_images/1371.png) 
+
+![](_images/1372.png) 
+
+![](_images/1373.png) 
+
+**Compare Subscriber vs. Non-Subscriber Distances**
+
+Let's compare subscriber to non-subscriber graphs by distance. Remember we can think of subscribers as local Chicago residents who regularly use the bikes, whereas non-subscribers are likely to be more casual users or tourists. Also it's important to keep in mind that this graph is a representation of geography. Which graph do you think has a further geographic distance? Why?
+
+`get_diameter()` and `farthest_vertices()` both provide the vertices in the graph that have the longest "shortest route" between them – `get_diameter()` provides all the intermediate vertices, whereas `farthest_vertices()` provides the end vertices and the number of nodes between them.
+
+`calc_physical_distance_m()`, a function that takes in two station IDs as inputs and calculates the physical distance between the stations (in meters), is also provided. You can view the function by running `calc_physical_distance_m` in the console.
+
+```{r}
+library(geosphere)
+
+calc_physical_distance_m <- function(station_1, station_2) {
+  station_1_long_lat <- bike_dat %>% 
+    filter(from_station_id == !!station_1) %>% 
+    top_n(1) %>% 
+    select(from_longitude, from_latitude) %>%
+    as.numeric()
+  station_2_long_lat <- bike_dat %>% 
+    filter(from_station_id == !!station_2) %>% 
+    top_n(1) %>% 
+    select(from_longitude, from_latitude) %>%
+    as.numeric()
+  as.numeric(geosphere::distm(station_1_long_lat, station_2_long_lat, distHaversine))
+}
+
+# Get the diameter of the subscriber graph
+get_diameter(subscriber_trip_graph)
+
+# Get the diameter of the customer graph
+get_diameter(customer_trip_graph)
+
+# Find the farthest vertices of the subscriber graph
+farthest_vertices(subscriber_trip_graph)
+
+# Find the farthest vertices of the customer graph
+farthest_vertices(customer_trip_graph)
+
+# From previous step
+farthest_vertices(subscriber_trip_graph)
+farthest_vertices(customer_trip_graph)
+
+# Calc physical distance between end stations for subscriber graph
+calc_physical_distance_m(200, 298)
+
+# Calc physical distance between end stations for customer graph
+calc_physical_distance_m(116, 281)
+```
+
+You're going the distance! In the subscriber graph, the furthest stations were 17km apart, compared to 7km for non-subscribing customers. Now on to most traveled to and from stations.
+
+**Most Traveled To and From Stations**
+
+Here we'll look at which stations are most commonly traveled to and from, as well as the ratio of in to out degree. This will tell us which stations are skewed as either having many stations pulling bikes from them or leaving bikes at them. In order for a bike sharing graph like this to work effectively, you can't have too many source or sink stations, otherwise the owner of the network would need to be constantly moving around bikes! Ideally, the network is designed to self correct, and if it's doing that, we expect to see almost all the stations with an in to out degree ratio of around one. First, we're going to look at this in the unweighted case.
+
+```{r}
+bike_dat_filtered <- bike_dat %>% filter(from_station_id != to_station_id)
+total_trips <- nrow(bike_dat_filtered)
+
+trip_g_simp <- bike_dat_filtered %>%
+  group_by(from_station_id, to_station_id) %>% 
+  summarize(
+    weights = n() / total_trips
+  ) %>%
+  # Make a graph from the data frame
+  graph_from_data_frame()
+
+trip_deg <- data_frame(
+  # Find the "out" degree distribution
+  trip_out = degree(trip_g_simp, mode = "out"), 
+  # ... and the "in" degree distribution
+  trip_in = degree(trip_g_simp, mode = "in"),
+  # Calculate the ratio of out / in
+  ratio = trip_out / trip_in
+)
+
+trip_deg_filtered <- trip_deg %>%
+  # Filter for rows where trips in and out are both over 10
+  filter(trip_out > 10, trip_in > 10) 
+
+# Plot histogram of filtered ratios
+hist(trip_deg_filtered$ratio)
+```
+
+**Most Traveled To and From Stations with Weights**
+
+So far, we've only looked at our network with unweighted edges. But our edge weights are actually the number of trips, so it seems logical that we would want to extend our analysis of degrees by adding a weighted degree distribution. This is important because while a balanced degree ratio is important, the item that would need to be rebalanced is bikes. If the weights are the same across all stations, then an unweighted degree ratio would work. But if we want to know how many bikes are actually flowing, we need to consider weights.
+
+The weighted analog to degree distribution is **strength**. We can calculate this with the `strength()` function, which presents a weighted degree distribution based on the `weight` attribute of a graph's edges.
+
+```{r}
+trip_strng <- data_frame(
+  # Find the "out" strength distribution
+  trip_out = strength(trip_g_simp, mode = "out"), 
+  # ... and the "in" strength distribution
+  trip_in = strength(trip_g_simp, mode = "in"),
+  # Calculate the ratio of out / in
+  ratio = trip_out / trip_in
+)
+
+trip_strng_filtered <- trip_strng %>%
+  # Filter for rows where trips in and out are both over 10
+  filter(trip_out > 10, trip_in > 10) 
+
+# Plot histogram of filtered ratios
+hist(trip_strng_filtered$ratio)
+```
+
+Hopefully those weights didn't make this too heavy! Now on to more visualization.
+
+**Visualize central vertices**
+
+As we saw in the last lesson, station 275 had the lowest out/in degree ratio. We can visualize this using `make_ego_graph()` to see all the outbound paths from this station. It's also useful to plot this on a geographic coordinate layout, not the default `igraph` layout. By default, `igraph` uses the `layout_nicely()` function to display your graph, making an algorithmic guess about what the best layout should be. However, in this case we want to specify the coordinates of each station, because when a vertex is above another it means it's actually north of it.
+
+```{r}
+from_longitude <- c(-87.65650, -87.66100, -87.65549, -87.64275, -87.67328, -87.66154, -87.62373, -87.66875, -87.65103, -87.66651, -87.66661)
+
+from_latitude <- c(41.85817, 41.86942, 41.86948, 41.88042, 41.87501, 41.85756, 41.86406, 41.85790, 41.87174, 41.86523, 41.89107)
+
+latlong <- as.matrix(data.frame(from_longitude, from_latitude))
+
+# Make an ego graph of the least traveled graph
+g275 <- make_ego_graph(trip_g_simp, 1, nodes = "275", mode= "out")[[1]]
+
+# Plot ego graph
+plot(
+  g275, 
+  # Weight the edges by weight attribute 
+  edge.width = E(g275)$weight
+)
+
+# Plot ego graph
+plot(
+  g275, 
+  edge.width = E(g275)$weight,
+  # Use geographic coordinates
+  layout = latlong, 
+)
+```
+
+Awesome work! Now let's keep on riding.
+
+**Weighted Measures of Centrality**
+
+Another common measure of important vertices is centrality. There are a number of ways that we can measure centrality, but for this lesson, we'll consider two metrics: eigen centrality and closeness. While eigen centrality has already been covered, closeness is another way of assessing centrality. It considers how close any vertex is to all the other vertices. In earlier lessons, we haven't explicitly considered weighted versus unweighted versions of centrality. In this lesson, we'll calculate both weighted and unweighted versions and see if the change is returned.
+
+*In the below example, do you expect to see the same vertex each time? What do you think will be the biggest difference between metrics or between weighted and unweighted versions?*
+
+```{r}
+# This calculates weighted eigen-centrality 
+ec_weight <- eigen_centrality(trip_g_simp, directed = TRUE)$vector
+
+# Calculate unweighted eigen-centrality 
+ec_unweight <- eigen_centrality(trip_g_simp, directed = TRUE, weights = NA)$vector
+
+# This calculates weighted closeness
+close_weight <- closeness(trip_g_simp)
+
+# Calculate unweighted closeness
+close_unweight <- closeness(trip_g_simp, weights = NA)
+
+# Get vertex names
+vertex_names <- names(V(trip_g_simp))
+
+# Complete the data frame to see the results
+data_frame(
+  "Weighted Eigen Centrality" = vertex_names[which.min(ec_weight)],
+  "Unweighted Eigen Centrality" = vertex_names[which.min(ec_unweight)],
+  "Weighted Closeness" = vertex_names[which.min(close_weight)],
+  "Unweighted Closeness" = vertex_names[which.min(close_unweight)]
+)
+```
+
+## Connectivity
+
+- a measure of density of the graph
+
+- measures how many vertices or edges need to be removed to disconnect the graph
+
+![](_images/1374.png) 
+
+![](_images/1375.png) 
+
+![](_images/1376.png) 
+
+![](_images/1377.png) 
+
+- Random graphs have higher connectivity, illustrating how they do not have geographic constraints.
+
+**Find the minimum cut 1**
+
+Connectivity tells us the minimum number of cuts needed to split the graph into two different subgraphs. `igraph` has two functions that we can use to tell us which vertices are actually cut into those two different subgraphs and how many cuts are required. The first is `min_cut()`, which returns all the cuts made, the number of cuts, and the two different subgraphs created. The number of cuts differs between directed and undirected graphs. In directed graphs, the minimum number of cuts only counts inbound edges, whereas in an undirected graph, it is how many cuts for all edges.
+
+```
+# Calculate the minimum number of cuts
+ud_cut <- min_cut(trip_g_ud, value.only = FALSE)
+
+# See the result
+ud_cut
+```
+```
+$value
+[1] 5
+
+$cut
++ 5/12972 edges from e947f39 (vertex names):
+[1] 71 --281 135--281 167--281 203--281 281--305
+
+$partition1
++ 1/300 vertex, named, from e947f39:
+[1] 281
+
+$partition2
++ 299/300 vertices, named, from e947f39:
+  [1] 5   13  14  15  16  17  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  66  67  68  69  71  72  73  74  75  76  77  80  81  84  85  86  87  88  90  91  92  93  94  97  98  99  100 106 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 126 127 128 129 130 131 132 134 135 136 137 138 140 141 143 144 146 147 148 149 150 152 153 154 156 157 158 159 160 162 163 164 165 166 167 168 169 170 171 173 174 175 176 177 178 179 181 183 184 185 186 188 190 191 192 193 194 195 196 197 198 199 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 215 216 217 218 219 220 222 223 224 225 226 227 228 229 230 231 232 233 234 236 237 238 239 240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255 256 257 258 259 260 261 262 263 264 265 267 268 271 272 273 274 275 276 277 278 279 280 282 283 284 285 286 287 288 289 290 291 292 293 294 295 296 297 298 299 300
+[249] 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 334 335 336 337 338 339 340 341 342 343 344 345 346 347 348 349 350 351
+```
+
+The number of cuts are shown in value, and the vertices in each new graph are listed in partition1 and partition2.
+
+**Find the minimum cut 2**
+
+Another function for cutting graphs into several smaller graphs is `stMincuts()`. This requires the graph and the IDs of two vertices, and tells you minimum number of cuts needed in the graph to disconnect them (specified by the `value` element of the function output). The syntax for this function is:
+
+```
+stMincuts(graph, "node1", "node2")
+```
+
+```
+# Make an ego graph from the first partition
+ego_partition1 <- make_ego_graph(trip_g_ud, nodes = ud_cut$partition1)[[1]]
+
+# Plot the ego graph
+plot(ego_partition1)
+```
+![](_images/1378.png) 
+
+```{r}
+# Find the number of cuts needed to disconnect nodes "231" and "321"
+stMincuts(trip_g_simp, "231", "321")
+
+# Find the number of cuts needed to disconnect nodes "231" and "213"
+stMincuts(trip_g_simp, "231", "213")
+```
+
+Further apart stations require more cuts to disconnect them from the network
+
+**Unweighted Clustering Randomizations**
+
+We've seen that the bike graph has a very low connectivity relative to a random graph. This is unsurprising because we expect that a graph that represents geographic space should have some parts that are connected by small corridors, and therefore, it wouldn't take much to disconnect the graph. It follows that it's likely that there are geographic clusters that are highly connected to each other and less connected to other clusters. We can test this hypothesis by looking at the transitivity of the network, or the clustering coefficient, a concept introduced in our introductory lesson. Several types of clustering coefficients exist, but we'll be looking at the global definition (essentially the portion of fully closed triangles), which is the same one covered earlier. First, we will look at an unweighted version of the graph and compare it to a random graph.
+
+To calculate the global transitivity of a network, you'll need to set `type` to `"global"` in your call to `transitivity()`.
+
+The bike trip network, `trip_g_simp` is available.
+
+```{r}
+# Calculate global transitivity
+actual_global_trans <- transitivity(trip_g_simp, type = "global")
+
+# See the result
+actual_global_trans
+
+# Calculate the order
+n_nodes <- gorder(trip_g_simp)
+
+# Calculate the edge density
+edge_dens <- edge_density(trip_g_simp)
+
+# Run the simulation
+simulated_global_trans <- rep(NA, 300)
+for(i in 1:300) {
+  # Generate an Erdos-Renyi simulated graph
+  simulated_graph <- erdos.renyi.game(n_nodes, edge_dens, directed = TRUE)
+  # Calculate the global transitivity of the simulated graph
+  simulated_global_trans[i] <- transitivity(simulated_graph, type = "global")
+}
+
+# Plot a histogram of simulated global transitivity
+hist(
+  simulated_global_trans, 
+  xlim = c(0.35, 0.6), 
+  main = "Unweighted clustering randomization"
+)
+
+# Add a vertical line at the actual global transitivity
+abline(v = actual_global_trans, col = "red")
+```
+
+What a simulating exercise! The global transitivity of each simulation is much lower than the global transitivity of the original graph. Let's try it again but with weighted clustering.
+
+**Weighted Clustering Randomizations**
+
+We can see support for the hypothesis that a graph with low connectivity would also have very high clustering, much higher than by chance. But our graph is more than just an undirected graph, it also has weights that represent the number of trips taken. So now we have several things to consider in our randomization. First, the weighted version of the metric is local only, so a transitivity value is calculated for each vertex. Second, the random graph doesn't include weights. To solve both of these problems, we'll look at the mean vertex transitivity, and implement a slightly more complicated randomization scheme.
+
+To calculate the weighted vertex transitivity of a network, you'll need to set `type` to `"weighted"` in your call to `transitivity()`.
+
+The bike trip network, `trip_g_simp` is available.
+
+```{r}
+# Find the mean local weighted clustering coeffecient using transitivity()
+actual_mean_weighted_trans <- mean(transitivity(trip_g_simp, type = "weighted"))
+
+# Calculate the order
+n_nodes <- gorder(trip_g_simp)
+
+# Calculate the edge density
+edge_dens <- edge_density(trip_g_simp)
+
+# Get edge weights
+edge_weights <- E(trip_g_simp)$weights
+
+# Run the simulation
+simulated_mean_weighted_trans <- rep(NA, 300)
+for(i in 1:300) {
+  # Generate an Erdos-Renyi simulated graph
+  simulated_graph <- erdos.renyi.game(n_nodes, edge_dens, directed = TRUE)
+  # Get number of edges in simulated graph
+  n_simulated_edges <- gsize(simulated_graph)
+  # Sample existing weights and add them to the random graph
+  E(simulated_graph)$weights <- sample(edge_weights, n_simulated_edges, replace = TRUE)
+  # Get the mean transitivity of the simulated graph
+  simulated_mean_weighted_trans[i] <- mean(transitivity(simulated_graph, type = "weighted"))
+}
+
+# Plot a histogram of simulated mean weighted transitivity
+hist(
+  simulated_mean_weighted_trans, 
+  xlim = c(0.35, 0.7), 
+  main = "Mean weighted clustering randomization"
+)
+
+# Add a vertical line at the actual mean weighted transitivity
+abline(v = actual_mean_weighted_trans, col = "red")
+```
+
+And we've reached the end of the ride for this bike chapter, but now let's wrap it up with some alternative plotting types.
+
+## Other packages for plotting graphs!
+
+![](_images/1379.png) 
+
+![](_images/1380.png) 
+
+![](_images/1381.png) 
+
+![](_images/1382.png) 
+
+![](_images/1383.png) 
+
+![](_images/1384.png) 
+
+![](_images/1385.png) 
+
+![](_images/1386.png) 
+
+![](_images/1387.png)
+
+![](_images/1388.png)
+
+![](_images/1389.png)
+
+![](_images/1390.png)
+
+**ggnet Basics**
+
+There are many ways to visualize a graph beyond the basic `igraph` plotting. A common framework is to use `ggplot2`, which provides a way to make high quality plots with minimal graphical parameter setting. In this lesson, we'll cover the basics of creating a plot with `ggnet2`. This package builds graph plots using the `ggplot2` framework. While it produces nice graphics, it relies on graph objects from a different R library `network`, but it does make plots with a `ggplot2` aesthetic without quite the formal grammar of graphics used by `ggnetwork`, as we'll see in the next lesson. Therefore, you'll notice a lot of overlap in the syntax with `igraph` (`node.size` is the same as `vertex.size`, and `edge.size` is the same name).
+
+```{r}
+library(GGally)
+library(intergraph)
+library(network)
+library(sna)
+library(ggplot2)
+
+# Create subgraph of retweet_graph
+retweet_samp <- induced_subgraph(retweet_graph, vids = V(retweet_graph))
+
+# Plot using igraph
+plot(retweet_samp, vertex.label = NA, edge.arrow.size = 0.2, edge.size = 0.5, vertex.color = "black", vertex.size = 1)
+
+# Convert to a network object
+retweet_net <- asNetwork(retweet_samp)
+
+# Plot using GGally 
+ggnet2(retweet_net, edge.size = 0.5, node.color = "black", node.size = 1)
+```
+
+GGood plotting! Let's move on to the next package.
+
+**ggnetwork Basics**
+
+In the last lesson, you saw that the `ggnet2` package produces `ggplot2`-like plots with a reasonably familiar syntax to `igraph`. However, the `ggnetwork` package works a bit differently. It converts `igraph` objects into data frames that are easily plotted by `ggplot2`. It also adds several new `geoms` that can be used to build plots. The `ggnetwork()` function converts the `igraph` object to a data frame, and some parameters are added into the data frame (in this case, the arrow gap parameter) and then can be plotted using `ggplot`. From there, you build your graph up with `geom_edges()` for edges and `geom_nodes()` for vertices. In this lesson we'll do two basic plots of the retweet graph, one with `ggplot` defaults, and one with some basic theming to look a bit nicer.
+
+```{r}
+library(ggnetwork)
+
+# Call ggplot
+ggplot(
+  # Convert retweet_samp to a ggnetwork
+  ggnetwork(retweet_samp), 
+  # Specify x, y, xend, yend
+  aes(x = x, y = y, xend = xend, yend = yend)) +
+  # Add a node layer
+  geom_nodes() +
+  # Add an edge layer
+  geom_edges()
+
+# Call ggplot
+ggplot(
+  # Convert retweet_samp to a ggnetwork
+  ggnetwork(retweet_samp), 
+  # Specify x, y, xend, yend
+  aes(x = x, y = y, xend = xend, yend = yend)) +
+  # Add a node layer
+  geom_nodes() +
+  # Change the edges to arrows of length 6 pts
+  geom_edges(arrow = arrow(length = unit(6, "pt"))) +
+  # Use the blank theme
+  theme_blank()
+```
+
+Priceless plotting! The x and y scales don't have any meaning when plotting a graph, so `theme_blank()` is a common choice to remove them.
+
+**More ggnet Plotting Options**
+
+The real power of `ggnet` and other alternatives to `igraph` is that they offer a way to generate advanced plots with just a little parameterization. In the earlier example comparing the two plotting methods, they were somewhat similar. However, in this lesson we'll show how you can make more advanced plots. We'll take the Twitter data set and using `igraph` add several vertex attributes, centrality and community, and plot them quickly using `ggnet`.
+
+The centrality and community membership attributes you created in the last exercise are still present.
+
+```{r}
+# Convert to a network object
+retweet_net <- asNetwork(retweet_graph)
+
+# Plot with ggnet2
+ggnet2(
+  retweet_net, 
+  # Set the node size to cent
+  node.size = "cent", 
+  # Set the node color to comm
+  node.color = "comm", 
+  # Set the color palette to spectral
+  color.palette = "Spectral"
+)
+
+# Update the plot
+ggnet2(
+  retweet_net, 
+  node.size = "cent", 
+  node.color = "comm", 
+  color.palette = "Spectral",
+  # Set the edge color
+  edge.color = c("color", "grey90")
+) +
+  # Turn off the size guide
+  guides(size = FALSE)
+```
+
+Our retweet graph is like colorful bouquet! Great work, now let's try it with the next plotting package.
+
+**More ggnetwork Plotting Options**
+
+Just like in the last lesson, `ggnetwork` also offers methods to quickly generate nice plots. It's important to keep in mind that each package has a different style, which may or may not appeal to you. Recall that `ggnetwork` works by converting a graph to a dataframe to be plotted by` ggplot2`. Therefore. all the parameterizations you're used to will be available. This gives you a great degree of flexibility, but could also mean more effort to achieve the aesthetic you desire. We'll repeat the exercise in the previous lesson, but this time using `ggnetwork`. This will give you a good point of comparison to decide which package you like the best.
+
+The centrality and community membership attributes you created in the last exercise are still present.
+
+![](_images/1391.png)
+
+```
+ggplot(
+  ggnetwork(retweet_graph, arrow.gap = 0.01), 
+  aes(x = x, y = y, xend = xend, yend = yend)
+) + 
+  geom_edges(
+    arrow = arrow(length = unit(6, "pt"), type = "closed"), 
+    curvature = 0.2, color = "black"
+  ) + 
+  # Add a node layer, mapping color to comm and setting the size to 4
+  geom_nodes(aes(color = comm), size = 4) + 
+  theme_blank()
+
+ggplot(
+  # Draw a ggnetwork of retweet_graph_smaller
+  ggnetwork(retweet_graph, arrow.gap = 0.01), 
+  aes(x = x, y = y, xend = xend, yend = yend)
+) + 
+  geom_edges(
+    # Add a color aesthetic, mapped to comm
+    aes(color = comm),
+    arrow = arrow(length = unit(6, "pt"), type = "closed"), 
+    curvature = 0.2, color = "black"
+  ) + 
+  # Make the size an aesthetic, mapped to cent 
+  geom_nodes(aes(color = comm, size = cent)) + 
+  theme_blank() +
+  guides(
+    color = guide_legend(title = "Community"), 
+    # Add a guide to size titled "Centrality"
+    size = guide_legend(title = "Centrality")
+  )
+```
+![](_images/1392.png)
+
+![](_images/1393.png)
+
+Pretty plotting! `ggnetwork` provides powerful plot customization options.
+
+## Interactive visualizations
+
+![](_images/1394.png)
+
+![](_images/1395.png)
+
+![](_images/1396.png)
+
+![](_images/1397.png)
+
+![](_images/1398.png)
+
+![](_images/1399.png)
+
+![](_images/1400.png)
+
+![](_images/1401.png)
+
+**Interactive plots with ggiraph**
+
+Up until now, we've been making static plots of our graphs. However, there are many features of our graph that we may want to visualize, and if we displayed them all at once, the image would be overwhelming. That's where interactive graphs can truly stand out. You can plot the basic graph structure and allow the user to see different vertex and edge properties based on how they interact with the plot. In this lesson we will build on work we've done with `ggnetwork`. First, we'll take a 1% subsample of the bike sharing network (cut down for ease of visualization) and create a `ggnetwork` plot. Then, we'll add betweenness centrality as a vertex property and create an interactive plot where centrality is displayed when the pointer hovers over a vertex.
+
+```
+library(ggiraph)
+
+# From previous step
+static_network <- ggplot(
+  ggnetwork(trip_g_simp, arrow.gap = 0.01), 
+  aes(x = x, y = y, xend = xend, yend = yend)
+) + 
+  geom_edges() + 
+  geom_nodes(aes(size = cent)) + 
+  theme_blank() 
+
+interactive_network <- static_network + 
+  # Add an interactive point layer
+  geom_point_interactive(
+    # Map tooltip and data_id to centrality
+    aes(tooltip = cent, data_id = cent)
+  ) 
+
+# Print the interactive network
+girafe(code = print(interactive_network)) %>%
+  # Set girafe options
+  girafe_options(
+    # Set hover options
+    opts_hover(css = "cursor: pointer; fill: red; stroke: red; r: 5pt"),
+    # Set tooltip options; give x-offset of 10 px 
+    opts_tooltip(offx = 10)
+  )
+```
+
+![](_images/1402.png)
+
+**Interactive javascript plots**
+
+Another widely used framework for creating interactive plots is D3.js. It has a specific standard for creating network plots that we can automatically generate in R. On the one hand, this is highly convenient because, with just a few lines of code, you'll be able to create fully interactive D3.js plots. The drawback is that real customization only comes when you directly edit the output javascript source code from R (which is beyond the scope of this course). Nonetheless, it is quick and easy to create a nice D3.js network plot in R using the `d3Network` library. In this lesson we'll load up the #rstats Twitter dataset and add community membership. Then we'll create a subgraph of just a few communities and render a D3.js network graph.
+
+The tweet graph object, `retweet_samp`, is available.
+
+```
+library(d3Network)
+
+# Run this to see the static version of the plot
+ggplot(ggnetwork(retweet_samp, arrow.gap = 0.01), 
+       aes(x = x, y = y, xend = xend, yend = yend)) + 
+  	   geom_edges(color = "black") + 
+	   geom_nodes(aes(color = as.factor(comm))) + 
+       theme_blank()  
+
+# Convert retweet_samp to a networkD3 object
+nd3 <- igraph_to_networkD3(retweet_samp, V(retweet_samp)$comm)
+
+# View the data structure
+str(nd3)
+```
+![](_images/1403.png)
+```
+# Render your D3.js network
+forceNetwork(
+  # Define links from nd3 object
+  Links = nd3$links, 
+  # Define nodes from nd3 object
+  Nodes = nd3$nodes, 
+  # Specify the source column
+  Source = "source", 
+  # Specify the target column
+  Target = "target", 
+  NodeID = "name", 
+  Group = "group", 
+  legend = TRUE, 
+  fontSize = 20
+)
+```
+
+Fantastic work, now you can put these network plots into web pages, or just impress your friends!
+
+## Alternative visualizations
+
+![](_images/1404.png)
+
+![](_images/1405.png)
+
+![](_images/1406.png)
+
+![](_images/1407.png)
+
+![](_images/1408.png)
+
+![](_images/1409.png)
+
+![](_images/1410.png)
+
+![](_images/1411.png)
+
+![](_images/1412.png)
+
+![](_images/1413.png)
+
+**Alternative ways to visualize a graph: Hive plots**
+
+Another method you can use to visualize graphs are hive plots. These visualize points along a set of axes that are defined by categories of data. The position on the axis is determined by a feature of the graph like centrality and edge width, and color can be set by graph properties. Unlike hairball plots, hive plots layout is determined by properties of the graph. It makes comparing and interpreting the visualization easier than other approaches. In this exercise, we’ll visualize some of the bike data by assigning each vertex to an axis by its geography (north, central, southern). Vertices are aligned by centrality, and then colored in a heat map by geographic distance. This is why we see more red lines (far distance) on vertices at the end of the axis (greater centrality).
+
+```
+library(HiveR)
+
+# Convert trip_df to hive object using edge2HPD()
+bike_hive <- edge2HPD(trip_df, axis.cols = rep("black", 3))
+
+# Set edge color using our custom function
+bike_hive$edges$color <- dist_gradient(trip_df$geodist)
+
+# Set node radius based on centrality
+bike_hive$nodes$radius <- ifelse(bike_cent > 0, bike_cent, runif(1000, 0, 3))
+
+# Set node axis to station axis
+bike_hive$nodes$axis <- dist_stations$axis
+
+# Plot the hive
+plotHive(bike_hive, method = "norm", bkgnd = "white")
+```
+![](_images/1414.png)
+
+Whoa, awesome work! Hive plots can be trickier than a hive of bees, but for the right data they are a powerful visualization.
+
+**BioFabric as an HTML widget**
+
+Biofabric plots are another way that you can visualize a graph without using a typical hairball approach. Instead, it lays out vertices as horizontal lines, one per row, and edges as vertical lines. When there is a connection between two vertices, a vertical line is drawn between the two vertex row lines. By default, vertices are sorted by degree, which leads to the triangular type of groupings. When using this method on large graphs, it's best to save the output as html or a pdf. The layout prevents the overlapping tangle often seen when visualizing large graphs. In this lesson we'll take the #rstats Twitter dataset and subset it into a few communities. Then we'll visualize it with `ggnetwork` and `RBioFabric` so we can get a sense of both approaches.
+
+```{r}
+library(RBioFabric)
+library(htmlwidgets)
+
+# Make a Biofabric plot of retweet_samp
+retweet_bf <- bioFabric(retweet_samp)
+
+# Create HTMLwidget of retweet_bf
+#bioFabric_htmlwidget(retweet_bf) #this widget is a memory wurm, do not uncomment
+```
+
+I'm not telling any fabrications, these are tricky plots, but R makes them easy and they are an interesting alternative to the hairball plot.
+
+**Plotting graphs on a map**
+
+In this lesson, we'll build a map that overlays the bike graph on a map. We'll then color the edges by subscriber/non-subscriber and draw the thickness by the number of trips. First, recall that subscribers to the bike sharing network are regular users and probably more likely to be local, whereas non-subscribers are more likely to be tourists. Trips from non-subscribers tend to be limited to the lakefront portions of the city that tend to have more tourist attractions. Another pattern we'll see is that the further west a station is, the thinner the line, meaning fewer trips were taken. Overlaying the graph on the map helps make certain network patterns much clearer than if we were to simply make a regular hairball plot.
+
+The bike data, `bike_dat`, and a map of Chicago, `chicago`, are available.
+
+```
+library(ggmap)
+chicago <- get_map("Chicago")
+
+weighted_trips_by_usertype <- bike_dat %>% 
+  group_by(
+    from_station_id, to_station_id, 
+    from_latitude, from_longitude, 
+    to_latitude, to_longitude, 
+    usertype
+  ) %>% 
+  # Weight each journey by number of trips
+  summarize(weight = n())
+
+# Create a base map
+ggmap(chicago) + 
+  # Add a line segment layer
+  geom_segment( 
+    aes(
+      x = from_longitude, y = from_latitude, 
+      xend = to_longitude, yend = to_latitude, 
+      # Color by user type
+      color = usertype, 
+      # Set the line width to the weight
+      size = weight
+    ), 
+    data = weighted_trips_by_usertype,
+    alpha = 0.5
+  )
+```
+![](_images/1415.png)
+
+Congratulations! You did it, that's the end, but really it's just the beginning of all the amazing things you can do with networks.
 
 
 
