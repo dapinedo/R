@@ -153,7 +153,7 @@ sitemap:
 - Certificate
 
 #### Statistician with R
-1. introduction to data in R
+1. <a href="https://pinedo.org/introduction-to-data-in-R.html" target="_blank" rel="noopener noreferrer">introduction to data in R</a>
 2. <a href="https://rpubs.com/odenipinedo/exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">exploratory data analysis in R</a>
 3. modeling with data in the tidyverse
 4. <a href="https://rpubs.com/odenipinedo/correlation-and-regression-in-R" target="_blank" rel="noopener noreferrer">correlation and regression in R</a>
