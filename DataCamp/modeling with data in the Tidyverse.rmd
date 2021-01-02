@@ -1,0 +1,27 @@
+---
+title: "Modeling with Data in the Tidyverse"
+author: "Datacamp - Albert Y. Kim"
+date: "1/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## Background on modeling for explanation
+
+
+
+
+
+
+
+![](_images/1416.png)
+
+
+
+
+
+
