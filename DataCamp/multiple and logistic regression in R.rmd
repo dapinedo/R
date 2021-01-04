@@ -1,0 +1,25 @@
+---
+title: "Multiple and Logistic Regression in R"
+author: "Datacamp - Ben Baumer"
+date: "1/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## What if you have two groups?
+
+
+
+
+
+
+
+![](_images/1444.png)
+
+
+
+
