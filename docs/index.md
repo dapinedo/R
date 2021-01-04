@@ -154,7 +154,7 @@ sitemap:
 #### Statistician with R
 1. <a href="introduction-to-data-in-R.html" target="_blank" rel="noopener noreferrer">introduction to data in R</a>
 2. <a href="https://rpubs.com/odenipinedo/exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">exploratory data analysis in R</a>
-3. modeling with data in the tidyverse
+3. <a href="https://rpubs.com/odenipinedo/modeling-with-data-in-the-Tidyverse" target="_blank" rel="noopener noreferrer">modeling with data in the tidyverse</a>
 4. <a href="https://rpubs.com/odenipinedo/correlation-and-regression-in-R" target="_blank" rel="noopener noreferrer">correlation and regression in R</a>
 5. multiple and logistic regression in R
 6. foundations of inference
@@ -189,7 +189,7 @@ sitemap:
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
 2. working with data in the Tidyverse
 3. project: Dr. Semmelweis and the discovery of handwashing
-4. modeling with data in the Tidyverse
+4. <a href="https://rpubs.com/odenipinedo/modeling-with-data-in-the-Tidyverse" target="_blank" rel="noopener noreferrer">modeling with data in the tidyverse</a>
 5. communicating with data in the Tidyverse
 6. categorical data in the Tidyverse
 
