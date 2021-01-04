@@ -185,6 +185,14 @@ sitemap:
 4. sentiment analysis in R
 - Certificate
 
+#### Tidyverse Fundamentals with R
+1. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
+2. working with data in the Tidyverse
+3. project: Dr. Semmelweis and the discovery of handwashing
+4. modeling with data in the Tidyverse
+5. communicating with data in the Tidyverse
+6. categorical data in the Tidyverse
+
 #### Time Series
 1. <a href="https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R" target="_blank" rel="noopener noreferrer"> manipulating time series data with xts and zoo in R</a>
 2. <a href="https://rpubs.com/odenipinedo/time-series-analysis-in-R" target="_blank" rel="noopener noreferrer">time series analysis in R</a>
