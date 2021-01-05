@@ -93,7 +93,7 @@ sitemap:
 2. <a href="https://pinedo.org/R/supervised-learning-in-R---regression.html " target="_blank" rel="noopener noreferrer">supervised learning in R: regression</a>
 3. <a href="https://rpubs.com/odenipinedo/unsupervised-learning-in-R" target="_blank" rel="noopener noreferrer">unsupervised learning in R</a>
 4. machine learning in the tidyverse
-5. multiple and logistic regression in R
+5. <a href="https://rpubs.com/odenipinedo/multiple-and-logistic-regression-in-R" target="_blank" rel="noopener noreferrer">multiple and logistic regression in R</a>
 6. <a href="https://rpubs.com/odenipinedo/cluster-analysis-in-R" target="_blank" rel="noopener noreferrer">cluster analysis in R</a>
 7. machine learning with caret in R
 8. tree-based models in R
@@ -151,12 +151,19 @@ sitemap:
 4. interactive maps with leaflet in R
 - Certificate
 
+#### Statistical Inference with R
+1. foundations of inference
+2. inference for categorical data in R
+3. inference for numerical data in R
+4. inference for linear regression in R
+- Certificate
+
 #### Statistician with R
 1. <a href="introduction-to-data-in-R.html" target="_blank" rel="noopener noreferrer">introduction to data in R</a>
 2. <a href="https://rpubs.com/odenipinedo/exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">exploratory data analysis in R</a>
 3. <a href="https://rpubs.com/odenipinedo/modeling-with-data-in-the-Tidyverse" target="_blank" rel="noopener noreferrer">modeling with data in the tidyverse</a>
 4. <a href="https://rpubs.com/odenipinedo/correlation-and-regression-in-R" target="_blank" rel="noopener noreferrer">correlation and regression in R</a>
-5. multiple and logistic regression in R
+5. <a href="https://rpubs.com/odenipinedo/multiple-and-logistic-regression-in-R" target="_blank" rel="noopener noreferrer">multiple and logistic regression in R</a>
 6. foundations of inference
 7. <a href="https://rpubs.com/odenipinedo/foundations-of-probability-in-R" target="_blank" rel="noopener noreferrer">foundations of probability in R</a>
 8. dealing with missing data in R
@@ -169,7 +176,6 @@ sitemap:
 - Certificate
 
 #### Statistics courses (misc)
-- inference for linear regression in R
 - hierarchical and mixed effects models in R
 - generalized linear models in R
 - nonlinear modeling in R with GAMs
@@ -192,6 +198,7 @@ sitemap:
 4. <a href="https://rpubs.com/odenipinedo/modeling-with-data-in-the-Tidyverse" target="_blank" rel="noopener noreferrer">modeling with data in the tidyverse</a>
 5. communicating with data in the Tidyverse
 6. categorical data in the Tidyverse
+- Certificate
 
 #### Time Series
 1. <a href="https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R" target="_blank" rel="noopener noreferrer"> manipulating time series data with xts and zoo in R</a>
