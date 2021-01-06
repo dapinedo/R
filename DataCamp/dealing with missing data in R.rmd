@@ -1,0 +1,25 @@
+---
+title: "Dealing With Missing Data in R"
+author: "Datacamp - Nicholas Tierney"
+date: "1/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## Introduction to missing data
+
+
+
+
+
+![](_images/1534.png)
+
+
+
+
+
+
