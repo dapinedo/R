@@ -176,12 +176,15 @@ sitemap:
 - Certificate
 
 #### Statistics courses (misc)
+- analyzing survey data in R
 - hierarchical and mixed effects models in R
 - generalized linear models in R
 - nonlinear modeling in R with GAMs
 - factor analysis in R
 - structural equation modeling with lavaan in R
+- survey and measurement development in R
 - anomaly detection in R
+- analyzing US census data in R
 - data privacy and anonymization in R
 
 #### Text Mining with R
