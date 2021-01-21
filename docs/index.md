@@ -104,6 +104,7 @@ sitemap:
 13. hyperparameter tuning in R
 14. Bayesian regression modeling with rstanarm
 15. introduction to Spark with sparklyr in R
+- Certificate
 
 #### Network Analysis with R
 1. <a href="https://rpubs.com/odenipinedo/network-analysis-in-R" target="_blank" rel="noopener noreferrer">network analysis in R</a>
@@ -166,7 +167,7 @@ sitemap:
 5. <a href="https://rpubs.com/odenipinedo/multiple-and-logistic-regression-in-R" target="_blank" rel="noopener noreferrer">multiple and logistic regression in R</a>
 6. <a href="https://rpubs.com/odenipinedo/foundations-of-inference" target="_blank" rel="noopener noreferrer">foundations of inference</a>
 7. <a href="https://rpubs.com/odenipinedo/foundations-of-probability-in-R" target="_blank" rel="noopener noreferrer">foundations of probability in R</a>
-8. dealing with missing data in R
+8. <a href="https://rpubs.com/odenipinedo/dealing-with-missing-data-in-R" target="_blank" rel="noopener noreferrer">dealing with missing data in R</a>
 9. experimental design in R
 10. A/B testing in R
 11. fundamentals of Bayesian data analysis in R
