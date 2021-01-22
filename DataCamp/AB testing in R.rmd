@@ -1,0 +1,26 @@
+---
+title: "AB Testing in R"
+author: "DataCamp - Paige Piccinini"
+date: "1/22/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## Introduction
+
+
+
+
+
+
+
+![](_images/1688.png)
+
+
+
+
+
