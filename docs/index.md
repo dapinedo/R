@@ -168,7 +168,7 @@ sitemap:
 6. <a href="https://rpubs.com/odenipinedo/foundations-of-inference" target="_blank" rel="noopener noreferrer">foundations of inference</a>
 7. <a href="https://rpubs.com/odenipinedo/foundations-of-probability-in-R" target="_blank" rel="noopener noreferrer">foundations of probability in R</a>
 8. <a href="https://rpubs.com/odenipinedo/dealing-with-missing-data-in-R" target="_blank" rel="noopener noreferrer">dealing with missing data in R</a>
-9. experimental design in R
+9. <a href="https://rpubs.com/odenipinedo/experimental-design-in-R" target="_blank" rel="noopener noreferrer">experimental design in R</a>
 10. A/B testing in R
 11. fundamentals of Bayesian data analysis in R
 12. linear algebra for data science in R
