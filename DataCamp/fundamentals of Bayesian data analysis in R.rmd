@@ -1,0 +1,26 @@
+---
+title: "Fundamentals of Bayesian Data Analysis in R"
+author: "DataCamp - Rasmus Bååth"
+date: "2/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## A first taste of Bayes
+
+
+
+
+
+
+![](_images/1732.png)
+
+
+
+
+
+
