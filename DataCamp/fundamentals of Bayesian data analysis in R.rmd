@@ -12,12 +12,172 @@ options(repos="https://CRAN.R-project.org")
 
 ## A first taste of Bayes
 
+![](_images/1775.png)
+
+![](_images/1776.png)
+
+![](_images/1777.png)
+
+## Let's try some Bayesian data analysis
+
+![](_images/1778.png)
+
+![](_images/1779.png)
+
+![](_images/1780.png)
+
+![](_images/1781.png)
+
+![](_images/1782.png)
+
+**Coin flips with prop_model**
+
+The function `prop_model` has been loaded into your workspace. It implements a Bayesian model that assumes that:
+
+- The `data` is a vector of successes and failures represented by `1`s and `0`s.
+- There is an unknown underlying proportion of success.
+- Prior to being updated with data any underlying proportion of success is equally likely.
+
+Assume you just flipped a coin four times and the result was *heads*, *tails*, *tails*, *heads*. If you code *heads* as a success and *tails* as a failure then the following R codes runs *prop_model* with this data
+
+```r
+data <- c(1, 0, 0, 1)
+prop_model(data)
+```
+
+```{r}
+library(tidyverse)
+library(ggridges)
+
+prop_model <- function (data = c(), prior_prop = c(1, 1), n_draws = 10000, 
+    show_plot = TRUE) 
+{
+    data <- as.logical(data)
+    proportion_success <- c(0, seq(0, 1, length.out = 100), 1)
+    data_indices <- round(seq(0, length(data), length.out = min(length(data) + 
+        1, 20)))
+    post_curves <- map_dfr(data_indices, function(i) {
+        value <- ifelse(i == 0, "Prior", ifelse(data[i], "Success", 
+            "Failure"))
+        label <- paste0("n=", i)
+        probability <- dbeta(proportion_success, prior_prop[1] + 
+            sum(data[seq_len(i)]), prior_prop[2] + sum(!data[seq_len(i)]))
+        probability <- probability/max(probability)
+        tibble(value, label, proportion_success, probability)
+    })
+    post_curves$label <- fct_rev(factor(post_curves$label, levels = paste0("n=", 
+        data_indices)))
+    post_curves$value <- factor(post_curves$value, levels = c("Prior", 
+        "Success", "Failure"))
+    p <- ggplot(post_curves, aes(x = proportion_success, y = label, 
+        height = probability, fill = value)) + geom_density_ridges(stat = "identity", 
+        color = "white", alpha = 0.8, panel_scaling = TRUE, size = 1) + 
+        scale_y_discrete("", expand = c(0.01, 0)) + scale_x_continuous("Underlying proportion of success") + 
+        scale_fill_manual(values = hcl(120 * 2:0 + 15, 100, 65), 
+            name = "", drop = FALSE, labels = c("Prior   ", "Success   ", 
+                "Failure   ")) + theme_light(base_size = 18) + 
+        theme(legend.position = "top")
+    if (show_plot) {
+        print(p)
+    }
+    invisible(rbeta(n_draws, prior_prop[1] + sum(data), prior_prop[2] + 
+        sum(!data)))
+}
+```
+
+```{r}
+data <- c(1, 0, 0, 1)
+prop_model(data)
+```
+
+The model knows it's not close to 0% or close to 100%, but believes it could be anything in between.
+
+**Zombie drugs with prop_model**
+
+If we really were interested in the underlying proportion of heads of this coin then `prop_model` isn't particularly useful. Since it assumes that any underlying proportion of success is equally likely prior to seeing any data it will take a lot of coin flipping to convince `prop_model` that the coin is fair. This model is more appropriate in a situation where we have little background knowledge about the underlying proportion of success.
+
+```{r}
+# Update the data and rerun prop_model
+data = c(rep.int(0, 11), 1, 1)
+prop_model(data)
+```
+
+It seems like it's not a perfect drug, but between 5% to 40% cured zombies is better than nothing!
+
+## Samples and posterior summaries
+
+![](_images/1783.png)
+
+![](_images/1784.png)
+
+![](_images/1785.png)
+
+![](_images/1786.png)
+
+![](_images/1787.png)
+
+**Looking at samples from prop_model**
+
+Here again is the `prop_model` function which has been given the data from our zombie experiment where two out of 13 zombies got cured. In addition to producing a plot, `prop_model` also returns a large random sample from the posterior over the underlying proportion of success.
+
+```{r}
+data = c(1, 0, 0, 1, 0, 0,
+         0, 0, 0, 0, 0, 0, 0)
+         
+# Extract and explore the posterior
+posterior <- prop_model(data)
+head(posterior)
+
+# Plot the histogram of the posterior
+hist(posterior, breaks = 30, xlim = c(0, 1), col = "palegreen4")
+```
+
+Hey, that's a good looking plot!
+
+**Summarizing the zombie drug experiment**
+
+The point of working with samples from a probability distribution is that it makes it easy to calculate new measures of interest. The following tasks are about doing just this!
+
+A *point estimate* is a single number used to summarize what's known about a parameter of interest. It can be seen as a "best guess" of the value of the parameter. A commonly used point estimate is the **median** of the posterior. It's the midpoint of the distribution, and it's equally probable for the parameter value to be larger than the median as it is to be smaller than it.
+
+```{r}
+# Calculate the median
+median(posterior)
+```
+
+So, a best guess is that the drug would cure around 18% of all zombies. Another common summary is to report an interval that includes the parameter of interest with a certain probability. This is called a *credible interval* (CI). With a posterior represented as a vector of samples you can calculate a CI using the `quantile()` function.
+
+```{r}
+# Calculate the credible interval
+quantile(posterior, c(0.05, 0.95))
+```
+
+According to the credible interval, there is a 90% probability that the proportion of zombies the drug would cure is between 6% and 38%. (Here we have to be careful to remember that the percentage of cured zombies and the percentage of probability are two different things.)
+
+Now, there is a rival zombie laboratory that is also working on a drug. They claim that they are certain that their drug cures 7% of the zombies it's administered to. Can we calculate how probable it is that our drug is better? Yes, we can! But it's a two stage process.
+
+```{r}
+# Calculate the sum
+sum(posterior > 0.07)
+
+# Calculate the probability
+sum(posterior > 0.07)/length(posterior)
+```
+
+It seems there is a large probability (93%) that our zombie drug is better!
+
+## You've done some Bayesian data analysis!
+
+![](_images/1788.png)
+
+![](_images/1789.png)
 
 
 
 
 
-![](_images/1732.png)
+
+
 
 
 
