@@ -172,6 +172,203 @@ It seems there is a large probability (93%) that our zombie drug is better!
 
 ![](_images/1789.png)
 
+## The parts needed for Bayesian inference
+
+![](_images/1790.png)
+
+![](_images/1791.png)
+
+![](_images/1792.png)
+
+**Take a generative model for a spin**
+
+Below you have the R code that implements the generative model we just developed.
+
+```{r}
+# The generative zombie drug model
+
+# Set parameters
+prop_success <- 0.42
+n_zombies <- 100
+
+# Simulating data
+data <- c()
+for(zombie in 1:n_zombies) {
+  data[zombie] <- runif(1, min = 0, max = 1) < prop_success
+}
+
+data <- as.numeric(data)
+data
+
+# Count cured
+data <- sum(data)
+data
+```
+
+Perfect! Some zombies got cured in this simulation, but far from all.
+
+**Take the binomial distribution for a spin**
+
+It turns out that the generative model you ran last exercise already has a name. It's called the **binomial process** or the **binomial distribution**. In R you can use the `rbinom` function to simulate data from a binomial distribution. The `rbinom` function takes three arguments:
+
+- `n` The number of times you want to run the generative model
+- `size` The number of trials. (For example, the number of zombies you're giving the drug.)
+- `prob` The underlying proportion of success as a number between `0.0` and `1.0`.
+
+```{r}
+# Try out rbinom
+rbinom(n = 1, size = 100, prob = 0.42)
+
+# Change the parameters
+rbinom(n = 200, size = 100, prob = 0.42)
+```
+
+Nice! That's a lot of simulated zombies right there.
+
+## Using a generative model
+
+![](_images/1793.png)
+
+![](_images/1794.png)
+
+![](_images/1795.png)
+
+![](_images/1796.png)
+
+**How many visitors could your site get (1)?**
+
+To get more visitors to your website you are considering paying for an ad to be shown 100 times on a popular social media site. According to the social media site, their ads get clicked on 10% of the time.
+
+```{r}
+# Fill in the parameters
+n_samples <- 100000
+n_ads_shown <- 100
+proportion_clicks <- 0.10
+n_visitors <- rbinom(n_samples, size = n_ads_shown, 
+                     prob = proportion_clicks)
+
+# Visualize n_visitors
+hist(n_visitors, breaks = 25, col = "palegreen4")
+```
+
+## Representing uncertainty with priors
+
+![](_images/1797.png)
+
+![](_images/1798.png)
+
+**Adding a prior to the model**
+
+You're not so sure that your ad will get clicked on exactly 10% of the time. Instead of assigning `proportion_clicks` a single value you are now going to assign it a large number of values drawn from a probability distribution.
+
+For now, we are going to assume that it's equally likely that `proportion_clicks` could be as low as 0% or as high as 20%. 
+
+```{r}
+n_samples <- 100000
+n_ads_shown <- 100
+
+# Update proportion_clicks
+proportion_clicks <- runif(n = n_samples, min = 0.0, max = 0.2)
+
+n_visitors <- rbinom(n = n_samples, size = n_ads_shown, prob = proportion_clicks)
+```
+
+Because the `rbinom` function is vectorized the first value of `proportion_clicks` is used to sample the first value in `n_visitors`, the second value in `proportion_clicks` is used for the second in `n_visitors`, and so on. The result is that the samples in `n_visitors` now also incorporate the uncertainty in what the underlying proportion of clicks could be.
+
+```{r}
+# Visualize proportion clicks
+hist(proportion_clicks, col = "blue")
+```
+
+You shouldn't be surprised to see that the uncertainty over `proportion_clicks` is just as you specified it to be: Uniform between 0.0 and 0.2 (except for some small variations in the height of the bars because we took a random sample using `runif`).
+
+```{r}
+# Visualize n_visitors
+hist(n_visitors, col = "palegreen4")
+```
+
+Uncertainty changed the distribution. We went from a random distribution of about 90% to, with added uncertainty of 0 to 20%, 70% likelihood that someone will click on an ad.
+
+## Bayesian models and conditioning
+
+![](_images/1799.png)
+
+![](_images/1800.png)
+
+![](_images/1801.png)
+
+![](_images/1802.png)
+
+![](_images/1803.png)
+
+![](_images/1804.png)
+
+![](_images/1805.png)
+
+**Update a Bayesian model with data**
+
+You ran your ad campaign, and 13 people clicked and visited your site when the ad was shown a 100 times. You would now like to use this new information to update the Bayesian model.
+
+```{r}
+# Create the prior data frame
+prior <- data.frame(proportion_clicks, n_visitors)
+
+# Examine the prior data frame
+head(prior)
+```
+
+The reason we've called it prior is because it represents the uncertainty before (that is, prior to) having included the information in the data. Let's do that now!
+
+`prior$n_visitors` represented the uncertainty over how many visitors you would get because of the ad campaign. But now you know you got exactly 13 visitors.
+
+```{r}
+# Create the posterior data frame
+posterior <- prior[prior$n_visitors == 13, ]
+
+# Visualize posterior proportion clicks
+hist(posterior$proportion_clicks, col = "palegreen4")
+```
+
+**How many visitors could your site get (3)?**
+
+In the last exercise, you updated the probability distribution over the underlying proportions of clicks (`proportion_clicks`) using new data. Now we want to use this updated `proportion_clicks` to predict how many visitors we would get if we reran the ad campaign.
+
+The result from the last exercise is still in the data frame `posterior`, but if you look at `posterior$n_visits` you'll see it's just `13` repeated over and over again. This makes sense as `posterior` represents what the model knew about the outcome of the last ad campaign after having seen the data.
+
+```{r}
+# Assign posterior to a new variable called prior
+prior <- posterior
+
+# Take a look at the first rows in prior
+head(prior)
+
+# Replace prior$n_visitors with a new sample and visualize the result
+n_samples <-  nrow(prior)
+n_ads_shown <- 100
+prior$n_visitors <- rbinom(n_samples, size = n_ads_shown,
+                           prob = prior$proportion_clicks)
+hist(prior$n_visitors, col = "palegreen4")
+
+# Calculate the probability that you will get 5 or more visitors
+sum(prior$n_visitors >= 5)/length(prior$n_visitors)
+```
+
+It's pretty probable that you'll get more than 5 visitors.
+
+## What have we done?
+
+**Joint Probability Distribution**
+
+![](_images/1806.png)
+
+![](_images/1807.png)
+
+**Chapter 4: Computational Methods**
+
+![](_images/1808.png)
+
+## Four good things with Bayes
+
 
 
 
