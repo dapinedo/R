@@ -766,7 +766,306 @@ What you've found by eyeballing this graph is the so-called *maximum likelihood 
 
 ## Bayesian calculation
 
+![](_images/1842.png)
 
+![](_images/1843.png)
+
+**Calculating a joint distribution**
+
+Below, you have parts of the code we developed in the last video. It defines a grid over the underlying proportions of clicks (`proportion_clicks`) and possible outcomes (`n_visitors`) in pars. It adds to it the `prior` probability of each parameter combination and the likelihood that each `proportion_clicks` would generate the corresponding `n_visitors`.
+
+- Add the column `pars$probability`: The probability of each `proportion_clicks` and `n_visitors` combination. As in the video, this should be calculated by multiplying the `likelihood` by the `prior`
+- Make sure the column `pars$probability` sums to `1.0` by *normalizing* it, that is, by dividing `pars$probability` by the total sum of `pars$probability`.
+
+```{r}
+n_ads_shown <- 100
+proportion_clicks <- seq(0, 1, by = 0.01)
+n_visitors <- seq(0, 100, by = 1)
+pars <- expand.grid(proportion_clicks = proportion_clicks,
+                    n_visitors = n_visitors)
+pars$prior <- dunif(pars$proportion_clicks, min = 0, max = 0.2)
+pars$likelihood <- dbinom(pars$n_visitors, 
+    size = n_ads_shown, prob = pars$proportion_clicks)
+
+# Add the column pars$probability and normalize it
+pars$probability <- pars$likelihood * pars$prior
+pars$probability <- pars$probability / sum(pars$probability)
+```
+
+**Conditioning on the data (again)**
+
+Let's resurrect the zombie site example where you tested text ads. Out of a 100 impressions of the text ad, 6 out of a 100 clicked and visited your site.
+
+Below is roughly the code you developed in the last exercise. `pars` is currently the joint distribution over all combinations of `proportion_clicks` and `n_visitors`.
+
+```{r}
+n_ads_shown <- 100
+proportion_clicks <- seq(0, 1, by = 0.01)
+n_visitors <- seq(0, 100, by = 1)
+pars <- expand.grid(proportion_clicks = proportion_clicks,
+                    n_visitors = n_visitors)
+pars$prior <- dunif(pars$proportion_clicks, min = 0, max = 0.2)
+pars$likelihood <- dbinom(pars$n_visitors, 
+    size = n_ads_shown, prob = pars$proportion_clicks)
+pars$probability <- pars$likelihood * pars$prior
+pars$probability <- pars$probability / sum(pars$probability)
+# Condition on the data 
+pars <- pars[pars$n_visitors == 6, ]
+# Normalize again
+pars$probability <- pars$probability / sum(pars$probability)
+# Plot the posterior pars$probability
+plot(pars$proportion_clicks, pars$probability, type = "h")
+```
+
+Cool! You have now calculated (rather than simulated) your first posterior probability distribution!
+
+**A conditional shortcut**
+
+Great, you've now done some Bayesian computation, without doing any simulation! The plot you produced should be similar to the posterior distribution you calculated in chapter 3. However, you see that it required an awful lot of code, isn't there anything we can cut?
+
+Yes, there is! You can directly condition on the data, no need to first create the joint distribution.
+
+- Set `n_visitors` directly to `6`, just replace the `seq` statement.
+- Now you can remove the line that conditions on the data, and the line after that, that normalizes `pars$probability`.
+- Take an extra look at the final code and convince yourself that the result of this modified code will be the same as before. :)
+
+```{r}
+# Simplify the code below by directly conditioning on the data
+n_ads_shown <- 100
+proportion_clicks <- seq(0, 1, by = 0.01)
+n_visitors <- 6
+pars <- expand.grid(proportion_clicks = proportion_clicks)
+pars$prior <- dunif(pars$proportion_clicks, min = 0, max = 0.2) 
+pars$likelihood <- dbinom(n_visitors, 
+    size = n_ads_shown, prob = pars$proportion_clicks)
+pars$probability <- pars$likelihood * pars$prior
+pars$probability <- pars$probability / sum(pars$probability)
+plot(pars$proportion_clicks, pars$probability, type = "h")
+```
+
+Unnecessary lines are removed, the code is easier to read, and the program runs quicker! Nice!
+
+## Bayes' theorem
+
+![](_images/1844.png)
+
+![](_images/1845.png)
+
+![](_images/1846.png)
+
+![](_images/1847.png) 
+![](_images/1848.png)
+
+## The temperature in a Normal lake
+
+![](_images/1849.png)
+
+![](_images/1850.png)
+
+![](_images/1851.png)
+
+![](_images/1852.png)
+
+**rnorm, dnorm, and the weight of newborns**
+
+Here is a small data set with the birth weights of six newborn babies in grams.
+
+```r
+c(3164, 3362, 4435, 3542, 3578, 4529)
+```
+
+```{r}
+# Assign mu and sigma
+mu <- 3600
+sigma <- 300
+
+weight_distr <- rnorm(n = 100000, mean = mu, sd = sigma)
+hist(weight_distr, 60, xlim = c(0, 6000), col = "lightgreen")
+
+# Create weight
+weight <- seq(0, 6000, 100)
+
+# Calculate likelihood
+likelihood <- dnorm(weight, mu, sigma)
+
+# Plot the distribution of weight
+plot(weight, likelihood, type = 'h')
+```
+
+## A Bayesian model of water temperature
+
+![](_images/1853.png)
+
+![](_images/1854.png)
+
+![](_images/1855.png)
+
+![](_images/1856.png)
+
+**A Bayesian model of Zombie IQ**
+
+Zombies are stupid, and you and your colleagues at the *National Zombie Research Laboratory* are interested in *how* stupid they are. Below, you have the Normal model we developed in the last video, but with the temperature data switched out with some zombie IQs fresh from the lab. What we're interested in is how much we can learn about the mean zombie IQ from this data. The model is complete, save for that we need to calculate the `probability` of each parameter combination in `pars`.
+
+![](_images/1857.png)
+
+```{r}
+# The IQ of a bunch of zombies
+iq <- c(55, 44, 34, 18, 51, 40, 40, 49, 48, 46)
+# Defining the parameter grid
+pars <- expand.grid(mu = seq(0, 150, length.out = 100), 
+                    sigma = seq(0.1, 50, length.out = 100))
+# Defining and calculating the prior density for each parameter combination
+pars$mu_prior <- dnorm(pars$mu, mean = 100, sd = 100)
+pars$sigma_prior <- dunif(pars$sigma, min = 0.1, max = 50)
+pars$prior <- pars$mu_prior * pars$sigma_prior
+# Calculating the likelihood for each parameter combination
+for(i in 1:nrow(pars)) {
+  likelihoods <- dnorm(iq, pars$mu[i], pars$sigma[i])
+  pars$likelihood[i] <- prod(likelihoods)
+}
+# Calculate the probability of each parameter combination
+pars$probability <- pars$likelihood * pars$prior / sum(pars$likelihood * pars$prior)
+```
+
+Ok! The code for calculating the likelihood was a bit messy, but Bayes theorem stays the same.
+
+**Eyeballing the mean IQ of zombies?**
+
+In the last exercise, you computed the probability for each mean (`mu`) and SD (`sigma`) combination. Using the `levelplot` function from the `lattice` package we can now visualize this 2D probability distribution:
+
+```{r}
+library(lattice)
+library(RColorBrewer)
+coul <- colorRampPalette(brewer.pal(9, "Blues"))(25)[1:25]
+levelplot(probability ~ mu * sigma, data = pars, col.regions = coul)
+```
+
+A mean IQ of 42 ± 10
+
+That seems about right! Zombies are not very smart it seems. Who could have guessed…
+
+## Answering the question: Should I have a beach party?
+
+![](_images/1858.png)
+
+![](_images/1859.png)
+
+![](_images/1860.png)
+
+![](_images/1861.png)
+
+![](_images/1862.png)
+
+**Sampling from the zombie posterior**
+
+Again `pars` contains the data frame representing the posterior zombie IQ distribution you calculated earlier. The code to the right draws `sample_indices`: a sample of row numbers (a.k.a. *indices*) from the posterior. Now, let's sample from `pars` to calculate some new measures!
+
+```{r}
+head(pars)
+sample_indices <- sample( nrow(pars), size = 10000,
+    replace = TRUE, prob = pars$probability)
+head(sample_indices)
+
+# Sample from pars to calculate some new measures
+pars_sample <- pars[sample_indices, c("mu", "sigma")]
+
+# Visualize the mean IQ
+hist(pars_sample$mu)
+
+# Calculate quantiles
+quantile(pars_sample$mu, c(0.025, 0.5, 0.975))
+```
+
+**But how smart will the next zombie be?**
+
+So we have an idea about what the *mean* zombie IQ is but what range of zombie IQs should we expect? And how likely is it that the next zombie you encounter is, at least, moderately intelligent?
+
+```{r}
+head(pars_sample)
+pred_iq <- rnorm(10000, mean = pars_sample$mu, 
+                 sd = pars_sample$sigma)
+
+# Visualize pred_iq
+hist(pred_iq)
+
+# Calculate the probability of a zombie being "smart" (+60 IQ)
+mean(pred_iq >= 60)
+```
+
+Zombies with an IQ of 60 or more are of moderate intelligence, and much more dangerous! (They can open doors!)
+
+The risk is relatively low but still very real. I always carry my zombie repellent spray!
+
+## A practical tool: BEST
+
+![](_images/1863.png)
+
+Low values for df increases outliers in data
+
+![](_images/1864.png)
+![](_images/1865.png)
+
+![](_images/1866.png)
+
+![](_images/1867.png)
+
+![](_images/1868.png)
+
+**The BEST models and zombies on a diet**
+
+The t-test is a classical statistical procedure used to compare the means of two data sets. In 2013 John Kruschke developed a souped-up Bayesian version of the t-test he named BEST (standing for *Bayesian Estimation Supersedes the t-test*). Let's try out BEST as implemented in the `BEST` package.
+
+```{r}
+library(BEST)
+
+# The IQ of zombies on a regular diet and a brain based diet.
+iq_brains <- c(44, 52, 42, 66, 53, 42, 55, 57, 56, 51)
+iq_regular <- c(55, 44, 34, 18, 51, 40, 40, 49, 48, 46)
+
+# Calculate the mean difference in IQ between the two groups
+mean(iq_brains) - mean(iq_regular)
+
+# Fit the BEST model to the data from both groups
+best_posterior <- BESTmcmc(iq_brains, iq_regular)
+
+# Plot the model result
+plot(best_posterior)
+```
+
+This plot shows the posterior probability distribution over the difference in means between `iq_brains` and `iq_regular`. On top of this you get:
+
+(1) The mean of the posterior as a "best guess" for the difference.
+
+(2) A 95% credible interval (called a 95% *Highest Density Interval* in the plot).
+
+(3) The amount of probability below and above zero difference.
+
+There is some evidence that eating brains makes zombies smarter, but it's uncertain by how much.
+
+**BEST is robust**
+
+The Bayesian model behind BEST assumes that the generative model for the data is a *t-distribution*; a more flexible distribution than the normal distribution as it assumes that data points might be outliers to some degree. This makes BEST's estimate of the mean difference *robust* to outliers in the data.
+
+```{r}
+# The IQ of zombies given a regular diet and a brain based diet.
+iq_brains <- c(44, 52, 42, 66, 53, 42, 55, 57, 56, 51)
+iq_regular <- c(55, 44, 34, 18, 51, 40, 40, 49, 48, 150)
+
+# Modify the data to include an outlier and calculate the difference in means
+mean(iq_brains) - mean(iq_regular)
+
+# Fit the BEST model to the data from both groups
+best_posterior <- BESTmcmc(iq_brains, iq_regular)
+
+# Plot the model result
+plot(best_posterior)
+```
+
+Looking at the plot, we see that the mutant zombie data point has made BEST more uncertain to some degree. But since BEST is robust to outliers, it still estimates that brain-eating zombies are more likely to have a higher IQ than zombies on a regular diet.
+
+There is weak evidence that eating brains make zombies smarter. And we should be better at screening for mutant zombies when doing experiments.
+
+## What have you learned? What did we miss?
 
 
 
