@@ -1,0 +1,29 @@
+---
+title: "Linear Algebra for Data Science in R"
+author: "DataCamp - Eric Eager"
+date: "2/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## Motivations
+
+
+
+
+
+
+
+
+
+
+
+![](_images/1775.png)
+
+
+
+
