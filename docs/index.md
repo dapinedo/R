@@ -99,7 +99,7 @@ sitemap:
 8. tree-based models in R
 9. support vector machines in R
 10. advanced dimensionality reduction in R
-11. fundamentals of Bayesian data analysis in R
+11. <a href="https://rpubs.com/odenipinedo/fundamentals-of-Bayesian-data-analysis-in-R" target="_blank" rel="noopener noreferrer">fundamentals of Bayesian data analysis in R</a>
 12. topic modeling in R
 13. hyperparameter tuning in R
 14. Bayesian regression modeling with rstanarm
@@ -170,7 +170,7 @@ sitemap:
 8. <a href="https://rpubs.com/odenipinedo/dealing-with-missing-data-in-R" target="_blank" rel="noopener noreferrer">dealing with missing data in R</a>
 9. <a href="https://rpubs.com/odenipinedo/experimental-design-in-R" target="_blank" rel="noopener noreferrer">experimental design in R</a>
 10. <a href="https://rpubs.com/odenipinedo/AB-testing-in-R" target="_blank" rel="noopener noreferrer">A/B testing in R</a>
-11. fundamentals of Bayesian data analysis in R
+11. <a href="https://rpubs.com/odenipinedo/fundamentals-of-Bayesian-data-analysis-in-R" target="_blank" rel="noopener noreferrer">fundamentals of Bayesian data analysis in R</a>
 12. linear algebra for data science in R
 13. inference for categorical data in R
 14. Bayesian modeling with RJAGS
