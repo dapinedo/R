@@ -12,6 +12,408 @@ options(repos="https://CRAN.R-project.org")
 
 ## Motivations
 
+![](_images/1871.png)
+
+![](_images/1872.png)
+
+![](_images/1873.png)
+
+**Creating Vectors in R**
+
+Vectors can be analyzed in a few different ways in R.
+
+One way is to create the vector yourself, and there are a few different means by which you can do this.
+
+The `rep()` command in R creates a vector that repeats the same element a prescribed number of times, while the `seq()` command creates a vector that follows a prescribed pattern.
+
+A vector can be manually created by using the `c()` command, which stands for "concatenate".
+
+```{r}
+# Creating three 3's and four 4's, respectively
+rep(3, 3)
+rep(4, 4)
+
+# Creating a vector with the first three even numbers and the first three odd numbers
+seq(2, 6, by = 2)
+seq(1, 5, by = 2)
+
+# Re-creating the previous four vectors using the 'c' command
+c(3, 3, 3)
+c(4, 4, 4, 4)
+
+c(2, 4, 6)
+c(1, 3, 5)
+```
+
+Awesome! You've created vectors using some commands in R.
+
+**The Algebra of Vectors**
+
+Vectors can be made to make new vectors much in the same way that numbers can.
+
+To add two vectors together in R, simply use the `+` command.
+
+Vectors can also be scaled via multiplication by a real number (or scalar), using the `*` command.
+
+Multiplication of two vectors is a trickier topic theoretically, but in R, component-wise multiplication of two vectors is legal and accomplished using the `*` command.
+
+The vectors `x`, `y`, and `z` have been loaded for you.
+
+```{r}
+x <- c(1, 2, 3, 4, 5, 6, 7)
+y <- c(2, 4, 6, 8, 10, 12, 14)
+z <- c(1, 1, 2)
+
+# Add x to y and print
+print(x + y)
+
+# Multiply z by 2 and print
+print(2*z)
+
+# Multiply x and y by each other and print
+print(x*y)
+
+# Add x to z, if possible, and print
+print(x + z)
+```
+
+Great! Vector operations are a useful way to create other vectors. In the case where they are not the same size, R recycles elements of the shorter vector to obtain the given result (with a warning message).
+
+**Creating Matrices in R**
+
+Matrices can be created and analyzed in a few different ways in R.
+
+One way is to create the matrix yourself. There are a few different ways you can do this.
+
+The `matrix(a, nrow = b, ncol = c)` command in R creates a matrix that repeats the element `a` in a matrix with `b` rows and `c` columns.
+
+A matrix can be manually created by using the `c()` command as well.
+
+```{r}
+A <- matrix(1, nrow = 2, ncol = 2)
+
+# Create a matrix of all 1's and all 2's that are 2 by 3 and 3 by 2, respectively
+matrix(1, nrow = 2, ncol = 3)
+
+print(matrix(2, nrow = 3, ncol = 2))
+
+# Create a matrix and changing the byrow designation.
+B <- matrix(c(1, 2, 3, 2), nrow = 2, ncol = 2, byrow = FALSE)
+B <- matrix(c(1, 2, 3, 2), nrow = 2, ncol = 2, byrow = TRUE)
+
+# Add A to the previously-created matrix
+A + B
+```
+
+Good work! You created matrices and added them to existing ones!
+
+## Matrix-Vector Operations
+
+![](_images/1874.png)
+
+![](_images/1875.png)
+
+![](_images/1876.png)
+
+![](_images/1877.png)
+
+**A vector needs to have the same amount of elements as the number of columns in a matrix for multiplication**
+
+**Matrix Multiplication as a Transformation**
+
+Matrices can be viewed as a way to transform collections of vectors into other vectors.
+
+These transformations can take many forms, but the simplest ones in two dimensions are stretches or shrinkages (in either coordinate), reflections (e.g. about the x-axis, y-axis, origin, the line y = x), and rotations (clockwise, counter-clockwise).
+
+Multiplication of a vector by a matrix is accomplished using the `%*%` command.
+
+```{r}
+A <- matrix(c(4, 0, 0, 1), 2, 2)
+B <- matrix(c(1, 0, 0.0, 2/3), 2, 2)
+b <- c(1,1)
+A
+B
+b
+
+# Multiply A by b
+A%*%b
+
+# Multiply B by b
+B%*%b
+```
+
+You've seen how multiplication by a matrix can alter a vector.
+
+**Reflections**
+
+In the last exercise, you looked at stretching or shrinking components of a vector.
+
+In this one, you'll apply a reflection matrix to the vector `b <- c(2, 1)`.
+
+```{r}
+A <- matrix(c(-1, 0, 0, 1), 2, 2)
+B <- matrix(c(1, 0, 0, -1), 2, 2)
+C <- matrix(c(-4, 0, 0, -2), 2, 2)
+b <- c(2, 1)
+A
+B
+C
+b
+
+# Multiply A by b 
+A%*%b
+
+# Multiply B by b 
+B%*%b
+
+# Multiply C by b
+C%*%b
+```
+
+Awesome! You've seen how multiplication by a matrix can alter a vector.
+
+## Matrix-Matrix Calculations
+
+- order matters
+  - matrix multiplication is not commutative
+
+component-wise multiplication (`*`) is different from matrix multiplication (`%*%`)
+
+![](_images/1878.png)
+
+![](_images/1879.png)
+
+- The identity matrix is commutative, however
+
+![](_images/1880.png)
+
+![](_images/1881.png)
+
+**Matrix Multiplication - Order Matters**
+
+In the last lesson, we studied how matrices act on vectors (stretches, shrinkages, reflections, rotations, etc.) and transform vectors into new vectors.
+
+The successive application of these matrices can act as complex transformations, but because matrix multiplication is not commutative, the **order** of these transformations matter.
+
+- The matrix with R output
+
+```
+> A
+          [,1]       [,2]
+[1,] 0.7071068 -0.7071068
+[2,] 0.7071068  0.7071068
+```
+
+represents rotation of a 2-dimensional vector by 45 degrees counterclockwise.
+
+- The matrix
+
+```
+> B
+     [,1] [,2]
+[1,]    1    0
+[2,]    0   -1
+```
+
+represents a reflection about the x (first) axis.
+
+```{r}
+A <- matrix(c(0.7071068, 0.7071068, -0.7071068, 0.7071068), nrow = 2, ncol = 2)
+B <- matrix(c(1, 0, 0, -1), nrow = 2, ncol = 2)
+b <- c(1, 1)
+
+# Multiply A by B
+A%*%B
+
+# Multiply A on the right of B
+B%*%A
+
+# Multiply the product of A and B by the vector b
+A%*%B%*%b
+
+# Multiply A on the right of B, and then by the vector b
+B%*%A%*%b
+```
+
+Great Work! You've demonstrated that matrix multiplication is not commutative.
+
+**Intro to The Matrix Inverse**
+
+We talked briefly about the identity matrix in the video. Another important concept to understand in matrix multiplication is that of the matrix inverse.
+
+For any number $a$ (aside from $0$), there's always a number $\frac{1}{a}$ that can be used to "undo" multiplication by $a$.
+
+For matrices, this is not always true. However, when it is, we call the matrix that, when applied to $A$, yields the identity matrix $I$, that matrix's inverse.
+
+The `solve` function in R will find the inverse of a matrix if it exists and provide an error if it does not.
+
+```{r}
+A <- matrix(c(1, -1, 2, 2), nrow = 2, ncol = 2)
+A
+
+# Take the inverse of the 2 by 2 identity matrix
+solve(diag(2))
+
+# Take the inverse of the matrix A
+Ainv <- solve(A)
+
+# Multiply A inverse by A
+Ainv%*%A
+
+# Multiply A by its inverse
+A%*%Ainv
+```
+
+Awesome. You've discovered how to compute the inverse of a matrix, if it exists.
+
+## Motivation for Solving Matrix-Vector Equations
+
+A matrix multiplied by a vector is a linear combination of the columns of A times the elements of X.
+
+![](_images/1882.png)
+
+![](_images/1883.png)
+
+![](_images/1884.png)
+
+The elements of $\vec{x}$ are the coefficients when one creates $\vec{b}$ from the columns of $A$!
+ 
+![](_images/1885.png)
+
+**Exploring WNBA Data**
+
+In this chapter, you will work with a matrix-vector model for team strength in the Women's National Basketball Association (WNBA) at the conclusion of the 2017 season. These team strengths can be used to predict who will win a match between any two teams, for example, using machine learning.
+
+The WNBA has 12 teams, so your Massey Matrix $M$ will be 12x12, and will initially be loaded as a data frame. The vector with the point differentials for each team will be a vector with 12 elements.
+
+```{r}
+library(readr)
+M <- read_csv("_data/WNBA_Data_2017_M.csv")
+f <- read_csv("_data/WNBA_Data_2017_f.csv")
+
+# Print the Massey Matrix M
+print(M)
+
+# Print the vector of point differentials f
+print(f)
+
+# Find the sum of the first column of M
+sum(M[, 1])
+
+# Find the sum of the vector f
+sum(f)
+```
+
+Great! Notice that, since every point scored by one team is allowed by another, the vector f of point differentials needs to sum to zero!
+
+## Matrix-Vector Equations - Some Theory
+
+![](_images/1886.png)
+
+![](_images/1887.png)
+
+![](_images/1888.png)
+
+![](_images/1889.png)
+
+![](_images/1890.png)
+
+![](_images/1891.png)
+
+![](_images/1892.png)
+
+The WNBA Massey matrix is not (computationally) invertible, so an adjustment needs to be made to our model.
+
+One way we can change this is to add a row of `1`'s on the bottom of the matrix $M$, a column of `-1`'s to the far right of $M$, and a 0 to the bottom of the vector of point differentials $\vec{f}$.
+
+In the setting of rating teams, that row of 1's represents (final equation stipulates) that The ratings for the entire league add to zero. This condition is good not only mathematically, but also for consistency in the rating system!
+
+**Adjusting the Massey Matrix**
+
+For our WNBA Massey Matrix model, some adjustments need to be made for a solution to our rating problem to exist and be unique. This is because the matrix we currently have is not (computationally) invertible.
+
+In this exercise, you will actually add all of these to the matrix $M$.
+
+```{r}
+M <- read_csv("_data/WNBA_Data_2017_M.csv")
+M <- as.matrix(M)
+
+# Add a row of 1's
+M_2 <- rbind(M, rep(1, 12))
+
+# Add a column of -1's 
+M_3 <- cbind(M_2, rep(-1, 13))
+
+# Change the element in the lower-right corner of the matrix
+M_3[13, 13] <- 1
+
+# Print M_3
+print(M_3)
+```
+
+Awesome! You're learning how to manipulate matrices in R!
+
+**Inverting the Massey Matrix**
+
+Now that you've updated the Massey Matrix $M$, you're almost ready to find out how the teams stacked up at the end of the 2017 season.
+
+First, we need to make sure that the updated $M$ has an inverse.
+
+```{r}
+# Find the inverse of M
+solve(M)
+```
+
+Awesome! You found the inverse of a real-world matrix!
+
+## Solving Matrix-Vector Equations
+
+![](_images/1893.png)
+
+![](_images/1894.png)
+
+![](_images/1895.png)
+
+![](_images/1896.png)
+
+**2017 WNBA Ratings!**
+
+Now that we have our Massey matrix in a form for which is invertible, we can now use it to find the ratings for the WNBA teams at the conclusion of 2017!
+
+`M` and an updated version of `f` are loaded for you.
+
+```{r}
+f <- as.matrix(f)
+
+# Solve for r and rename column
+r <- solve(M)%*%f
+colnames(r) <- "Rating"
+
+# Print r
+print(r)
+```
+
+Awesome! You solved a matrix-vector equation in a real-world setting!
+
+```{r}
+library(dplyr)
+as.data.frame(r) %>% arrange(desc(Rating))
+
+```
+
+The best team was Minnesota.
+
+## Other Considerations for Matrix-Vector Equations
+
+![](_images/1897.png)
+
+![](_images/1898.png)
+
+![](_images/1899.png)
+
+![](_images/1900.png)
+
+![](_images/1901.png)
 
 
 
@@ -22,7 +424,7 @@ options(repos="https://CRAN.R-project.org")
 
 
 
-![](_images/1775.png)
+
 
 
 
