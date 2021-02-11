@@ -415,17 +415,402 @@ The best team was Minnesota.
 
 ![](_images/1901.png)
 
+**Alternatives to the Regular Matrix Inverse**
 
+In the last video, we talked briefly about generalized or pseudo-inverses.
 
+In this exercise, you'll use the Moore-Penrose generalized inverse in the `MASS' package and find that it produces the regular inverse if the matrix you're working with is already invertible!
 
+The command `ginv()` computes the Moore-Penrose generalized inverse in R.
 
+For more information on the Moore-Penrose inverse, see the following [link](https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_inverse).
 
+```{r}
+library(MASS)
 
+# Print M
+print(M)
 
+# Find the rating vector the conventional way
+r <- solve(M)%*%f
+colnames(r) <- "Rating"
+print(r)
 
+# Find the rating vector using ginv
+r <- ginv(M)%*%f
+colnames(r) <- "Rating"
+print(r)
+```
 
+Great work! You have found the final 2017 WNBA ratings in two ways!
 
+## Intro to Eigenvalues and Eigenvectors
 
+![](_images/1902.png)
 
+![](_images/1903.png)
 
+![](_images/1904.png)
 
+![](_images/1905.png)
+
+**Scaling Different Axes**
+
+Suppose that you wanted to transform a two-dimensional vector so that the first element doubled in size, while the second element was cut by a third.
+
+You can do this with matrix multiplication, as the matrix `A`, which yields the R output:
+
+```r
+     [,1]      [,2]
+[1,]    2 0.0000000
+[2,]    0 0.6666667
+```
+
+achieves the desired result.
+
+```{r}
+A <- matrix(c(2, 0, 0.00, 2/3), nrow = 2, ncol = 2)
+# Multiply A by the given vector
+print(A%*%c(1, 1))
+```
+
+Awesome! You've multiplied by a matrix that contracts and stretches elements of a vector!
+
+## Definition of Eigenvalues and Eigenvectors
+
+![](_images/1906.png)
+
+![](_images/1907.png)
+
+![](_images/1908.png)
+
+Eigenvectors can be scaled (are about direction, not magnitude)
+
+An eigenvector is a scalar multiple of itself ("own") when multiplied by $A$!
+
+![](_images/1909.png)
+
+**Finding Eigenvalues in R**
+
+In the next video we will explicitly see how to find the eigenpairs for a matrix $A$, but right now we can at least show that a pair is an eigenpair for a matrix $A$. We can do this by showing that the difference between $A\vec{v}$ and $\lambda\vec{v}$ results in a vector of zeros.
+
+The matrix `A` with R output:
+
+```r
+     [,1] [,2] [,3]
+[1,]   -1    2    4
+[2,]    0    7   12
+[3,]    0    0   -4
+```
+
+is loaded for you.
+
+```{r}
+A <- matrix(c(-1,0,0,2,7,0,4,12,-4), nrow = 3, ncol = 3)
+
+# Show that 7 is an eigenvalue for A
+A%*%c(0.2425356, 0.9701425, 0) - 7*c(0.2425356, 0.9701425, 0)
+
+# Show that -4 is an eigenvalue for A
+A%*%c(-0.3789810, -0.6821657, 0.6253186) - -4*c(-0.3789810, -0.6821657, 0.6253186)
+
+# Show that -1 is an eigenvalue for A
+A%*%c(1, 0, 0) - -1*c(1, 0, 0)
+```
+
+Awesome! You've learned how to determine if a given pair is an eigenpair of a matrix. Note that there are often rounding errors that occur in R and, in this case, what you're seeing is an approximation of the zero vector.
+
+**Scalar Multiplies of Eigenvectors are Eigenvectors**
+
+As we said in the videos, an eigenvector of $A$ associated with a matrix $A$ can be scaled to meet the needs of the problem at hand. For example, for Markov models, having all of the elements sum to 1 means that the elements are probabilities, and thus have a clear interpretation.
+
+In this exercise, we will be working with the first eigenpair in the previous exercise. For matrix $A$, this eigenpair has an eigenvalue $\lambda = 7$  and eigenvector:
+
+```r
+          [,1]
+[1,] 0.2425356
+[2,] 0.9701425
+[3,] 0.0000000
+```
+
+```{r}
+# Show that double an eigenvector is still an eigenvector
+A%*%((2)*c(0.2425356, 0.9701425, 0)) - 7*(2)*c(0.2425356, 0.9701425, 0)
+
+# Show half of an eigenvector is still an eigenvector
+A%*%((0.5)*c(0.2425356, 0.9701425, 0)) - 7*(0.5)*c(0.2425356, 0.9701425, 0)
+```
+
+Awesome! You've shown that a scalar multiple of an eigenvector is still an eigenvector of a matrix! Note that often times there are rounding errors that occur in R, and in this case what you're seeing is an approximation of the zero vector.
+
+## Computing Eigenvalues and Eigenvectors in R
+
+![](_images/1910.png)
+
+![](_images/1911.png)
+
+![](_images/1912.png)
+
+![](_images/1913.png)
+
+**Verifying the Math on Eigenvalues**
+
+In this exercise you'll find the eigenvalues $\lambda$ of a matrix $A$, and show that they satisfy the property that the matrix $\lambda I - A$ is not invertible, with determinant equal to zero.
+
+```{r}
+A <- matrix(c(1,1,2,1), nrow = 2, ncol = 2)
+
+# Compute the eigenvalues of A and store in Lambda
+Lambda <- eigen(A)
+
+# Print eigenvalues
+print(Lambda$values[1])
+print(Lambda$values[2])
+
+# Verify that these numbers satisfy the conditions of being an eigenvalue
+det(Lambda$values[1]*diag(2) - A)
+det(Lambda$values[2]*diag(2) - A)
+```
+
+Great! You showed that eigenvalues indeed satisfy the conditions they are meant to. Note that often times there are rounding errors that occur in R, and in this case what you're seeing is an approximation of the zero vector.
+
+**Computing Eigenvectors in R**
+
+In this exercise you'll find the eigenvectors of a matrix, and show that they satisfy the properties discussed in the lecture.
+
+```{r}
+# Find the eigenvectors of A and store them in Lambda
+Lambda <- eigen(A)
+
+# Print eigenvectors
+print(Lambda$vectors[, 1])
+print(Lambda$vectors[, 2])
+
+# Verify that these eigenvectors & their associated eigenvalues satisfy lambda*v - A*v = 0
+Lambda$values[1]*Lambda$vectors[, 1] - A%*%Lambda$vectors[, 1]
+Lambda$values[2]*Lambda$vectors[, 2] - A%*%Lambda$vectors[, 2]
+```
+
+Awesome! You showed that eigenvectors indeed satisfy the conditions they are meant to. Note that often times there are rounding errors that occur in R, and in this case what you're seeing is an approximation of the zero vector.
+
+## Some More on Eigenvalues and Eigenvectors
+
+![](_images/1914.png)
+
+![](_images/1915.png)
+
+![](_images/1916.png)
+
+**Eigenvalue Ordering**
+
+R displays the eigenvalues in descending order of size because the largest eigenvalue(s) characterize the application of the matrix the more times it's applied.
+
+**Markov Models for Allele Frequencies**
+
+In the lecture, you saw that the leading eigenvalue of the Markov matrix $M$, whose R output is:
+
+```r
+      [,1]  [,2]  [,3]  [,4]
+[1,] 0.980 0.005 0.005 0.010
+[2,] 0.005 0.980 0.010 0.005
+[3,] 0.005 0.010 0.980 0.005
+[4,] 0.010 0.005 0.005 0.980
+```
+
+produced an eigenvector modeling a situation where the alleles are represented equally (each with probability 0.25).
+
+In this exercise, we use a for-loop to iterate the process of mutation from an initial allele distribution of:
+
+```r
+[1] 1 0 0 0
+```
+
+and show that this is indeed what happens - that the eigenvector yields the right information in lieu of the for-loop.
+
+For more on Markov Processes, see this [link](https://en.wikipedia.org/wiki/Markov_chain).
+
+```{r}
+# This code iterates mutation 1000 times
+M <- matrix(c(.98,.005,.005,.01,.005,.98,.01,.005,.005,.01,.98,.005,.01,.005,.005,.98), nrow = 4, ncol = 4)
+x <- c(1, 0, 0, 0)
+for (j in 1:1000) {x <- M%*%x}
+
+# Print x
+print(x)
+
+# Print and scale first eigenvector of M
+Lambda <- eigen(M)
+v1 <- Lambda$vectors[, 1]/sum(Lambda$vectors[, 1])
+
+# Print v1
+print(v1)
+```
+
+Great! You have seen how eigen analyses can help us understand genomics!
+
+## Intro to the Idea of PCA
+
+![](_images/1917.png)
+
+![](_images/1918.png)
+
+![](_images/1919.png)
+
+![](_images/1920.png)
+
+**Finding Redundancies**
+
+One of the important things that principal component analysis can do is shrink redundancy in your dataset. In its simplest manifestation, redundancy occurs when two variables are correlated.
+
+The Pearson correlation coefficient is a number between -1 and 1. Coefficients near zero indicate two variables are linearly independent, while coefficients near -1 or 1 indicate that two variables are linearly related.
+
+The dataset `combine` has been loaded for you.
+
+```{r}
+combine <- read.csv("_data/DataCampCombine.csv", stringsAsFactors = TRUE)
+
+# Print the first 6 observations of the dataset
+head(combine, n = 6)
+
+# Find the correlation between variables forty and three_cone
+cor(combine$forty, combine$three_cone)
+
+# Find the correlation between variables vertical and broad_jump
+cor(combine$vertical, combine$broad_jump)
+```
+
+There are at least two redundancies in this dataset, and PCA can help us properly handle these.
+
+## The Linear Algebra Behind PCA
+
+![](_images/1921.png)
+
+**First subtract mean from each column**
+
+![](_images/1922.png)
+
+![](_images/1923.png)
+
+![](_images/1924.png)
+
+In this example, the eigenvalue of the first column contains all of the information of the matrix. As we can see, the first column is simple 0.5 of the second column, they are perfectly correlated.
+
+![](_images/1925.png)
+
+**Standardizing Your Data**
+
+In the lecture, we saw that you can learn a lot about a dataset by creating the matrix $A^TA$ from it. In this exercise, you'll do that with athletic data for players entering the National Football League college draft. The dataset `combine` is loaded for you.
+
+```{r}
+# Extract columns 5-12 of combine
+A <- combine[, 5:12]
+
+# Make A into a matrix
+A <- as.matrix(A)
+
+# Subtract the mean of each column
+A <- apply(A, 2, function(x) x - mean(x))
+```
+
+Terrific! You've successfully pre-processed the `combine` dataset.
+
+**Variance/Covariance Calculations**
+
+In the last exercise you pre-processed the `combine` data into a matrix `A`. We now use `A` to create the *variance-covariance* matrix of this dataset.
+
+```{r}
+# Create matrix B from equation in instructions
+B <- t(A)%*%A/(nrow(A) - 1)
+
+# Compare 1st element of the 1st column of B to the variance of the first column of A
+B[1,1]
+var(A[, 1])
+
+# Compare 1st element of 2nd column of B to the 1st element of the 2nd row of B to the covariance between the first two columns of A
+B[1, 2]
+B[2, 1]
+cov(A[, 1], A[, 2])
+```
+
+Great stuff! You're understanding the structure of the variance-covariance matrix of a dataset.
+
+**Eigenanalyses of Combine Data**
+
+Now that you have looked at and understand the contents of `B`, you can study its eigen data to see if there is a chance to reduce the dimension of your data down from eight columns to something smaller. `B` is loaded for you.
+
+```{r}
+# Find eigenvalues of B
+V <- eigen(B)
+
+# Print eigenvalues
+V$values
+```
+
+Great work. You've extracted a great deal of context about this dataset!
+
+A great deal of the variability in the athletic profile of future NFL players can be attributed to one linear combination of the data!
+
+## Performing PCA in R
+
+![](_images/1926.png)
+
+![](_images/1927.png)
+
+![](_images/1928.png)
+
+![](_images/1929.png)
+
+![](_images/1930.png)
+
+**Scaling Data Before PCA**
+
+When dealing with data that has features with different scales, it's often important to scale the data first. This is because data that has larger values may sway the data even with relatively little variability.
+
+The `combine` data frame is loaded for you.
+
+```{r}
+# Scale columns 5-12 of combine
+B <- scale(combine[, 5:12])
+
+# Print the first 6 rows of the data
+head(B)
+
+# Summarize the principal component analysis
+summary(prcomp(B))
+```
+
+Awesome! You can perform PCA in R.
+
+**Summarizing PCA in R**
+
+As we saw in the video, there was a categorical variable (position) in our data that seemed to identify itself with clusters in the first two principal components. Even when scaling the data, these two PCs still explain a great deal of variation in the data. What if we looked at only one position at a time?
+
+```{r}
+# Subset combine only to "WR"
+combine_WR <- subset(combine, position == "WR")
+
+# Scale columns 5-12 of combine_WR
+B <- scale(combine_WR[, 5:12])
+
+# Print the first 6 rows of the data
+head(B)
+
+# Summarize the principal component analysis
+summary(prcomp(B))
+```
+
+Once a major variable is removed, there's a lot more structure to the data's principal components!
+
+Great work! You've used PCA to wrangle data, and then applied PCA again!
+
+##Wrap-up
+
+![](_images/1931.png)
+
+![](_images/1932.png)
+
+![](_images/1933.png)
+
+![](_images/1934.png)
+
+![](_images/1935.png)
