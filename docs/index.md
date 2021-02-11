@@ -171,7 +171,7 @@ sitemap:
 9. <a href="https://rpubs.com/odenipinedo/experimental-design-in-R" target="_blank" rel="noopener noreferrer">experimental design in R</a>
 10. <a href="https://rpubs.com/odenipinedo/AB-testing-in-R" target="_blank" rel="noopener noreferrer">A/B testing in R</a>
 11. <a href="https://rpubs.com/odenipinedo/fundamentals-of-Bayesian-data-analysis-in-R" target="_blank" rel="noopener noreferrer">fundamentals of Bayesian data analysis in R</a>
-12. linear algebra for data science in R
+12. <a href="https://rpubs.com/odenipinedo/linear-algebra-for-data-science-in-R" target="_blank" rel="noopener noreferrer">linear algebra for data science in R</a>
 13. inference for categorical data in R
 14. Bayesian modeling with RJAGS
 - Certificate
