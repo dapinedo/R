@@ -12,16 +12,734 @@ options(repos="https://CRAN.R-project.org")
 
 ## The General Social Survey
 
+![](_images/1936.png)
 
+![](_images/1937.png)
 
+![](_images/1938.png)
 
+![](_images/1939.png)
 
+![](_images/1940.png)
 
+![](_images/1941.png)
 
-![](_images/1871.png)
+![](_images/1942.png)
 
+**Exploring consci**
 
+The General Social Survey asks about far more topics than just happiness. Take a moment to poke around this data set and visualize the variables that interest you. When you're ready, turn your attention to the question of how much confidence people had in the scientific community in 2016. The answers to this question have been summarized as `"High"` or `"Low"` levels of confidence and are stored in the `consci` variable.
 
+```{r}
+load("_data/gss.RData")
 
+# Print gss data
+gss
 
+# Load dplyr
+library(dplyr)
 
+gss2016 <- gss %>%
+  select(-grass, -cappun2, -protest3) %>% drop_na() %>%
+  # Filter for rows in 2016
+  filter(year == 2016)
+
+# Print gss2016 data
+gss2016
+
+# Load ggplot2
+library(ggplot2)
+```
+
+```r
+# Plot distribution of consci
+ggplot(gss2016, aes(x = consci)) +
+  # Add a bar layer
+  geom_bar()
+```
+![](_images/1943.png)
+```r
+# Compute proportion of high conf
+p_hat <- gss2016 %>%
+  summarize(prop_high = mean(consci == "High")) %>%
+  pull()
+```
+
+Perfectly prepared proportion! You should have high conf in your ability to use a plot and numerical summaries to describe a sample of data.
+
+**Generating via bootstrap**
+
+To assess your uncertainty in this estimate of the number of people that have "High" confidence in the scientific community, you need to calculate the standard error. Start by considering how different the data might look in just a single bootstrap sample.
+
+```r
+# Load the infer package
+library(infer)
+
+# Create single bootstrap data set
+boot1 <- gss2016 %>%
+  # Specify the response
+  specify(response = consci, success = "High") %>%
+  # Generate one bootstrap replicate
+  generate(reps = 1, type = "bootstrap")
+
+# See the result
+boot1
+```
+```
+Response: consci (factor)
+# A tibble: 150 x 2
+# Groups:   replicate [1]
+   replicate consci
+       <int> <fct> 
+ 1         1 High  
+ 2         1 Low   
+ 3         1 Low   
+ 4         1 High  
+ 5         1 Low   
+ 6         1 Low   
+ 7         1 Low   
+ 8         1 High  
+ 9         1 High  
+10         1 Low   
+# ... with 140 more rows
+```
+```r
+# Using boot1, plot consci
+ggplot(boot1, aes(x = consci)) +
+  # Add bar layer
+  geom_bar()
+```
+![](_images/1944.png)
+```r
+# Compute proportion with high conf
+boot1 %>%
+  summarize(prop_high = mean(consci == "High")) %>%
+  pull()
+```
+```
+[1] 0.4333333
+```
+
+Beautifully bootstrapped! You've essentially done the same exercise twice now, but this time, you plotted and summarized a *synthetic* data set. This is the power of the bootstrap: to mimic the sampling process to create similar, but slightly different, data sets.
+
+**Constructing a CI**
+
+You've seen one example of how p-hat can vary upon resampling, but we need to do this many many times to get a good estimate of its variability. Here you will compute a full bootstrap distribution to estimate the standard error (SE) that will be used to form a confidence interval. You'll use an additional verb from infer, `calculate()`, to streamline this process of calculating many statistics from many data sets.
+
+Take a moment to inspect the output of calculate. This function reduces your data frame to just two columns: one for the "stat"s and another for the "replicate" they correspond to.
+
+When you plot your bootstrap distribution, you'll find that it's bell-shaped. It's this shape that allows you to add and subtract two SEs to get a 95% interval.
+
+```r
+# Create bootstrap distribution for proportion with High conf
+boot_dist <- gss2016 %>%
+  # Specify the response and success
+  specify(response = consci, success = "High") %>%
+  # Generate 500 bootstrap reps
+  generate(reps = 500, type = "bootstrap") %>%
+  # Calculate proportions
+  calculate(stat = "prop")
+
+# See the result
+boot_dist
+```
+```
+# A tibble: 500 x 2
+   replicate  stat
+       <int> <dbl>
+ 1         1 0.373
+ 2         2 0.36 
+ 3         3 0.473
+ 4         4 0.42 
+ 5         5 0.393
+ 6         6 0.42 
+ 7         7 0.44 
+ 8         8 0.447
+ 9         9 0.493
+10        10 0.367
+# ... with 490 more rows
+```
+```r
+# Plot bootstrap distribution of stat
+ggplot(boot_dist, aes(stat)) +
+  # Add density layer
+  geom_density()
+```
+![](_images/1945.png)
+```r
+# Compute estimate of SE
+SE <- boot_dist %>%
+  summarize(se = sd(stat)) %>%
+  pull()
+
+# Create CI
+c(p_hat - 2 * SE, p_hat + 2 * SE)
+```
+```
+[1] 0.3530717 0.5135950
+```
+
+Cleverly constructed confidence interval! You've moved from just describing the data set at hand with `p_hat` to quantifying how good of an estimate this is of the true proportion of all Americans.
+
+If your bootstrap distribution looks rough, you can always increase the number of bootstrap samples to see if you can get a smoother picture of its shape.
+
+## Interpreting a Confidence Interval
+
+![](_images/1946.png)
+
+![](_images/1947.png)
+
+![](_images/1948.png)
+
+![](_images/1949.png)
+
+**SE with less data**
+
+The less data that you have to make an estimate, the more uncertainty you will have in that estimate. This is reflected in the standard error. In this exercise you'll develop a feel for this relationship by looking at data sets of different sizes.
+
+Two new smaller data sets have been created for you from `gss2016`: `gss2016_small`, which contains 50 observations, and `gss2016_smaller` which contains just 10 observations.
+
+```r
+# Create bootstrap distribution for proportion
+boot_dist_small <- gss2016_small %>%
+  # Specify the variable and success
+  specify(response = consci, success = "High") %>%
+  # Generate 500 bootstrap reps
+  generate(reps = 500, type = "bootstrap") %>%
+  # Calculate the statistic
+  calculate(stat = "prop")
+
+# See the result
+glimpse(boot_dist_small)
+```
+```
+Observations: 500
+Variables: 2
+$ replicate <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17...
+$ stat      <dbl> 0.48, 0.44, 0.46, 0.32, 0.46, 0.50, 0.36, 0.46, 0.46, 0.4...
+```
+```r
+# Compute and save estimate of SE
+SE_small_n <- boot_dist_small %>%
+  summarize(se = sd(stat)) %>%
+  pull()
+
+# See the result
+SE_small_n
+```
+```
+[1] 0.07121931
+```
+```r
+# Generate bootstrap distribution for smaller data
+boot_dist_smaller <-gss2016_smaller %>%
+  specify(response = consci, success = "High") %>%
+  generate(reps = 500, type = "bootstrap") %>%
+  calculate(stat = "prop")
+
+# See the result
+glimpse(boot_dist_smaller)
+```
+```
+Observations: 500
+Variables: 2
+$ replicate <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17...
+$ stat      <dbl> 0.4, 0.3, 0.4, 0.4, 0.2, 0.4, 0.5, 0.1, 0.5, 0.2, 0.2, 0....
+```
+```r
+# Compute and save estimate of second SE
+SE_smaller_n <- boot_dist_smaller %>%
+  summarize(se = sd(stat)) %>%
+  pull()
+
+# Compare the results for each dataset size
+message("gss2016_small has ", nrow(gss2016_small), " rows and standard error ", SE_small_n)
+message("gss2016_smaller has ", nrow(gss2016_smaller), " rows and standard error ", SE_smaller_n)
+```
+```
+gss2016_small has 50 rows and standard error 0.0721210294281186
+gss2016_smaller has 10 rows and standard error 0.159395023595764
+```
+
+Well done! This is a fundamental relationship that you've uncovered: the less data, the greater the standard error.
+
+**SE with different p**
+
+You just saw the effect that *sample size* can have on inference, but that's not the only variable in play here. Let's return now to our full data set and see what happens to the SE when we consider a category that has a different *population proportion*, p.
+
+We've displayed here the plot that you made way back in exercise 4 to study the proportion of respondents that have "High" confidence in science. Notice this proportion is very close to .5. In this exercise, you'll be looking at the variable `meta_region`, which records whether or not the respondent lives in the pacific region of the US. These respondents were fairly rare, which allows you to study how SEs behave in a setting where the proportion is is very far from 0.5.
+
+```r
+# Using gss2016, plot meta_region
+ggplot(gss2016, aes(meta_region)) +
+  # Add bar layer
+  geom_bar()
+```
+![](_images/1950.png)
+```r
+# Specify the response for the bootstrap distribution
+boot_dist <- gss2016 %>%
+  specify(response = meta_region, success = "pacific") %>%
+  generate(reps = 500, type = "bootstrap") %>%
+  calculate(stat = "prop")
+  
+# Calculate std error
+SE_low_p <- boot_dist %>%
+  summarize(se = sd(stat)) %>%
+  pull()
+
+# Compare SEs
+c(SE_low_p, SE)
+```
+```
+[1] 0.02496027 0.03800703
+```
+
+Oh, what a difference a proportion makes! It turns out that that SEs are highest when estimating proportions are close to 0.5.
+
+## The approximation shortcut
+
+![](_images/1951.png)
+
+![](_images/1952.png)
+
+![](_images/1953.png)
+
+![](_images/1954.png)
+
+![](_images/1955.png)
+
+![](_images/1956.png)
+
+![](_images/1957.png)
+
+**CI via approximation**
+
+The approximation shortcut offers an alternative method of describing the sampling distribution. In this exercise, you will apply the approximation shortcut to build a confidence interval for the proportion of respondents that live in the pacific region.
+
+When building *any* confidence interval, note that you use three ingredients: the point estimate (here, `p_hat`), the SE, and the number of standard errors to add and subtract. For a sampling distribution that is bell-shaped, adding and subtracting two SEs corresponds to a confidence level of 95%. When you use the bootstrap, you can check that the distribution is bell-shaped because you have a have the bootstrap distribution to plot. When you use the approximation, you're flying blind – well, not quite blind, but you *are* dependent on the "rule of thumb" to ensure that you're working with a bell shape.
+
+```r
+# Calculate n as the number of rows
+n <- nrow(gss2016)
+
+# Calculate p_hat as the proportion in pacific meta region
+p_hat <- gss2016 %>%
+  summarize(prop_pacific = mean(meta_region == "pacific")) %>%
+  pull()
+
+# See the result
+p_hat
+```
+```
+[1] 0.1
+```
+```r
+# Check conditions
+n * p_hat >= 10
+n * (1 - p_hat) >= 10
+```
+```
+[1] TRUE
+[1] TRUE
+```
+```r
+# Calculate SE
+SE_approx <- sqrt(p_hat * (1-p_hat) / n)
+
+# Form 95% CI
+c(p_hat - 2*SE_approx, p_hat + 2*SE_approx)
+```
+```
+[1] 0.05101021 0.14898979
+```
+
+Well done. You probably noticed: this approximation method gives you a similar answer to the computational approach. This is a recurring theme that you'll be seeing throughout this course.
+
+## Hypothesis test for a proportion
+
+![](_images/1958.png)
+
+![](_images/1959.png)
+
+![](_images/1960.png)
+
+![](_images/1961.png)
+
+![](_images/1962.png)
+
+**Life after death**
+
+In this chapter, you'll continue to dig into the data from the General Social Survey. One of the questions that was asked of respondents was: "Do you believe there is a life after death?"
+
+Let's see how your sample of Americans responded to this question in 2016.
+
+```r
+# Using `gss2016`, plot postlife
+ggplot(gss2016, aes(postlife)) +
+  # Add bar layer
+  geom_bar()
+```
+![](_images/1963.png)
+```r
+# Compute and save proportion that believe
+p_hat <- gss2016 %>%
+  summarize(prop_yes = mean(postlife == "YES")) %>%
+  pull()
+
+# See the result
+p_hat
+```
+```
+[1] 0.8
+```
+
+Excellent effort! Your sample of data has a majority of respondents that indeed believe in an afterlife.
+
+**Generating from H0**
+
+Imagine that when reading the newspaper, you come across someone who makes the following claim: "3/4 of all Americans believe in life after death". This can be interpreted as a `point` null hypothesis that the population proportion has a value of 0.75.
+
+Use this hypothesis to generate a single data set to explore.
+
+```r
+sim1 <- gss2016 %>%
+  # Specify the response and success
+  specify(response = postlife, success = "YES") %>%
+  # Hypothesize the null value of p
+  hypothesize(null = "point", p = 0.75) %>%
+  # Generate a single simulated dataset
+  generate(reps = 1, type = "simulate")
+
+# See the result
+sim1
+```
+```
+Response: postlife (factor)
+Null Hypothesis: point
+# A tibble: 150 x 2
+# Groups:   replicate [1]
+   postlife replicate
+   <fct>    <fct>    
+ 1 YES      1        
+ 2 YES      1        
+ 3 YES      1        
+ 4 NO       1        
+ 5 YES      1        
+ 6 YES      1        
+ 7 YES      1        
+ 8 YES      1        
+ 9 YES      1        
+10 YES      1        
+# ... with 140 more rows
+```
+```r
+# Using sim1, plot postlife
+ggplot(sim1, aes(postlife)) +
+  # Add bar layer
+  geom_bar()
+```
+![](_images/1964.png)
+```r
+# Compute proportion that believe
+sim1 %>%
+  summarize(prop_yes = mean(postlife == "YES")) %>%
+  pull()
+```
+```
+[1] 0.72
+```
+
+Spectacular simulation! The null hypothesis describes a theoretical world and with these tools, you can generate from that world as much data as you like.
+
+**Testing a claim**
+
+In the last exercise, you got a sense of what a single simulated p-hat might be if in fact the true proportion of believers was 0.75. That p-hat was likely different from the p-hat in `gss2016`, but was that a fluke or is there a systematic inconsistency between that claim and the data in the GSS?
+
+In this exercise, you'll settle this question.
+
+```r
+# Generate null distribution
+null <- gss2016 %>%
+  specify(response = postlife, success = "YES") %>%
+  hypothesize(null = "point", p = 0.75) %>%
+  generate(reps = 500, type = "simulate") %>%
+  # Calculate proportions
+  calculate(stat = "prop")
+  
+# Visualize null distribution
+ggplot(null, aes(stat)) +
+  # Add density layer
+  geom_density() +
+  # Add line at observed
+  geom_vline(xintercept = p_hat, color = "red")
+```
+![](_images/1965.png)
+```r
+null %>%
+  summarize(
+    # Compute the one-tailed p-value
+    one_tailed_pval = mean(stat >= p_hat),
+    # Compute the two-tailed p-value
+    two_tailed_pval = 2 * one_tailed_pval
+  ) %>%
+  pull(two_tailed_pval)
+```
+```
+[1] 0.212
+```
+
+Tip top testing! One way to think about a p-value is as a measure of how far out an observed statistic is into the tails of a null distribution.
+
+The p-value > alpha, thus the data is consistent with the null hypothesis so I fail to reject it as a reasonable explanation. This data is consistent with a model in which ¾ of Americans believe in life after death.
+
+## Intervals for differences
+
+![](_images/1966.png)
+
+![](_images/1967.png)
+
+![](_images/1968.png)
+
+![](_images/1969.png)
+
+![](_images/1970.png)
+
+![](_images/1971.png)
+
+**Death penalty and sex**
+
+While you're on the topic of death and the afterlife, take a look at another question from the GSS:
+
+*Do you favor or oppose the death penalty for people convicted of murder?*
+
+Your objective here is to explore if opinions on capital punishment (`cappun`) diverged between men and women in the `gss2016` data.
+
+```r
+# Plot distribution of sex filled by cappun
+ggplot(gss2016, aes(x = sex, fill = cappun)) +
+  # Add bar layer
+  geom_bar(position = "fill")
+```
+![](_images/1972.png)
+```r
+# Compute two proportions
+p_hats <- gss2016 %>%
+  # Group by sex
+  group_by(sex) %>%
+  # Calculate proportion that FAVOR
+  summarize(prop_favor = mean(cappun == "FAVOR")) %>%
+  pull()
+
+# See the result
+p_hats
+```
+```
+[1] 0.6271186 0.5274725
+```
+```r
+# Compute difference in proportions
+d_hat <- diff(p_hats)
+
+# See the result
+d_hat
+```
+```
+[1] -0.09964612
+```
+
+Excellent! Unless you tell R otherwise, R will do operations like this alphabetically, so -0.09964612 is the proportion of (f)emales that favor minus the proportion of (m)ales.
+
+**Hypothesis test on the difference in proportions**
+
+In the last exercise you learned that about 52% of women favor the death penalty while about 63% of men do, a difference of about 11 percentage points. That seems like a large difference, but what if it's just due to chance and in fact there is no relationship between sex and support for the death penalty? Find out by testing the null hypothesis that sex and support for the death penalty are independent of one another.
+
+The `stat`istic that you'll be using in this exercise is a `"diff in props"`, which requires that you specify the order of the difference by adding an argument, `order = c("FIRST", "SECOND")`, where first and second refer to the group names. This results in the calculation: FIRST - SECOND.
+
+```r
+# Create null distribution
+null <- gss2016 %>%
+  # Specify the response and explanatory as well as the success
+  specify(cappun ~ sex, success = "FAVOR") %>%
+  # Set up null hypothesis
+  hypothesize(null = "independence") %>%
+  # Generate 500 reps by permutation
+  generate(reps = 500, type = "permute") %>%
+  # Calculate the statistics
+  calculate(stat = "diff in props", order = c("FEMALE", "MALE"))
+  
+# Visualize null
+ggplot(null, aes(stat)) +
+  # Add density layer
+  geom_density() +
+  # Add red vertical line at obs stat
+  geom_vline(xintercept = d_hat, color = "red")
+```
+![](_images/1973.png)
+```r
+# Compute two-tailed p-value
+null %>%
+  summarize(
+    one_tailed_pval = mean(stat <= d_hat),
+    two_tailed_pval = 2 * one_tailed_pval
+  ) %>%
+  pull(two_tailed_pval)
+```
+```
+[1] 0.272
+```
+
+Correctly crafted code! While that observed difference of 11% seemed large, it's actually somewhat close to the main hump of the null distribution. As a result, the p-value isn't very small.
+
+The data are consistent with the hypothesis that there is no association.
+
+Despite the difference that we found between men and women in our sample, it quite possible it's simply an artifact of the process of drawing a random sample.
+
+**Hypothesis tests and confidence intervals**
+
+As was mentioned at the very beginning of this chapter, there is a close link between hypothesis tests and confidence intervals. The former explores whether a particular hypothesis about the world is consistent with your data. The latter has no hypothesis, it simply quantifies your uncertainty in your point estimate by adding and subtracting the margin of error.
+
+In this exercise you will explore the duality by forming a confidence interval around the difference in proportions, `d_hat`. To get you started, here is the code that you used to form the null distribution:
+
+```r
+# Reference code for null distribution
+null <- gss2016 %>%
+   specify(cappun ~ sex, success = "FAVOR") %>%
+   hypothesize(null = "independence") %>%
+   generate(reps = 500, type = "permute") %>%
+   calculate(stat = "diff in props", order = c("FEMALE", "MALE"))`
+```
+
+```r
+# Create the bootstrap distribution
+boot <- gss2016 %>%
+  # Specify the variables and success
+  specify(cappun ~ sex, success = "FAVOR") %>%
+  # Generate 500 bootstrap reps
+  generate(reps = 500, type = "bootstrap") %>%
+  # Calculate statistics
+  calculate(stat = "diff in props", order = c("FEMALE", "MALE"))
+
+# Compute the standard error
+SE <- boot %>%
+  summarize(se = sd(stat)) %>%
+  pull()
+  
+# Form the CI (lower, upper)
+c(d_hat - 2*SE, d_hat + 2*SE)
+```
+```
+[1] -0.26820753  0.06891529
+```
+
+Tremendous travail! Your CI included the value of zero, indicating that it is a plausible value. Since it's a plausible value, you wouldn't want to reject it - leading the same conclusion as the hypothesis test.
+
+## Statistical errors
+
+![](_images/1974.png)
+
+![](_images/1975.png)
+
+$Power = 1 - \beta$
+
+**When the null is true**
+
+In this exercise, you will run an experiment: what happens when you conduct a hypothesis test when you *know* that the null hypothesis is true? You hope that you will retain the null hypothesis, but there's always a chance that you will make a statistical error.
+
+To begin the experiment, we have created a new explanatory variable called `coinflip` that captures the result of a fair coin toss for every subject. With that variable in hand you can pose the following null hypothesis:
+
+$H_0: p_{heads} - p_{tails} = 0$
+
+This claims that there is no difference in the proportions that favor the death penalty between the people that flipped `"heads"` and those that flipped `"tails"`. Since coinflip was formed independently of `cappun`, we `know` that this null hypothesis is true. The question is: will your test reject or retain this null hypothesis?
+
+```r
+# Inspect coinflip
+gssmod %>%
+  select(coinflip)
+
+# Compute two proportions
+p_hats <- gssmod %>%
+  group_by(coinflip) %>%
+  summarize(prop_favor = mean(cappun == "FAVOR")) %>%
+  pull()
+  
+# See the result
+p_hats
+```
+```
+[1] 0.6307692 0.5176471
+```
+```r
+# Compute difference in proportions
+d_hat <- diff(p_hats)
+
+# Form null distribution
+null <- gssmod %>%
+  # Specify the response and explanatory var and success
+  specify(cappun ~ coinflip, success = "FAVOR") %>%
+  # Set up the null hypothesis
+  hypothesize(null = "independence") %>%
+  # Generate 500 permuted data sets
+  generate(reps = 500, type = "permute") %>%
+  # Calculate statistics
+  calculate(stat = "diff in props", order = c("heads", "tails"))
+
+# Visualize null
+ggplot(null, aes(stat)) +
+  # Add density layer
+  geom_density() +
+  # Add vertical red line at observed stat
+  geom_vline(xintercept = d_hat, color = "red")
+```
+![](_images/1976.png)
+
+Excellent experimentation! Your experiment suggests that when there is no difference in proportions, it's still conceivable that we'd observe differences up to around +/- 0.2.
+
+**When the null is true: decision**
+
+In the last exercise, the observed difference in proportions is comfortably in the middle of the null distribution. In this exercise, you'll come to a formal decision on if you should reject the null hypothesis, but instead of using p-values, you'll use the notion of a rejection region.
+
+The rejection region is the range of values of the statistic that would lead you to reject the null hypothesis. In a two-tailed test, there are two rejection regions. You know that the upper region should contain the largest 2.5% of the null statistics (when alpha = .05), so you can extract the cutoff value by finding the .975 `quantile()`. Similarly, the lower region contains the smallest 2.5% of the null statistics, which can also be found using `quantile()`.
+
+Here's a quick look at how the `quantile()` function works for this simple data set `x`.
+
+```r
+x <- c(0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)
+quantile(x, probs = .5)
+quantile(x, probs = .8)
+```
+
+Once you have the rejection region defined by the upper and lower cutoffs, you can make your decision regarding the null by checking if your observed statistic falls between those cutoffs (in which case you will fail to reject) or outside of them (in which case you will reject).
+
+```r
+# Set alpha
+alpha <- 0.05
+
+# Find cutoffs
+lower <- null %>%
+  summarize(l = quantile(stat, probs = alpha/2)) %>%
+  pull()
+upper <- null %>%
+  summarize(u = quantile(stat, probs = 1 - alpha/2)) %>%
+  pull()
+
+# Is d_hat inside cutoffs?
+d_hat %>%
+  between(lower, upper)
+```
+```
+[1] TRUE
+```
+```r
+# Visualize cutoffs
+ggplot(null, aes(x = stat)) +
+  geom_density() +
+  geom_vline(xintercept = d_hat, color = "red") +
+  # Add vertical blue line for lower cutoff
+  geom_vline(xintercept = lower, color = "blue") +
+  # Add vertical blue line for upper cutoff
+  geom_vline(xintercept = upper, color = "blue")
+```
+![](_images/1977.png)
+
+Very vibrantly visualized! In this case, the observed statistic is not in the rejection, which is good, given that you know H0 is true. Occasionally, however, you will make a type I error and reject a true H0 just due to chance. This error rate is what you set when you choose alpha.
