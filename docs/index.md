@@ -24,7 +24,7 @@ sitemap:
 
 ## <a href="https://www.datacamp.com/profile/odenipinedo" target="_blank" rel="noopener noreferrer">DataCamp</a> 
 
-#### Analyzing Genomic Data in R
+#### <a href="https://learn.datacamp.com/skill-tracks/analyzing-genomic-data-in-r" target="_blank" rel="noopener noreferrer">Analyzing Genomic Data in R</a>
 1. introduction to Bioconductor in R
 2. RNA-seq with Bioconductor in R
 3. differential expressiion analysis with limma in R
@@ -32,7 +32,7 @@ sitemap:
 5. ChIP-seq with Bioconductor in R
 - Certificate
 
-#### Data Manipulation with R
+####  <a href="https://learn.datacamp.com/skill-tracks/data-manipulation-with-r?version=4" target="_blank" rel="noopener noreferrer">Data Manipulation with R</a>
 1. <a href="https://rpubs.com/odenipinedo/data-manipulation-with-dplyr" target="_blank" rel="noopener noreferrer">data manipulation with dplyr</a>
 2. <a href="https://rpubs.com/odenipinedo/joining-data-with-dplyr" target="_blank" rel="noopener noreferrer">joining data with dplyr</a>
 3. <a href="https://rpubs.com/odenipinedo/case-study-exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">case study: exploratory data analysis in R</a>
@@ -40,13 +40,13 @@ sitemap:
 5. joining data with data.table in R
 - Certificate
 
-#### Data Visualization with R
+#### <a href="https://learn.datacamp.com/skill-tracks/data-visualization-with-r?version=3" target="_blank" rel="noopener noreferrer">Data Visualization with R</a>
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-data-visualization-with-ggplot2" target="_blank" rel="noopener noreferrer">introduction to data visualization with ggplot2</a>
 2. <a href="https://rpubs.com/odenipinedo/intermediate-data-visualization-with-ggplot2" target="_blank" rel="noopener noreferrer">intermediate data visualization with ggplot2</a>
 3. visualization best practices in R
 - Certificate
 
-#### Data Scientist with R
+#### <a href="https://learn.datacamp.com/career-tracks/data-scientist-with-r?version=4" target="_blank" rel="noopener noreferrer">Data Scientist with R</a>
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-R" target="_blank" rel="noopener noreferrer">introduction to R</a>
 2. <a href="https://rpubs.com/odenipinedo/intermediate-R" target="_blank" rel="noopener noreferrer">intermediate R</a>
 3. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
@@ -73,14 +73,14 @@ sitemap:
      - <a href="https://www.datacamp.com/statement-of-accomplishment/course/a33337a0f51da442affde252cf98ed0ee2ed79f8" target="_blank" rel="noopener noreferrer">Certificate</a>
 2. designing and analyzing clinical trials in R
 
-#### Importing & Cleaning Data with R
+#### <a href="https://learn.datacamp.com/skill-tracks/importing-cleaning-data-with-r?version=2" target="_blank" rel="noopener noreferrer">Importing & Cleaning Data with R</a>
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-importing-data-in-R" target="_blank" rel="noopener noreferrer">introduction to importing data in R</a>
 2. <a href="https://rpubs.com/odenipinedo/intermediate-importing-data-in-R" target="_blank" rel="noopener noreferrer">intermediate importing data in R</a>
 3. <a href="https://rpubs.com/odenipinedo/cleaning-data-in-R" target="_blank" rel="noopener noreferrer">cleaning data in R</a>
 4. working with data in the tidyverse
 - Certificate
 
-#### Interactive Data Visualization in R
+#### <a href="https://learn.datacamp.com/skill-tracks/interactive-data-visualization-in-r?version=2" target="_blank" rel="noopener noreferrer">Interactive Data Visualization in R</a>
 1. interactive maps with leaflet in R
 2. interactive data visualization with plotly in R
 3. intermediate interactive data visualization with plotly in R
@@ -88,7 +88,7 @@ sitemap:
 5. interactive data visualization with rbokeh
 - Certificate
 
-#### Machine Learning Scientist with R
+#### <a href="https://learn.datacamp.com/career-tracks/machine-learning-scientist-with-r?version=1" target="_blank" rel="noopener noreferrer">Machine Learning Scientist with R</a>
 1. <a href="https://rpubs.com/odenipinedo/supervised-learning-in-R-classification" target="_blank" rel="noopener noreferrer">supervised learning in R: classification</a>
 2. <a href="https://pinedo.org/R/supervised-learning-in-R---regression.html " target="_blank" rel="noopener noreferrer">supervised learning in R: regression</a>
 3. <a href="https://rpubs.com/odenipinedo/unsupervised-learning-in-R" target="_blank" rel="noopener noreferrer">unsupervised learning in R</a>
@@ -106,21 +106,21 @@ sitemap:
 15. introduction to Spark with sparklyr in R
 - Certificate
 
-#### Network Analysis with R
+#### <a href="https://learn.datacamp.com/skill-tracks/analyzing-networks-with-r?version=2" target="_blank" rel="noopener noreferrer">Network Analysis with R</a>
 1. <a href="https://rpubs.com/odenipinedo/network-analysis-in-R" target="_blank" rel="noopener noreferrer">network analysis in R</a>
 2. <a href="https://rpubs.com/odenipinedo/predictive-analytics-using-networked-data-in-R" target="_blank" rel="noopener noreferrer">predictive analytics using networked data in R</a>
 3. <a href="https://pinedo.org/R/network-analysis-in-the-Tidyverse.html" target="_blank" rel="noopener noreferrer">network analysis in the tidyverse</a>
 4. <a href="https://rpubs.com/odenipinedo/case-studies-network-analysis-in-R" target="_blank" rel="noopener noreferrer">case studies: network analysis in R</a>
 - <a href="https://www.datacamp.com/statement-of-accomplishment/track/4bff229b1fdc0f33241c9981762fb66c6dc4af6e" target="_blank" rel="noopener noreferrer">Certificate</a>
 
-#### Probability and Distributions with R
+#### <a href="https://learn.datacamp.com/skill-tracks/probability-and-distribution-with-r?version=1" target="_blank" rel="noopener noreferrer">Probability and Distributions with R</a>
 1. <a href="https://rpubs.com/odenipinedo/foundations-of-probability-in-R" target="_blank" rel="noopener noreferrer">foundations of probability in R</a>
 2. multivariate probability distributions in R
 3. probability puzzles in R
 4. mixture models in R
 - Certificate
 
-#### R Programmer
+#### <a href="https://learn.datacamp.com/career-tracks/r-programmer?version=4" target="_blank" rel="noopener noreferrer">R Programmer</a>
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
 2. project: Dr. Semmelweis and the discovery of handwashing
 3. <a href="https://rpubs.com/odenipinedo/data-manipulation-with-dplyr" target="_blank" rel="noopener noreferrer">data manipulation with dplyr</a>
@@ -138,28 +138,28 @@ sitemap:
 15. object-oriented programming with S3 and R6 in R
 - Certificate
 
-#### Shiny Fundamentals with R
+#### <a href="https://learn.datacamp.com/skill-tracks/shiny-fundamentals-with-r?version=3" target="_blank" rel="noopener noreferrer">Shiny Fundamentals with R</a>
 1. <a href="https://rpubs.com/odenipinedo/building-web-applications-with-Shiny-in-R" target="_blank" rel="noopener noreferrer">building web applications with Shiny in R</a>
 2. case studies - building web applications with Shiny in R
 3. building dashboards with shinydashboard
 4. building dashboards with flexdashboard
 - Certificate
 
-#### Spatial Data with R
+#### <a href="https://learn.datacamp.com/skill-tracks/spatial-data-with-r?version=1" target="_blank" rel="noopener noreferrer">Spatial Data with R</a>
 1. <a href="https://pinedo.org/R/visualizing-geospatial-data-in-R.html" target="_blank" rel="noopener noreferrer">visualizing geospatial data in R</a>
 2. spatial analysis with sf and raster in R
 3. spatial statistics in R
 4. interactive maps with leaflet in R
 - Certificate
 
-#### Statistical Inference with R
+#### <a href="https://learn.datacamp.com/skill-tracks/statistical-inference-with-r?version=1" target="_blank" rel="noopener noreferrer">Statistical Inference with R</a>
 1. <a href="https://rpubs.com/odenipinedo/foundations-of-inference" target="_blank" rel="noopener noreferrer">foundations of inference</a>
 2. <a href="https://rpubs.com/odenipinedo/inference-for-categorical-data-in-R" target="_blank" rel="noopener noreferrer">inference for categorical data in R</a>
 3. inference for numerical data in R
 4. inference for linear regression in R
 - Certificate
 
-#### Statistician with R
+#### <a href="https://learn.datacamp.com/career-tracks/statistician-with-r?version=1" target="_blank" rel="noopener noreferrer">Statistician with R</a>
 1. <a href="introduction-to-data-in-R.html" target="_blank" rel="noopener noreferrer">introduction to data in R</a>
 2. <a href="https://rpubs.com/odenipinedo/exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">exploratory data analysis in R</a>
 3. <a href="https://rpubs.com/odenipinedo/modeling-with-data-in-the-Tidyverse" target="_blank" rel="noopener noreferrer">modeling with data in the tidyverse</a>
@@ -188,14 +188,14 @@ sitemap:
 - analyzing US census data in R
 - data privacy and anonymization in R
 
-#### Text Mining with R
+#### <a href="https://learn.datacamp.com/skill-tracks/text-mining-with-r?version=2" target="_blank" rel="noopener noreferrer">Text Mining with R</a>
 1. introduction to text analysis in R
 2. string manipulation with stringr in R
 3. text mining with bag-of-words in R
 4. sentiment analysis in R
 - Certificate
 
-#### Tidyverse Fundamentals with R
+#### <a href="https://learn.datacamp.com/skill-tracks/tidyverse-fundamentals?version=2" target="_blank" rel="noopener noreferrer">Tidyverse Fundamentals with R</a>
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
 2. working with data in the Tidyverse
 3. project: Dr. Semmelweis and the discovery of handwashing
@@ -204,7 +204,7 @@ sitemap:
 6. categorical data in the Tidyverse
 - Certificate
 
-#### Time Series
+#### <a href="https://learn.datacamp.com/skill-tracks/time-series-with-r?version=1" target="_blank" rel="noopener noreferrer">Time Series</a>
 1. <a href="https://rpubs.com/odenipinedo/manipulating-time-series-data-with-xts-and-zoo-in-R" target="_blank" rel="noopener noreferrer"> manipulating time series data with xts and zoo in R</a>
 2. <a href="https://rpubs.com/odenipinedo/time-series-analysis-in-R" target="_blank" rel="noopener noreferrer">time series analysis in R</a>
 3. <a href="https://rpubs.com/odenipinedo/ARIMA-Models-in-R" target="_blank" rel="noopener noreferrer">ARIMA Models in R</a>
