@@ -154,7 +154,7 @@ sitemap:
 
 #### Statistical Inference with R
 1. <a href="https://rpubs.com/odenipinedo/foundations-of-inference" target="_blank" rel="noopener noreferrer">foundations of inference</a>
-2. inference for categorical data in R
+2. <a href="https://rpubs.com/odenipinedo/inference-for-categorical-data-in-R" target="_blank" rel="noopener noreferrer">inference for categorical data in R</a>
 3. inference for numerical data in R
 4. inference for linear regression in R
 - Certificate
@@ -172,7 +172,7 @@ sitemap:
 10. <a href="https://rpubs.com/odenipinedo/AB-testing-in-R" target="_blank" rel="noopener noreferrer">A/B testing in R</a>
 11. <a href="https://rpubs.com/odenipinedo/fundamentals-of-Bayesian-data-analysis-in-R" target="_blank" rel="noopener noreferrer">fundamentals of Bayesian data analysis in R</a>
 12. <a href="https://rpubs.com/odenipinedo/linear-algebra-for-data-science-in-R" target="_blank" rel="noopener noreferrer">linear algebra for data science in R</a>
-13. inference for categorical data in R
+13. <a href="https://rpubs.com/odenipinedo/inference-for-categorical-data-in-R" target="_blank" rel="noopener noreferrer">inference for categorical data in R</a>
 14. Bayesian modeling with RJAGS
 - Certificate
 
