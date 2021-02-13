@@ -176,7 +176,7 @@ sitemap:
 14. Bayesian modeling with RJAGS
 - Certificate
 
-#### Statistics courses (misc)
+#### Statistics (misc)
 - analyzing survey data in R
 - hierarchical and mixed effects models in R
 - generalized linear models in R
