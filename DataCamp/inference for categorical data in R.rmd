@@ -38,6 +38,7 @@ gss
 
 # Load dplyr
 library(dplyr)
+library(tidyr)
 
 gss2016 <- gss %>%
   select(-grass, -cappun2, -protest3) %>% drop_na() %>%
