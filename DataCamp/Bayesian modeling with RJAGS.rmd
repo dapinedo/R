@@ -12,14 +12,597 @@ options(repos="https://CRAN.R-project.org")
 
 ## The prior model
 
+![](_images/2014.png)
+
+![](_images/2015.png)
+
+![](_images/2016.png)
+
+![](_images/2017.png)
+
+**Simulating a Beta prior**
+
+Suppose you're running in an election for public office. Let $p$ be your underlying support, the proportion of voters that plan to vote for you. Based on past polls, your prior model of $p$ is captured by a Beta distribution with shape parameters 45 and 55.
+
+You will approximate the Beta(45, 55) prior using random samples from the `rbeta()` function. This function takes three arguments: sample size (`n`) and two *shape* parameters (`shape1`,`shape2`). Subsequently, you will construct a density plot of the samples using `ggplot()`. This function takes two arguments: the data set containing the samples and, within `aes()`, the variable to be plotted on the `x` axis. The density plot layer is added using `geom_density()`.
+
+```{r}
+library(ggplot2)
+
+# Sample 10000 draws from Beta(45,55) prior
+prior_A <- rbeta(n = 10000, shape1 = 45, shape2 = 55)
+
+# Store the results in a data frame
+prior_sim <- data.frame(prior_A)
+
+# Construct a density plot of the prior sample
+ggplot(prior_sim, aes(x = prior_A)) + 
+    geom_density()
+```
+
+Great! Take a quick look - the distribution of your sample approximates the features of the Beta(45,55) prior.
+
+**Comparing & contrasting Beta priors**
+
+The Beta($a$,$b$) distribution is defined on the interval from 0 to 1, thus provides a natural and flexible prior for your underlying election support, $p$. You can *tune* the Beta shape parameters $a$ and $b$ to produce alternative prior models. Below you will compare your original Beta(45,55) prior with two alternatives: Beta(1, 1) and Beta(100, 100). The original 10,000 `prior_A` samples drawn from Beta(45,55) are in your workspace.
+
+```{r}
+library(tibble)
+
+# Sample 10000 draws from the Beta(1,1) prior
+prior_B <- rbeta(n = 10000, shape1 = 1, shape2 = 1)    
+
+# Sample 10000 draws from the Beta(100,100) prior
+prior_C <- rbeta(n = 10000, shape1 = 100, shape2 = 100)
+
+# Combine the results in a single data frame
+prior_sim <- data.frame(samples = c(prior_A, prior_B, prior_C),
+        priors = rep(c("A","B","C"), each = 10000))
+tibble(prior_sim)
+
+# Plot the 3 priors
+ggplot(prior_sim, aes(x = samples, fill = priors)) + 
+    geom_density(alpha = 0.5)
+```
+
+Nice work! The three Beta priors here are just a few of the countless different priors we can obtain by tuning the shape parameters.
+
+Prior B reflects 'vague' prior information about p - it gives equal prior weight to all values of p between 0 and 1. Prior C reflects more prior certainty about p - it has less spread and is centered around a mean that's greater than that for Prior A.
+
+## Data & the likelihood
+
+![](_images/2018.png)
+
+![](_images/2019.png)
+
+**Simulating the dependence of X on p**
+
+In your quest for election to public office, your campaign polls 10 likely voters. Let $X$ be the number that support you. Of course, $X$ varies from sample to sample and depends upon $p$, your underlying support in the broader population. Since  $X$ is a count of successes in 10 independent trials, each having probability of success $p$, you can model its dependence on $p$ by the Binomial distribution: Bin(10, $p$).
+
+You will simulate the Binomial model using random samples from the `rbinom(n, size, prob)` function. This *vectorized* function draws `n` samples from a Bin(`size`, `prob`) distribution. Given a *vector* of `prob` values, the first `prob` value will be used for the first draw, the second `prob` value will be used for the second draw, etc.
+
+```{r}
+library(ggridges)
+
+# Define a vector of 1000 p values    
+p_grid <- seq(from = 0, to = 1, length.out = 1000)
+
+# Simulate 1 poll result for each p in p_grid   
+poll_result <- rbinom(n = 1000, size = 10, prob = p_grid)    
+
+# Create likelihood_sim data frame
+likelihood_sim <- data.frame(p_grid, poll_result)    
+
+# Density plots of p_grid grouped by poll_result
+ggplot(likelihood_sim, aes(x = p_grid, y = poll_result, group = poll_result)) + 
+    geom_density_ridges()
+```
+
+Great! Notice that polls in which 0 people supported you (`poll_result = 0`) correspond to smaller values of underlying support p (`p_grid`). The opposite is true for polls in which all 10 people supported you.
+
+**Approximating the likelihood function**
+
+The first election poll is in! $X$ = 6 of 10 polled voters plan to vote for you. You can use these data to build insight into your underlying support $p$. To this end, you will use the `likelihood_sim` data frame (in your workspace). This contains the values of $X$ (`poll_result`) simulated from each of 1,000 possible values of $p$ between 0 to 1 (`p_grid`).
+
+```{r}
+# Density plots of p_grid grouped by poll_result
+ggplot(likelihood_sim, aes(x = p_grid, y = poll_result, group = poll_result, fill = poll_result == 6)) + 
+    geom_density_ridges()
+```
+
+Great! Reexamine the highlighted density plot. This is a scaled approximation of the likelihood function! It indicates that the simulated surveys in which 6 of 10 voters supported you corresponded to underlying support p that ranged from approximately 0.25 to 1, with p around 0.6 being the most common.
+
+## The posterior model
+
+![](_images/2020.png)
+
+![](_images/2021.png)
+
+![](_images/2022.png)
+
+![](_images/2023.png)
+
+![](_images/2024.png)
+
+![](_images/2025.png)
+
+**Define, compile, and simulate**
+
+In your election quest, let $p$ be the proportion of the underlying voting population that supports you. Built from previous polls & election data, your *prior* model of $p$ is a Beta($a$,$b$) with shape parameters $a=45$  and $b=55$. For added insight into $p$, you also polled $n$ potential voters. The dependence of $X$, the number of these voters that support you, on $p$ is modeled by the Bin($n$,$p$) distribution.
+
+In the completed poll, $X=6$ of $n=10$ voters supported you. The next goal is to update your model of $p$ in light of these observed polling data! To this end, you will use the `rjags` package to approximate the *posterior* model of $p$. We break this exercise down into the 3 `rjags` steps: *define*, *compile*, *simulate*.
+
+```{r}
+library(rjags)
+
+# DEFINE the model
+vote_model <- "model{
+    # Likelihood model for X
+    X ~ dbin(p, n)
+    
+    # Prior model for p
+    p ~ dbeta(a, b)
+}"
+
+# COMPILE the model    
+vote_jags <- jags.model(textConnection(vote_model), 
+    data = list(a = 45, b = 55, X = 6, n = 10),
+    inits = list(.RNG.name = "base::Wichmann-Hill", .RNG.seed = 100))
+
+# SIMULATE the posterior
+vote_sim <- coda.samples(model = vote_jags, variable.names = c("p"), n.iter = 10000)
+
+# PLOT the posterior
+plot(vote_sim, trace = FALSE)
+```
+
+Nice work! You've successfully defined, compiled, and simulated your Bayesian model. Notice that after observing a poll in which 6 of 10 (60%) of voters supported you, your updated posterior optimism and certainty about your underlying support, p, are slightly higher than they were prior to the poll.
+
+**Updating the posterior**
+
+The posterior model of your underlying election support $p$ is informed by both the prior model of $p$ and polling data $X$. Run the script to the right to remind yourself of the posterior that evolved from your original prior (Beta(45, 55)) and original poll data ($X=6$ of $n=10$ polled voters support you). The defined `vote_model` is in your workspace.
+
+In a 3-step exercise, you will explore how using a *different prior model* or observing *new data* (or a combination of the two!) might impact the posterior.
+
+Re-compile, simulate, and plot the  posterior to reflect the setting in which you start with a Beta(1,1) prior but observe the same polling data ($X=6$, $n=10$). NOTE: Recall that Beta(1,1) is uniform across the (0,1) interval.
+
+```{r}
+# COMPILE the model    
+vote_jags <- jags.model(textConnection(vote_model), 
+    data = list(a = 1, b = 1, X = 6, n = 10),
+    inits = list(.RNG.name = "base::Wichmann-Hill", .RNG.seed = 100))
+
+# SIMULATE the posterior
+vote_sim <- coda.samples(model = vote_jags, variable.names = c("p"), n.iter = 10000)
+
+# PLOT the posterior
+plot(vote_sim, trace = FALSE, xlim = c(0,1), ylim = c(0,18))
+```
+
+In a new poll, 214 of 390 voters support you. Combined with the first poll, a total $X=220$ of $n=400$ voters support you. Re-compile, simulate, and plot the $p$ posterior to reflect these combined poll results and a Beta(1,1) prior.
+
+```{r}
+# COMPILE the model    
+vote_jags <- jags.model(textConnection(vote_model), 
+    data = list(a = 1, b = 1, X = 220, n = 400),
+    inits = list(.RNG.name = "base::Wichmann-Hill", .RNG.seed = 100))
+
+# SIMULATE the posterior
+vote_sim <- coda.samples(model = vote_jags, variable.names = c("p"), n.iter = 10000)
+
+# PLOT the posterior
+plot(vote_sim, trace = FALSE, xlim = c(0,1), ylim = c(0,18))
+```
+
+Finally, re-compile, simulate, and plot the $p$ posterior to reflect the **combined** poll results ($X=220$ of $n=400$) and your **original** Beta(45,55) prior.
+
+```{r}
+# COMPILE the model    
+vote_jags <- jags.model(textConnection(vote_model), 
+    data = list(a = 45, b = 55, X = 220, n = 400),
+    inits = list(.RNG.name = "base::Wichmann-Hill", .RNG.seed = 100))
+
+# SIMULATE the posterior
+vote_sim <- coda.samples(model = vote_jags, variable.names = c("p"), n.iter = 10000)
+
+# PLOT the posterior
+plot(vote_sim, trace = FALSE, xlim = c(0,1), ylim = c(0,18))
+```
+
+Nice work! Re-visit the plots you constructed throughout this exercise to review the impact of the prior and data on the posterior.
+
+- Even in light of the same data, different priors lead to different posteriors.
+
+- The influence of the prior on the posterior diminishes as the sample size of your data increases.
+
+- As sample size increases, your posterior understanding becomes more precise.
+
+## The Normal-Normal model
+
+![](_images/2026.png)
+
+![](_images/2027.png)
+
+![](_images/2028.png)
+
+![](_images/2029.png)
+
+![](_images/2030.png)
+
+**Normal-Normal priors**
+
+Researchers developed a test to evaluate the impact of sleep deprivation on reaction time. For subject $i$, let $Y_i$ be the change in reaction time (in ms) after 3 sleep deprived nights. Of course, people react differently to sleep deprivation. It's reasonable to assume that $Y_i$ are Normally distributed around some *average* $m$ with *standard deviation* $s$: $Y_i \sim N(m, s^2)$.
+
+In the first step of your Bayesian analysis, you'll simulate the following prior models for parameters $m$ and $s$: $m \sim N(50, 25^2)$ and $s \sim Unif(0,200)$. This requires the `rnorm(n, mean, sd)` and `runif(n, min, max)` functions.
+
+```{r}
+# Take 10000 samples from the m prior
+prior_m <- rnorm(n = 10000, mean = 50, sd = 25)    
+
+# Take 10000 samples from the s prior    
+prior_s <- runif(n = 10000, min = 0, max = 200)    
+
+# Store samples in a data frame
+samples <- data.frame(prior_m, prior_s)
+
+# Density plots of the prior_m & prior_s samples    
+ggplot(samples, aes(x = prior_m)) + 
+    geom_density()
+ggplot(samples, aes(x = prior_s)) + 
+    geom_density()
+```
+
+Right! The distributions of these random samples approximate the features of your Normal prior for `m` and Uniform prior for `s`.
+
+**Sleep study data**
+
+Researchers enrolled 18 subjects in a sleep deprivation study. Their observed `sleep_study` data are loaded in the workspace. These data contain the `day_0` reaction times and `day_3` reaction times after 3 sleep deprived nights for each `subject`.
+
+You will define and explore `diff_3`, the observed *difference* in reaction times for each subject. This will require the `mutate()` & `summarize()` functions. For example, the following would add variable `day_0_s`, `day_0` reaction times in *seconds*, to `sleep_study`:
+
+```r
+sleep_study <- sleep_study %>% 
+    mutate(day_0_s = day_0 * 0.001)
+```
+
+You can then `summarize()` the `day_0_s` values, here by their minimum & maximum:
+
+```r
+sleep_study  %>% 
+    summarize(min(day_0_s), max(day_0_s))
+```
+
+```{r}
+library(dplyr)
+
+sleep_study <- read.csv("_data/sleep_study.csv")
+
+# Check out the first 6 rows of sleep_study
+head(sleep_study)
+
+# Define diff_3
+sleep_study <- sleep_study %>% 
+    mutate(diff_3 = day_3 - day_0)    
+
+# Histogram of diff_3    
+ggplot(sleep_study, aes(x = diff_3)) + 
+    geom_histogram(binwidth = 20, color = "white")
+
+# Mean and standard deviation of diff_3    
+sleep_study %>% 
+    summarize(mean(diff_3), sd(diff_3))
+```
+
+Great work! Reaction times increased by an average of ~26 ms with a standard deviation of ~37 ms. Further, only 4 of the 18 test subjects had faster reaction times on day 3 than on day 0.
+
+![](_images/2031.png)
+
+Though not in perfect agreement about the degree to which the average reaction time changes under sleep deprivation, both the likelihood and prior are consistent with the hypothesis that the average increases relative to reaction time under normal sleep conditions.
+
+## Simulating the Normal-Normal in RJAGS
+
+![](_images/2032.png)
+
+![](_images/2033.png)
+
+![](_images/2034.png)
+
+![](_images/2035.png)
+
+![](_images/2036.png)
+
+**Define, compile, & simulate the Normal-Normal**
+
+Upon observing the change in reaction time $Y_i$ for each of the 18 subjects $i$ enrolled in the sleep study, you can update your *posterior* model of the effect of sleep deprivation on reaction time. This requires the combination of insight from the likelihood and prior models:
+
+- **likelihood**: $Y_i \sim N(m,s^2)$ 
+- **priors**: $m \sim N(50,25^2)$ and $s \sim Unif(0,200)$
+In this series of exercises, you'll **define**, **compile**, and **simulate** your Bayesian posterior. The observed `sleep_study` data are in your work space.
+
+```{r}
+# DEFINE the model    
+sleep_model <- "model{
+    # Likelihood model for Y[i]
+    for(i in 1:length(Y)) {
+        Y[i] ~ dnorm(m, s^(-2))
+    }
+
+    # Prior models for m and s
+    m ~ dnorm(50, 25^(-2))
+    s ~ dunif(0, 200)
+}"
+
+# COMPILE the model
+sleep_jags <- jags.model(
+  textConnection(sleep_model),
+  data = list(Y = sleep_study$diff_3),
+  inits = list(.RNG.name = "base::Wichmann-Hill", .RNG.seed = 1989)
+)
+
+# SIMULATE the posterior    
+sleep_sim <- coda.samples(model = sleep_jags, variable.names = c("m", "s"), n.iter = 10000)
+
+# PLOT the posterior    
+plot(sleep_sim, trace = FALSE)
+```
+
+Nice work! You've successfully defined, compiled, and simulated your Bayesian Normal-Normal model.
+
+![](_images/2037.png)
+
+Your posterior model is more narrow and lies almost entirely above 0, thus you're more confident that the average reaction time increases under sleep deprivation. Further, the location of the posterior is below that of the prior. This reflects the strong insight from the observed sleep study data in which the increase in average reaction time was only ~26 ms.
+
+## Markov chains
+
+![](_images/2038.png)
+
+![](_images/2039.png)
+
+![](_images/2040.png)
+
+**Markov chain distribution: an approximation of the posterior!**
+
+![](_images/2041.png)
+
+**Storing Markov chains**
+
+Let $m$ be the average change in reaction time after 3 days of sleep deprivation. In a previous exercise, you obtained an approximate sample of 10,000 draws from the posterior model of $m$. You stored the resulting `mcmc.list` object as `sleep_sim` which is loaded in your workspace:
+
+```r
+sleep_sim <- coda.samples(model = sleep_jags, variable.names = c("m", "s"), n.iter = 10000)
+```
+
+In fact, the sample of $m$ values in `sleep_sim` is a dependent **Markov chain**, the distribution of which *converges* to the posterior. You will examine the contents of `sleep_sim` and, to have finer control over your analysis, store the contents in a data frame.
+
+```{r}
+# Check out the head of sleep_sim
+head(sleep_sim)
+
+# Store the chains in a data frame
+sleep_chains <- data.frame(sleep_sim[[1]], iter = 1:10000)
+
+# Check out the head of sleep_chains
+head(sleep_chains)
+```
+
+Great! Next, you'll visualize the contents of these Markov chains.
+
+**Markov chain trace plots**
+
+A **trace plot** provides a visualization of a Markov chain's *longitudinal* behavior. Specifically, a trace plot for the $m$ chain plots the observed chain value (y-axis) against the corresponding iteration number (x-axis).
+
+You will construct trace plots of the $m$ chain using two different approaches: by applying the built-in `plot()` function to the `mcmc.list` object `sleep_sim` and, for finer control over this graphic (and finer control over analyses in later chapters), by applying `ggplot()` to the `data.frame` object `sleep_chains`. Both `sleep_sim` and `sleep_chains` are in your workspace:
+
+```r
+sleep_sim <- coda.samples(model = sleep_jags, variable.names = c("m", "s"), n.iter = 10000)
+sleep_chains <- data.frame(sleep_sim[[1]], iter = 1:10000)
+```
+
+```{r}
+# Use plot() to construct trace plots of the m and s chains
+plot(sleep_sim, density = FALSE)
+
+# Use ggplot() to construct a trace plot of the m chain
+ggplot(sleep_chains, aes(x = iter, y = m)) + 
+    geom_line()
+
+# Trace plot the first 100 iterations of the m chain
+ggplot(sleep_chains[1:100, ], aes(x = iter, y = m)) + 
+    geom_line()
+```
+
+Nice work! Note that the longitudinal behavior of the chain appears quite random and that the trend remains relatively constant. This is a good thing - it indicates that the Markov chain (likely) converges quickly to the posterior distribution of m.
+
+**Markov chain density plots**
+
+Whereas a trace plot captures a Markov chain's longitudinal behavior, a **density plot** illustrates the final distribution of the chain values. In turn, the density plot provides an *approximation* of the posterior model. You will construct and examine density plots of the $m$ Markov chain below. The `mcmc.list` object `sleep_sim` and `sleep_chains` data frame are in your workspace:
+
+```
+sleep_sim <- coda.samples(model = sleep_jags, variable.names = c("m", "s"), n.iter = 10000)
+sleep_chains <- data.frame(sleep_sim[[1]], iter = 1:10000)
+```
+
+```{r}
+# Use plot() to construct density plots of the m and s chains
+plot(sleep_sim, trace = FALSE)
+
+# Use ggplot() to construct a density plot of the m chain
+ggplot(sleep_chains, aes(x = m)) + 
+    geom_density()
+```
+
+Check it out! These density plots approximate the posterior models of m and s.
+
+## Markov chain diagnostics & reproducibility
+
+![](_images/2042.png)
+
+![](_images/2043.png)
+
+![](_images/2044.png)
+
+![](_images/2045.png)
+
+![](_images/2046.png)
+
+![](_images/2047.png)
+
+**Multiple chains**
+
+**Trace plots** help us diagnose the quality of a Markov chain simulation. A "good" Markov chain will exhibit stability as the chain length increases and consistency across repeated simulations, or **multiple chains**. You will use `RJAGS` to run and construct trace plots for four parallel chains below. The defined `sleep_model` is in your workspace.
+
+```{r}
+# COMPILE the model
+sleep_jags_multi <- jags.model(textConnection(sleep_model), data = list(Y = sleep_study$diff_3), n.chains = 4)   
+
+# SIMULATE the posterior    
+sleep_sim_multi <- coda.samples(model = sleep_jags_multi, variable.names = c("m", "s"), n.iter = 1000)
+
+# Check out the head of sleep_sim_multi
+head(sleep_sim_multi)
+
+# Construct trace plots of the m and s chains
+plot(sleep_sim_multi, density = FALSE)
+```
+
+Good work! The most important thing to notice here is the similarity and stability among the 4 parallel chains. This provides some reassurance about the quality and consistency of our Markov chain simulation.
+
+**Naive standard errors**
+
+The mean of the $m$ Markov chain provides an estimate of the posterior mean of $m$. The **naive standard error** provides a measure of the potential *error* in this estimate. In turn, we can use this measure to determine an appropriate chain length. For example, suppose your *goal* is to estimate the posterior mean of $m$ within a standard error of `0.1` ms. If your *observed* naive standard error exceeds this target, no problem! Simply run a longer chain - the error in using a Markov chain to approximate a posterior tends to decrease as chain length increases.
+
+The defined `sleep_model` and compiled `sleep_jags` object are your workspace.
+
+```{r}
+# SIMULATE the posterior    
+sleep_sim_1 <- coda.samples(model = sleep_jags, variable.names = c("m", "s"), n.iter = 1000)
+
+# Summarize the m and s chains of sleep_sim_1
+summary(sleep_sim_1)
+
+# RE-SIMULATE the posterior    
+sleep_sim_2 <- coda.samples(model = sleep_jags, variable.names = c("m", "s"), n.iter = 10000)
+
+# Summarize the m and s chains of sleep_sim_2
+summary(sleep_sim_2)
+```
+
+No problem! You've proved to yourself that if the standard errors associated with your Markov chain are too big, simply increase the number of iterations. In general, naive standard error will decrease as the chain length increases.
+
+**Reproducibility**
+
+Now that you've completed (and passed!) some Markov chain diagnostics, you're ready to finalize your `RJAGS` simulation. To this end, reproducibility is crucial. To obtain reproducible simulation output, you must set the seed of the `RJAGS` random number generator. This works differently than in base `R`. Instead of using `set.seed()`, you will specify a starting seed using 
+
+```r
+inits = list(.RNG.name = "base::Wichmann-Hill", .RNG.seed = ___) 
+```
+
+when you *compile* your model.
+
+```{r}
+# COMPILE the model
+sleep_jags <- jags.model(textConnection(sleep_model), data = list(Y = sleep_study$diff_3), inits = list(.RNG.name = "base::Wichmann-Hill", .RNG.seed = 1989)) 
+
+# SIMULATE the posterior    
+sleep_sim <- coda.samples(model = sleep_jags, variable.names = c("m", "s"), n.iter = 10000)
+
+# Summarize the m and s chains of sleep_sim
+summary(sleep_sim)
+```
+
+Excellent work. Now that you can diagnose and reproduce your Markov chain simulations, you're ready for the next Bayesian model!
+
+## A simple Bayesian regression model
+
+![](_images/2048.png)
+
+![](_images/2049.png)
+
+![](_images/2050.png)
+
+![](_images/2051.png)
+
+![](_images/2052.png)
+
+![](_images/2053.png)
+
+![](_images/2054.png)
+
+**Regression priors**
+
+Let $Y_i$ be the weight (in kg) of subject $i$. Past studies have shown that weight is linearly related to height $X_i$ (in cm). The average weight $m_i$ among adults of any shared height $X_i$ can be written as $m_i=a+bX_i$. But height isn't a perfect predictor of weight - individuals vary from the trend. To this end, it's reasonable to assume that $Y_i$ are Normally distributed around $m_i$ with *residual standard deviation* $s$: $Y_i \sim N(m_i, s^2)$.
+
+Note the 3 parameters in the model of weight by height: intercept $a$, slope $b$, & standard deviation $s$. In the first step of your Bayesian analysis, you will simulate the following prior models for these parameters: $a \sim N(0, 200^2)$, $b \sim N(1, 0.5^2)$, and $s \sim Unif(0,20)$.
+
+```{r}
+# Take 10000 samples from the a, b, & s priors
+a <- rnorm(n = 10000, mean = 0, sd = 200)    
+b <- rnorm(n = 10000, mean = 1, sd = 0.5)    
+s <- runif(n = 10000, min = 0, max = 20)
+
+# Store samples in a data frame
+samples <- data.frame(set = 1:10000, a, b, s)
+
+# Construct density plots of the prior samples    
+ggplot(samples, aes(x = a)) + 
+    geom_density()
+ggplot(samples, aes(x = b)) + 
+    geom_density()
+ggplot(samples, aes(x = s)) + 
+    geom_density()
+```
+
+Great work! These simulations approximate your prior models of each separate model parameter. There's likely a positive association between weight & height (b > 0) but more uncertainty about the intercept a. Further, at any given height, the typical deviation of individuals' weights from the trend is equally likely to be anywhere between 0 and 20 kg.
+
+**Visualizing the regression priors**
+
+In the previous exercise, you simulated 10,000 `samples` for each parameter ($a$, $b$, $s$) in the Bayesian regression model of weight $Y$ by height $X$:$Y \sim N(m, s^2)$  with mean $m = a + bX$. The set of $a$, $b$, and $s$ values in each *row* of `samples` represents a prior plausible regression scenario. To explore the scope of these prior scenarios, you will simulate 50 pairs of height and weight values from **each of the first 12 sets of prior parameters** $a$, $b$, and $s$.
+
+```{r}
+# Replicate the first 12 parameter sets 50 times each
+prior_scenarios_rep <- bind_rows(replicate(n = 50, expr = samples[1:12, ], simplify = FALSE)) 
+
+# Simulate 50 height & weight data points for each parameter set
+prior_simulation <- prior_scenarios_rep %>% 
+    mutate(height = rnorm(n = 600, mean = 170, sd = 10)) %>% 
+    mutate(weight = rnorm(n = 600, mean = a + b * height, sd = s))
+
+# Plot the simulated data & regression model for each parameter set
+ggplot(prior_simulation, aes(x = height, y = weight)) + 
+    geom_point() + 
+    geom_smooth(method = "lm", se = FALSE, size = 0.75) + 
+    facet_wrap(~ set)
+```
+
+Exciting! These 12 plots demonstrate the range of prior plausible models. These models have different intercepts, slopes, and residual standard deviations. Almost all of the models have positive slopes, demonstrating the prior information that there is likely a positive association between weight & height. Given your vague prior for `a`, some of these models are even biologically impossible!
+
+**Weight & height data**
+
+The `bdims` data set from the `openintro` package is loaded in your workspace. `bdims` contains physical measurements on a sample of 507 individuals, including their weight in kg (`wgt`) and height in cm (`hgt`). You will use these data to build insights into the relationship between weight and height.
+
+```{r}
+library(openintro)
+data(bdims, package = "openintro")
+
+# Construct a scatterplot of wgt vs hgt
+ggplot(bdims, aes(x = hgt, y = wgt)) + 
+    geom_point()
+
+# Add a model smooth
+ggplot(bdims, aes(x = hgt, y = wgt)) + 
+    geom_point() + 
+    geom_smooth(method = "lm", se = FALSE)
+```
+
+Nice work. These data support your prior information about a positive association between weight and height. With insights from the priors and data in place, you're ready to simulate the posterior regression model in RJAGS!
+
+## Bayesian regression in RJAGS
 
 
 
 
 
 
-
-![](_images/1936.png)
 
 
 
