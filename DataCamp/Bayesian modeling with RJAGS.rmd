@@ -598,16 +598,649 @@ Nice work. These data support your prior information about a positive associatio
 
 ## Bayesian regression in RJAGS
 
+![](_images/2055.png)
 
+![](_images/2056.png)
 
+**Insight from the observed weight & height data**
 
+![](_images/2057.png)
 
+![](_images/2058.png)
 
+![](_images/2059.png)
 
+![](_images/2060.png)
 
+![](_images/2061.png)
 
+![](_images/2062.png)
 
+![](_images/2063.png)
 
+![](_images/2064.png)
 
+**Define, compile, & simulate the regression model**
 
+Upon observing the relationship between weight $Y_i$ and height $X_i$ for the 507 subjects $i$ in the `bdims` data set, you can update your *posterior* model of this relationship. To build your posterior, you must combine your insights from the likelihood and priors:
 
+- likelihood: $Y_i \sim (m_i, s^2)$,  where $m_i = a +bX_i$
+- priors: $a \sim N(0,200^2)$, $b \sim N(1, 0.5^2)$ and $s \sim Unif(0,20)$
+
+In this series of exercises, you'll **define**, **compile**, and **simulate** your Bayesian regression posterior. The `bdims` data are in your work space.
+
+```{r}
+# DEFINE the model    
+weight_model <- "model{
+    # Define model for data Y[i]
+    for(i in 1:length(Y)) {
+      Y[i] ~ dnorm(m[i], s^(-2))
+      m[i] <- a + b * X[i]
+    }
+
+    # Define the a, b, s priors
+    a ~ dnorm(0, 200^(-2))
+    b ~ dnorm(1, 0.5^(-2))
+    s ~ dunif(0, 20)
+}"
+
+# COMPILE the model
+weight_jags <- jags.model(
+  textConnection(weight_model),
+  data = list(Y = bdims$wgt, X = bdims$hgt),
+  inits = list(.RNG.name = "base::Wichmann-Hill", .RNG.seed = 1989)
+)
+
+# SIMULATE the posterior    
+weight_sim <- coda.samples(model = weight_jags, variable.names = c("a", "b", "s"), n.iter = 1000)
+
+# PLOT the posterior    
+plot(weight_sim)
+```
+
+Yuck! You've successfully defined, compiled, and simulated your Bayesian regression model. But the results don't look that great. Let's fix that.
+
+```{r}
+# SIMULATE the posterior    
+weight_sim_big <- coda.samples(model = weight_jags, variable.names = c("a", "b", "s"), n.iter = 100000)
+
+# PLOT the posterior    
+plot(weight_sim_big)
+```
+
+Trace plots indicate that after only 1,000 iterations, the a and b parallel chains had not stabilized. However, after 100,000 iterations, the chains demonstrate greater stability. We might also increase the stability of our simulation by *standardizing* the height data, but this is beyond the scope of our current discussion.
+
+## Posterior estimation & inference
+
+![](_images/2065.png)
+
+![](_images/2066.png)
+
+![](_images/2067.png)
+
+![](_images/2068.png)
+
+![](_images/2069.png)
+
+![](_images/2070.png)
+
+![](_images/2071.png)
+
+![](_images/2072.png)
+
+**Posterior point estimates**
+
+Recall the likelihood of the Bayesian regression model of weight $Y$ by height $X$:$Y \sim N(m,s^2)$ where $m = a + bX$. A 100,000 iteration RJAGS simulation of the posterior, `weight_sim_big`, is in your workspace along with a data frame of the Markov chain output:
+
+```r
+> head(weight_chains, 2)
+          a        b        s iter
+1 -113.9029 1.072505 8.772007    1
+2 -115.0644 1.077914 8.986393    2
+```
+
+The posterior *means* of the intercept & slope parameters, $a$ & $b$, reflect the posterior mean *trend* in the relationship between weight & height. In contrast, the *full* posteriors of $a$ & $b$ reflect the *range* of plausible parameters, thus posterior uncertainty in the trend. You will examine the trend and uncertainty in this trend below. The `bdims` data are in your workspace.
+
+```{r}
+# Summarize the posterior Markov chains
+summary(weight_sim_big)
+
+# Calculate the estimated posterior mean of b
+weight_chains <- data.frame(weight_sim_big[[1]], iter = 1:100000)
+mean(weight_chains$b)
+
+# Plot the posterior mean regression model
+ggplot(bdims, aes(x = hgt, y = wgt)) + 
+    geom_point() + 
+    geom_abline(intercept = mean(weight_chains$a), slope = mean(weight_chains$b), color = "red")
+
+# Visualize the range of 20 posterior regression models
+ggplot(bdims, aes(x = hgt, y = wgt)) + 
+    geom_point() +
+    geom_abline(intercept = weight_chains$a[1:20], slope = weight_chains$b[1:20], color = "gray", size = 0.25)
+```
+
+Excellent work. You now have a sense of the posterior mean trend in the linear relationship between weight and height as well as the posterior uncertainty in this trend. Given the size of the data and selection of priors, the posterior uncertainty is noticeably small as evidenced by the tight distribution of the gray posterior plausible lines around the trend.
+
+**Posterior credible intervals**
+
+Let's focus on slope parameter $b$, the rate of change in weight over height. The **posterior mean** of $b$ reflects the *trend* in the posterior model of the slope. In contrast, a posterior **credible interval** provides a *range* of posterior plausible slope values, thus reflects posterior *uncertainty* about $b$. For example, the 95% credible interval for $b$ ranges from the 2.5th to the 97.5th quantile of the $b$ posterior. Thus there's a 95% (posterior) chance that $b$ is in this range.
+
+You will use RJAGS simulation output to *approximate* credible intervals for $b$. The 100,000 iteration RJAGS simulation of the posterior, `weight_sim_big`, is in your workspace along with a data frame of the Markov chain output, `weight_chains`.
+
+```{r}
+# Summarize the posterior Markov chains
+summary(weight_sim_big)
+
+# Calculate the 95% posterior credible interval for b
+ci_95 <- quantile(weight_chains$b, probs = c(0.025, 0.975))
+ci_95
+
+# Calculate the 90% posterior credible interval for b
+ci_90 <- quantile(weight_chains$b, probs = c(0.05, 0.95))
+ci_90
+
+# Mark the 90% credible interval 
+ggplot(weight_chains, aes(x = b)) + 
+    geom_density() + 
+    geom_vline(xintercept = ci_90, color = "red")
+```
+
+Right! Based on your calculations we can say that there's a 90% (posterior) probability that, on average, the increase in weight per 1 cm increase in height is between 0.93 and 1.08 kg.
+
+**Posterior probabilities**
+
+You've used RJAGS output to explore and quantify the posterior trend & uncertainty $b$. You can also use RJAGS output to assess specific hypotheses. For example: What's the posterior probability that, on average, weight increases by more than 1.1 kg for every 1 cm increase in height? That is, what's the posterior probability that $b > 1.1$?
+
+You will approximate this probability by the proportion of $b$ Markov chain values that exceed 1.1. The `weight_chains` data frame with the 100,000 iteration Markov chain output is in your workspace.
+
+```{r}
+# Mark 1.1 on a posterior density plot for b
+ggplot(weight_chains, aes(x = b)) + 
+    geom_density() + 
+    geom_vline(xintercept = 1.1, color = "red")
+
+# Summarize the number of b chain values that exceed 1.1
+table(weight_chains$b > 1.1)
+
+# Calculate the proportion of b chain values that exceed 1.1 
+mean(weight_chains$b > 1.1)
+```
+
+Great. Based on your calculations we can say that there's only a ~2% (posterior) chance that, on average, the increase in weight per 1 cm increase in height exceeds 1.1 kg.
+
+## Posterior prediction
+
+![](_images/2073.png)
+
+![](_images/2074.png)
+
+![](_images/2075.png)
+
+![](_images/2076.png)
+
+![](_images/2077.png)
+
+![](_images/2078.png)
+
+![](_images/2079.png)
+
+**Inference for the posterior trend**
+
+Recall the likelihood of the Bayesian regression model of weight $Y$ by height $X$:$Y \sim N(m,s^2)$ where $m = a+bX$. In earlier exercises you approximated the form of the posterior trend $m$(solid line). From this, notice that the typical weight among 180 cm adults is roughly 80 kg (dashed lines):
+
+![](_images/2080.png)
+
+You will use RJAGS simulation output to approximate the posterior *trend* in weight among 180 cm tall adults as well as the posterior *uncertainty* in this trend. The 100,000 iteration RJAGS simulation of the posterior, `weight_sim_big`, is in your workspace along with a data frame of the Markov chain output, `weight_chains`.
+
+```{r}
+# Calculate the trend under each Markov chain parameter set
+weight_chains <- weight_chains  %>% 
+    mutate(m_180 = a + b * 180)
+    
+# Construct a posterior density plot of the trend
+ggplot(weight_chains, aes(x = m_180)) + 
+    geom_density()
+
+# Construct a posterior credible interval for the trend
+quantile(weight_chains$m_180, probs = c(0.025, 0.975))
+```
+
+Yes! The posterior trend of your regression model indicates that the typical weight among 180 cm tall adults is roughly 78 kg. However, posterior uncertainty in the regression model trickles down to uncertainty about this trend. This uncertainty is communicated through your credible interval: there's a 95% (posterior) chance that the typical weight at a height of 180 cm is between 76.95 and 79.24 kg.
+
+**Calculating posterior predictions**
+
+You just explored the posterior *trend* in weight $Y$ among adults with height $X=180$:$m_{180} = a+b*180$. The `weight_chains` data frame contains 100,000 posterior plausible values of $m_{180}$ that you calculated from the corresponding values of $a$ and $b$:
+
+```
+> head(weight_chains, 2)
+          a        b        s iter     m_180
+1 -113.9029 1.072505 8.772007    1  79.14803
+2 -115.0644 1.077914 8.986393    2  78.96014
+```
+
+Forget the trend - what if you wanted to *predict* the weight of a *specific* 180 cm tall adult? You can! To do so, you must account for individual variability from the trend, modeled by
+
+$Y_{180} \sim N(m_{180}, s^2)$
+
+Using this model, you will simulate predictions of weight under each set of posterior plausible parameters in `weight_chains`.
+
+```{r}
+# Simulate 1 prediction under the first parameter set
+rnorm(n = 1, mean = weight_chains$m_180[1], sd = weight_chains$s[1])
+
+# Simulate 1 prediction under the second parameter set
+rnorm(n = 1, mean = weight_chains$m_180[2], sd = weight_chains$s[2])
+
+# Simulate & store 1 prediction under each parameter set
+weight_chains <- weight_chains  %>% 
+    mutate(Y_180 = rnorm(n = 100000, mean = m_180, sd = s))
+
+# Print the first 6 parameter sets & predictions
+head(weight_chains)
+```
+
+You now have 100,000 predictions for the weight of a 180 cm tall adult that reflect the range of posterior plausible parameter settings.
+
+**Posterior predictive distribution**
+
+The `weight_chains` data frame (in your workspace) contains your 100,000 posterior predictions, `Y_180`, for the weight of a 180 cm tall adult:
+
+```
+> head(weight_chains, 2)
+          a        b        s iter    m_180    Y_180
+1 -113.9029 1.072505 8.772007    1 79.14803 71.65811
+2 -115.0644 1.077914 8.986393    2 78.96014 75.78893
+```
+
+You will use these 100,000 predictions to approximate the **posterior predictive** distribution for the weight of a 180 cm tall adult. The `bdims` data are in your workspace.
+
+```{r}
+# Construct a posterior credible interval for the prediction
+ci_180 <- quantile(weight_chains$Y_180, probs = c(0.025, 0.975))
+ci_180
+
+# Construct a density plot of the posterior predictions
+ggplot(weight_chains, aes(x = Y_180)) + 
+    geom_density() + 
+    geom_vline(xintercept = ci_180, color = "red")
+
+# Visualize the credible interval on a scatterplot of the data
+ggplot(bdims, aes(x = hgt, y = wgt)) + 
+    geom_point() + 
+    geom_abline(intercept = mean(weight_chains$a), slope = mean(weight_chains$b), color = "red") + 
+    geom_segment(x = 180, xend = 180, y = ci_180[1], yend = ci_180[2], color = "red")
+```
+
+Congratulations! You've simulated your first posterior predictive distribution. Your 100,000 posterior plausible weights for a given 180 cm tall adult ranged from roughly 36 to 117 kg. Eliminating the most extreme 5% of these predictions, you observed that there's a 95% (posterior) chance that the weight is between 72 and 84 kg.
+
+## Bayesian regression with a categorical predictor
+
+![](_images/2081.png)
+
+![](_images/2082.png)
+
+![](_images/2083.png)
+
+![](_images/2084.png)
+
+![](_images/2085.png)
+
+![](_images/2086.png)
+
+**RailTrail sample data**
+
+The `RailTrail` data frame from the `mosaic` package is loaded in your workspace. `RailTrail` contains data collected by the Pioneer Valley Planning Commission on the usage of a local rail-trail. For each of 90 days, they recorded the rail-trail `volume` (number of users) and whether it was a `weekday` (`TRUE` if yes and `FALSE` otherwise). You will explore the trends in weekday vs weekend volume below.
+
+```{r}
+library(mosaicData)
+data(RailTrail)
+
+# Confirm that weekday is a factor variable
+class(RailTrail$weekday)
+
+# Construct a density plot of volume by weekday
+ggplot(RailTrail, aes(x = volume, fill = weekday)) + 
+    geom_density(alpha = 0.5)
+```
+
+Right! Notice that, as might be intuitive, rail-trail volume tends to be slightly higher on weekends (~430 users per day) than on weekdays (~350 users per day).
+
+**RJAGS simulation with categorical variables**
+
+Consider the Normal regression model of volume $Y_i$ by weekday status $X_i$:
+
+- **likelihood**: $Y_i \sim N(m_i, s^2)$ where $m_i=a+bX_i$
+- priors: $a \sim N(400, 100^2)$, $b \sim N(0, 200^2)$, $s \sim Unif(0, 200)$
+
+You explored the relationship between $Y_i$ and $X_i$ for the 90 days recorded in `RailTrail` (in your workspace). In light of these data and the priors above, you will update your *posterior* model of this relationship. This differs from previous analyses in that $X_i$ is categorical. In `rjags` syntax, its coefficient $b$ is defined by two elements, `b[1]` and `b[2]`, which correspond to the weekend and weekday levels, respectively. For reference, `b[1]` is set to 0. In contrast, `b[2]` is modeled by the prior for $b$
+
+```{r}
+RailTrail$weekday <- as.factor(RailTrail$weekday)
+
+# DEFINE the model    
+rail_model_1 <- "model{
+    # Likelihood model for Y[i]
+    for(i in 1:length(Y)){
+      Y[i] ~ dnorm(m[i], s^(-2))
+      m[i] <- a + b[X[i]]
+    }
+    
+    # Prior models for a, b, s
+    a ~ dnorm(400, 100^(-2))
+    b[1] <- 0
+    b[2] ~ dnorm(0, 200^(-2))
+    s ~ dunif(0, 200)
+}"
+
+# COMPILE the model
+rail_jags_1 <- jags.model(
+  textConnection(rail_model_1),
+  data = list(Y = RailTrail$volume, X = RailTrail$weekday),
+  inits = list(.RNG.name = "base::Wichmann-Hill", .RNG.seed = 10)
+)
+
+# SIMULATE the posterior    
+rail_sim_1 <- coda.samples(model = rail_jags_1, variable.names = c("a", "b", "s"), n.iter = 10000)
+
+# Store the chains in a data frame
+rail_chains_1 <- data.frame(rail_sim_1[[1]])
+
+# PLOT the posterior
+plot(rail_sim_1)
+```
+
+Nice work! You've successfully defined, compiled, and simulated a Bayesian regression model with a categorical predictor.
+
+```{r}
+summary(rail_sim_1)
+```
+
+Typically, there are 428.47 trail users on a weekend day and 77.78 fewer users (~350.69) on a weekday.
+
+Parameter `a` describes the typical *weekend* volume whereas `b` describes the *contrast* between weekday and weekend volume.
+
+**Inference for volume by weekday**
+
+The 10,000 iteration RJAGS simulation output, `rail_sim_1`, is in your workspace along with a data frame of the Markov chain output:
+
+```
+> head(rail_chains_1, 2)
+         a b.1.       b.2.        s 
+1 420.6966    0  -54.30783 118.2328
+2 399.5823    0  -52.02570 119.9499
+```
+
+These chains provide 10,000 unique sets of values for `a`, the typical trail volume on *weekend* days, and `b.2.`, the **contrast** between typical weekday volume vs weekend volume. For example, the first set of parameters indicate that there are typically `420.6966` riders on weekend days and `54.30783` *fewer* riders on weekdays. Thus there are typically `420.6966 - 54.30783 = 366.3888` riders on weekdays. You will utilize these simulation data to make inferences about weekday trail volume.
+
+```{r}
+# Construct a chain of values for the typical weekday volume
+rail_chains_1 <- rail_chains_1 %>% 
+    mutate(weekday_mean = a + b.2.)
+
+# Construct a density plot of the weekday chain
+ggplot(rail_chains_1, aes(x = weekday_mean)) + 
+    geom_density()
+
+# 95% credible interval for typical weekday volume
+quantile(rail_chains_1$weekday_mean, c(0.025, 0.975))
+```
+
+Excellent! You've shown that there's a 95% posterior chance that the typical weekday volume is between 319 and 382 trail users.
+
+## Multivariate Bayesian regression
+
+![](_images/2087.png)
+
+![](_images/2088.png)
+
+![](_images/2089.png)
+
+![](_images/2090.png)
+
+![](_images/2091.png)
+
+**Re-examining the RailTrail data**
+
+In your previous work, you observed that rail-trail `volume` tends to be lower on a `weekday` than a weekend. Some of the variability in `volume` might also be explained by outside temperature. For example, we might expect trail volume to increase on warm, pleasant days.
+
+The `RailTrail` data set in your workspace includes `hightemp`, the observed high temperature (F) for each of the 90 days in the study period. You will use these data to explore the associations between trail `volume`, `weekday` status, and `hightemp`
+
+```{r}
+# Construct a plot of volume by hightemp & weekday
+ggplot(RailTrail, aes(y = volume, x = hightemp, color = weekday)) + 
+    geom_point() + 
+	geom_smooth(method = "lm", se = FALSE)
+```
+
+Nice work. Notice that for the 90 days in the study period, volume tends to increase with temperature. Further, volume tends to be higher on weekends than on weekdays of the same temperature.
+
+**RJAGS simulation for multivariate regression**
+
+Consider the following Bayesian model of volume $Y_i$ by weekday status $X_i$ and temperature $Z_i$:
+
+- **likelihood**: $Y_i \sim N(m_i, s^2)$, where $m_i = a+bX_i+cZ_i$.
+- **priors**: $a \sim N(0,200^2)$, $b \sim N(0,200^2)$, $c \sim N(0, 20^2)$, $s \sim Unif(0, 200)$
+
+Your previous exploration of the relationship between `volume`, `weekday`, and `hightemp` in the `RailTrail` data provided some insight into this relationship. You will combine this with insight from the priors to develop a *posterior* model of this relationship using RJAGS. The `RailTrail` data are in your work space.
+
+```{r}
+# DEFINE the model    
+rail_model_2 <- "model{
+    # Likelihood model for Y[i]
+    for(i in 1:length(Y)) {
+      Y[i] ~ dnorm(m[i], s^(-2))
+	    m[i] <- a + b[X[i]] + c * Z[i]
+    }
+
+    # Prior models for a, b, c, s
+    a ~ dnorm(0, 200^(-2))
+    b[1] <- 0
+    b[2] ~ dnorm(0, 200^(-2))
+    c ~ dnorm(0, 20^(-2))
+    s ~ dunif(0, 200)
+}"
+
+# COMPILE the model
+rail_jags_2 <- jags.model(textConnection(rail_model_2), 
+    data = list(Y = RailTrail$volume, X = RailTrail$weekday, Z = RailTrail$hightemp), 
+    inits = list(.RNG.name = "base::Wichmann-Hill", .RNG.seed = 10))
+
+# SIMULATE the posterior    
+rail_sim_2 <- coda.samples(model = rail_jags_2, variable.names = c("a","b","c","s"), n.iter = 10000)
+
+# Store the chains in a data frame
+rail_chains_2 <- data.frame(rail_sim_2[[1]])
+
+# PLOT the posterior
+plot(rail_sim_2)
+```
+
+Wow! You've successfully defined, compiled, and simulated your multivariate Bayesian regression model.
+
+```{r}
+summary(rail_sim_2)
+```
+
+Typical volume is ~50 less on weekdays than on weekends of the same temperature.
+
+The `b` coefficient represents the relationship between `volume` and `weekday` status *when controlling for*, or *on days with similar* `hightemp`.
+
+**Posterior inference for multivariate regression**
+
+The 10,000 iteration RJAGS simulation output, `rail_sim_2`, is in your workspace along with a data frame of the Markov chain output:
+
+```
+> head(rail_chains_2, 2)
+         a b.1.      b.2.        c         s
+1 49.76954    0 -12.62112 4.999202 111.02247
+2 30.22211    0  -3.16221 4.853491  98.11892 
+```
+
+You will use these 10,000 unique sets of parameter values to summarize the posterior mean trend in the relationships between trail `volume`, `weekday` status, and `hightemp`.
+
+```{r}
+# Plot the posterior mean regression models
+ggplot(RailTrail, aes(y = volume, x = hightemp, color = weekday)) + 
+    geom_point() + 
+    geom_abline(intercept = mean(rail_chains_2$a), slope = mean(rail_chains_2$c), color = "red") + 
+    geom_abline(intercept = mean(rail_chains_2$a) + mean(rail_chains_2$b.2.), slope = mean(rail_chains_2$c), color = "turquoise3")
+```
+
+Your posterior analysis suggests that there's a positive association between volume and temperature. Further, the typical weekday volume is less than that on weekends of the same temperature.
+
+## Bayesian Poisson regression
+
+![](_images/2092.png)
+
+![](_images/2093.png)
+
+![](_images/2094.png)
+
+![](_images/2095.png)
+
+![](_images/2096.png)
+
+![](_images/2097.png)
+
+**RJAGS simulation for Poisson regression**
+
+In the previous video we engineered a Poisson regression model of volume $Y_i$ by weekday status $X_i$ and temperature $Z_i$:
+
+- **likelihood**: $Y_i \sim Pois(l_i)$ where $log(l_i) = a + bX_i + cZ_i$
+- **priors**: $a \sim N(0,200^2)$, $b \sim N(0, 2^2)$, and $c \sim N(0,2^2)$
+
+Combining your insights from the observed `RailTrail` data and the priors stated here, you will define, compile, and simulate a *posterior* model of this relationship using RJAGS. To challenge yourself in this last RJAGS simulation of the course, you'll be provided with less helpful code than usual!
+
+The `RailTrail` data are in your work space.
+
+```{r}
+# DEFINE the model    
+poisson_model <- "model{
+    # Likelihood model for Y[i]
+    for(i in 1:length(Y)) {
+        Y[i] ~ dpois(l[i])
+        log(l[i]) <- a + b[X[i]] + c * Z[i]
+    }
+
+    # Prior models for a, b, c
+    a ~ dnorm(0, 200^(-2))
+    b[1] <- 0
+    b[2] ~ dnorm(0, 2^(-2))
+    c ~ dnorm(0, 2^(-2))
+}"
+
+# COMPILE the model
+poisson_jags <- jags.model(textConnection(poisson_model), 
+    data = list(Y = RailTrail$volume, X = RailTrail$weekday, Z = RailTrail$hightemp), 
+    inits = list(.RNG.name = "base::Wichmann-Hill", .RNG.seed = 10))
+
+# SIMULATE the posterior    
+poisson_sim <- coda.samples(model = poisson_jags, variable.names = c("a","b","c"), n.iter = 10000)
+
+# Store the chains in a data frame
+poisson_chains <- data.frame(poisson_sim[[1]])
+
+# PLOT the posterior
+plot(poisson_sim)
+```
+
+You've successfully defined, compiled, and simulated a Bayesian Poisson regression model!
+
+**Plotting the Poisson regression model**
+
+Recall the likelihood structure for your Bayesian Poisson regression model of volume $Y_i$ by weekday status $X_i$ and temperature $Z_i$:$Y_i \sim Pois(l_i)$ where
+
+- $log(l_i) = a + bX_i + cZ_i$; thus
+- $l_i = exp(a+bX_i+cZ_i)$
+
+Your 10,000 iteration RJAGS simulation of the model posterior, `poisson_sim`, is in your workspace along with a data frame of the Markov chain output:
+
+```
+> head(poisson_chains, 2)
+         a b.1.       b.2.          c
+1 5.019807    0 -0.1222143 0.01405269
+2 5.018642    0 -0.1217608 0.01407691
+```
+
+You will use these results to plot the posterior Poisson regression trends. These nonlinear trends can be added to a `ggplot()` using `stat_function()`. For example, specifying `fun = function(x){x^2}` would return a quadratic trend line.
+
+```{r}
+# Plot the posterior mean regression models
+ggplot(RailTrail, aes(x = hightemp, y = volume, color = weekday)) + 
+    geom_point() + 
+    stat_function(fun = function(x){exp(mean(poisson_chains$a) + mean(poisson_chains$c) * x)}, color = "red") + 
+    stat_function(fun = function(x){exp(mean(poisson_chains$a) + mean(poisson_chains$b.2.) + mean(poisson_chains$c) * x)}, color = "turquoise3")
+```
+
+Excellent work. Notice that unlike the Normal regression trend, the Poisson regression trend is *curved*.
+
+**Inference for the Poisson rate parameter**
+
+Again, recall the likelihood structure for your Bayesian Poisson regression model of volume $Y_i$ by weekday status $X_i$ and temperature $Z_i$:
+
+$Y_1 \sim Pois(l_i)$ where $l_i = exp(a+bX_i+cZ_i)$
+
+Your 10,000 iteration RJAGS simulation of the model posterior, `poisson_sim`, is in your workspace along with a data frame of the Markov chain output:
+
+```
+> head(poisson_chains, 2)
+         a b.1.       b.2.          c
+1 5.019807    0 -0.1222143 0.01405269
+2 5.018642    0 -0.1217608 0.01407691
+```
+
+Using these 10,000 unique sets of posterior plausible values for parameters $a$, $b$, and $c$ you will make inferences about the typical trail volume on **80 degree days**.
+
+```{r}
+# Calculate the typical volume on 80 degree weekends & 80 degree weekdays
+poisson_chains <- poisson_chains %>% 
+    mutate(l_weekend = exp(a + c * 80)) %>% 
+    mutate(l_weekday = exp(a + b.2. + c * 80))
+
+# Construct a 95% CI for typical volume on 80 degree weekend
+quantile(poisson_chains$l_weekend, c(0.025, 0.975))
+
+# Construct a 95% CI for typical volume on 80 degree weekday
+quantile(poisson_chains$l_weekday, c(0.025, 0.975))
+```
+
+This was your first analysis that incorporated transformations. It wasn't so bad (so long as you remember to back-transform)!
+
+**Poisson posterior prediction**
+
+Your `l_weekday` variable reflects the `trend` in volume on 80 degree weekdays:
+
+```
+> head(poisson_chains, 2)
+       a b.1.    b.2.      c l_weekend l_weekday
+1 5.0198    0 -0.1222 0.0141   465.924   412.324
+2 5.0186    0 -0.1218 0.0141   466.284   412.829
+```
+
+Now that you understand the *trend*, let's make some predictions! Specifically, let's *predict* trail volumes on the next 80 degree weekday. To do so, you must take into account individual variability from the trend, modeled by the likelihood $Y_i \sim Pois(l_i)$.
+
+Using `rpois(n, lambda)` for sample size `n` and rate parameter `lambda`, you will simulate Poisson predictions of volume under each value of the posterior plausible trend in `poisson_chains`.
+
+```{r}
+# Simulate weekday predictions under each parameter set
+poisson_chains <- poisson_chains %>% 
+    mutate(Y_weekday = rpois(n = 10000, lambda = l_weekday))
+    
+# Construct a density plot of the posterior weekday predictions
+ggplot(poisson_chains, aes(x = Y_weekday)) + 
+    geom_density()
+    
+# Posterior probability that weekday volume is less 400
+mean(poisson_chains$Y_weekday < 400)
+```
+
+Recall that one of our motivations in applying the Poisson model was to accommodate the *count* nature of the volume data. This trickled down to your volume predictions `Y_weekday` - notice that these predictions, like the raw volume data, are discrete counts.
+
+## Conclusion
+
+![](_images/2098.png)
+
+![](_images/2099.png)
+
+![](_images/2100.png)
