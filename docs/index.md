@@ -173,8 +173,8 @@ sitemap:
 11. <a href="https://rpubs.com/odenipinedo/fundamentals-of-Bayesian-data-analysis-in-R" target="_blank" rel="noopener noreferrer">fundamentals of Bayesian data analysis in R</a>
 12. <a href="https://rpubs.com/odenipinedo/linear-algebra-for-data-science-in-R" target="_blank" rel="noopener noreferrer">linear algebra for data science in R</a>
 13. <a href="https://rpubs.com/odenipinedo/inference-for-categorical-data-in-R" target="_blank" rel="noopener noreferrer">inference for categorical data in R</a>
-14. Bayesian modeling with RJAGS
-- Certificate
+14. <a href="https://rpubs.com/odenipinedo/Bayesian-modeling-with-RJAGS" target="_blank" rel="noopener noreferrer">Bayesian modeling with RJAGS</a>
+- <a href="https://www.datacamp.com/statement-of-accomplishment/track/ab989c1d80ebcaa721bd450d9d0f21b86501f904" target="_blank" rel="noopener noreferrer">Certificate</a>
 
 #### Statistics (misc)
 - analyzing survey data in R
