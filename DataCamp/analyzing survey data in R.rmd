@@ -1,0 +1,23 @@
+---
+title: "Analyzing Survey Data in R"
+author: "DataCamp - Kelly McConville"
+date: "2/21/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos="https://CRAN.R-project.org")
+```
+
+## What are survey weights?
+
+
+
+
+
+
+![](_images/2014.png)
+
+
+
