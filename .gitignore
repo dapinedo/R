@@ -1,3 +1,6 @@
+# Comment out if you want to ignore .gitignore file
+# .gitignore
+
 # Ignore R history files
 .Rdata
 .RHistory
