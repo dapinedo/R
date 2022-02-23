@@ -121,6 +121,13 @@ sitemap:
 4. mixture models in R
 - Certificate
 
+#### <a href="https://app.datacamp.com/learn/skill-tracks/sql-fundamentals" target="_blank" rel="noopener noreferrer">SQL Fundamentals</a>
+1. introduction to SQL
+2. joining data in SQL
+3. intermediate SQL
+4. PostgreSQL summary stats and window functions
+5. functions for manipulating data in PostgreSQL
+
 #### <a href="https://learn.datacamp.com/career-tracks/r-programmer?version=4" target="_blank" rel="noopener noreferrer">R Programmer</a>
 1. <a href="https://rpubs.com/odenipinedo/introduction-to-the-Tidyverse" target="_blank" rel="noopener noreferrer">introduction to the Tidyverse</a>
 2. project: Dr. Semmelweis and the discovery of handwashing
