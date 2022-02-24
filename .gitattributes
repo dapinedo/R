@@ -1,8 +1,21 @@
 # Linguist overrides
+
+## Latex as a vendored language
 *.tex linguist-vendored
 *.cls linguist-vendored
+
+## Markdown
 *.md linguist-detectable=true
-*.Rmd linguist-detectable=true
-*.rmd linguist-detectable=true
+*.md linguist-language=Markdown
 README.md linguist-detectable=false
 readme.md linguist-detectable=false
+
+## RMarkdown
+*.Rmd linguist-detectable=true
+*.rmd linguist-detectable=true
+*.Rmd linguist-language=RMarkdown
+*.rmd linguist-language=RMarkdown
+
+## 
+*.sql linguist-detectable=true
+*.sql linguist-language=SQL
