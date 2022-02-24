@@ -1,0 +1,6 @@
+# Linguist overrides
+*.md linguist-detectable=true
+*.Rmd linguist-detectable=true
+*.rmd linguist-detectable=true
+README.md linguist-detectable=false
+readme.md linguist-detectable=false
