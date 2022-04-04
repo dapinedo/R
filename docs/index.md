@@ -7,7 +7,6 @@ sitemap:
   lastmod: 2020-12-11
   exclude: 'no'
 ---
-
 ## Claremont Graduate University
       
 #### Data Wrangling
