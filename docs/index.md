@@ -10,17 +10,17 @@ sitemap:
 ## Claremont Graduate University
       
 #### Data Wrangling
-- <a href="https://github.com/dapinedo/R/tree/master/CGU/Taming" target="_blank" rel="noopener noreferrer">Taming/Wrangling</a>
+- <a href="https://github.com/odenipinedo/R/tree/master/CGU/Taming" target="_blank" rel="noopener noreferrer">Taming/Wrangling</a>
 
 #### Networks
-- <a href="https://github.com/dapinedo/R/tree/master/CGU/Networks/Correlational" target="_blank" rel="noopener noreferrer">Correlational Network Analysis</a>
+- <a href="https://github.com/odenipinedo/R/tree/master/CGU/Networks/Correlational" target="_blank" rel="noopener noreferrer">Correlational Network Analysis</a>
 
 #### Psych Stats
-1. <a href="https://github.com/dapinedo/R/tree/master/CGU/Statistics/ANOVA" target="_blank" rel="noopener noreferrer">T Tests & ANOVA</a>
-2. <a href="https://github.com/dapinedo/R/tree/master/CGU/Statistics/Regression" target="_blank" rel="noopener noreferrer">Multiple Regression</a>
-3. <a href="https://github.com/dapinedo/R/tree/master/CGU/Statistics/Categorical" target="_blank" rel="noopener noreferrer">Categorical and Non-Parametric Analysis</a>
-4. <a href="https://github.com/dapinedo/R/tree/master/CGU/Statistics/Factor" target="_blank" rel="noopener noreferrer">Factor Analysis</a>
-5. <a href="https://github.com/dapinedo/R/tree/master/CGU/Statistics/SEM" target="_blank" rel="noopener noreferrer">Structural Equation Modeling</a>
+1. <a href="https://github.com/odenipinedo/R/tree/master/CGU/Statistics/ANOVA" target="_blank" rel="noopener noreferrer">T Tests & ANOVA</a>
+2. <a href="https://github.com/odenipinedo/R/tree/master/CGU/Statistics/Regression" target="_blank" rel="noopener noreferrer">Multiple Regression</a>
+3. <a href="https://github.com/odenipinedo/R/tree/master/CGU/Statistics/Categorical" target="_blank" rel="noopener noreferrer">Categorical and Non-Parametric Analysis</a>
+4. <a href="https://github.com/odenipinedo/R/tree/master/CGU/Statistics/Factor" target="_blank" rel="noopener noreferrer">Factor Analysis</a>
+5. <a href="https://github.com/odenipinedo/R/tree/master/CGU/Statistics/SEM" target="_blank" rel="noopener noreferrer">Structural Equation Modeling</a>
 
 ## <a href="https://www.datacamp.com/profile/odenipinedo" target="_blank" rel="noopener noreferrer">DataCamp</a> 
 
@@ -63,7 +63,7 @@ sitemap:
 14. <a href="https://rpubs.com/odenipinedo/case-study-exploratory-data-analysis-in-R" target="_blank" rel="noopener noreferrer">case study: exploratory data analysis in R</a>
 15. <a href="https://rpubs.com/odenipinedo/correlation-and-regression-in-R" target="_blank" rel="noopener noreferrer">correlation and regression in R</a>
 16. <a href="https://rpubs.com/odenipinedo/supervised-learning-in-R-classification" target="_blank" rel="noopener noreferrer">supervised learning in R: classification</a>
-17. <a href="https://pinedo.org/R/supervised-learning-in-R---regression.html " target="_blank" rel="noopener noreferrer">supervised learning in R: regression</a>
+17. <a href="https://pine.do/R/supervised-learning-in-R---regression.html " target="_blank" rel="noopener noreferrer">supervised learning in R: regression</a>
 18. <a href="https://rpubs.com/odenipinedo/unsupervised-learning-in-R" target="_blank" rel="noopener noreferrer">unsupervised learning in R</a>
 19. <a href="https://rpubs.com/odenipinedo/cluster-analysis-in-R" target="_blank" rel="noopener noreferrer">cluster analysis in R</a>
 - <a href="https://www.datacamp.com/statement-of-accomplishment/track/76c44361a97cda3b2e815bdbbdfac8de2d7ed2d0" target="_blank" rel="noopener noreferrer">Certificate</a>
@@ -90,7 +90,7 @@ sitemap:
 
 #### <a href="https://learn.datacamp.com/career-tracks/machine-learning-scientist-with-r?version=1" target="_blank" rel="noopener noreferrer">Machine Learning Scientist with R</a>
 1. <a href="https://rpubs.com/odenipinedo/supervised-learning-in-R-classification" target="_blank" rel="noopener noreferrer">supervised learning in R: classification</a>
-2. <a href="https://pinedo.org/R/supervised-learning-in-R---regression.html " target="_blank" rel="noopener noreferrer">supervised learning in R: regression</a>
+2. <a href="https://pine.do/R/supervised-learning-in-R---regression.html " target="_blank" rel="noopener noreferrer">supervised learning in R: regression</a>
 3. <a href="https://rpubs.com/odenipinedo/unsupervised-learning-in-R" target="_blank" rel="noopener noreferrer">unsupervised learning in R</a>
 4. machine learning in the tidyverse
 5. <a href="https://rpubs.com/odenipinedo/multiple-and-logistic-regression-in-R" target="_blank" rel="noopener noreferrer">multiple and logistic regression in R</a>
@@ -109,7 +109,7 @@ sitemap:
 #### <a href="https://learn.datacamp.com/skill-tracks/analyzing-networks-with-r?version=2" target="_blank" rel="noopener noreferrer">Network Analysis with R</a>
 1. <a href="https://rpubs.com/odenipinedo/network-analysis-in-R" target="_blank" rel="noopener noreferrer">network analysis in R</a>
 2. <a href="https://rpubs.com/odenipinedo/predictive-analytics-using-networked-data-in-R" target="_blank" rel="noopener noreferrer">predictive analytics using networked data in R</a>
-3. <a href="https://pinedo.org/R/network-analysis-in-the-Tidyverse.html" target="_blank" rel="noopener noreferrer">network analysis in the tidyverse</a>
+3. <a href="https://pine.do/R/network-analysis-in-the-Tidyverse.html" target="_blank" rel="noopener noreferrer">network analysis in the tidyverse</a>
 4. <a href="https://rpubs.com/odenipinedo/case-studies-network-analysis-in-R" target="_blank" rel="noopener noreferrer">case studies: network analysis in R</a>
 - <a href="https://www.datacamp.com/statement-of-accomplishment/track/4bff229b1fdc0f33241c9981762fb66c6dc4af6e" target="_blank" rel="noopener noreferrer">Certificate</a>
 
@@ -153,7 +153,7 @@ sitemap:
 - Certificate
 
 #### <a href="https://learn.datacamp.com/skill-tracks/spatial-data-with-r?version=1" target="_blank" rel="noopener noreferrer">Spatial Data with R</a>
-1. <a href="https://pinedo.org/R/visualizing-geospatial-data-in-R.html" target="_blank" rel="noopener noreferrer">visualizing geospatial data in R</a>
+1. <a href="https://pine.do/R/visualizing-geospatial-data-in-R.html" target="_blank" rel="noopener noreferrer">visualizing geospatial data in R</a>
 2. spatial analysis with sf and raster in R
 3. spatial statistics in R
 4. interactive maps with leaflet in R
@@ -221,7 +221,7 @@ sitemap:
 -  <a href="https://www.datacamp.com/statement-of-accomplishment/track/bc62af00e2dd28e937de0070de19a98aa4afca1c" target="_blank" rel="noopener noreferrer">Certificate</a>
 
 #### RMarkdown
-- <a href="https://github.com/dapinedo/R/tree/master/DataCamp" target="_blank" rel="noopener noreferrer">All DataCamp Files</a>
+- <a href="https://github.com/odenipinedo/R/tree/master/DataCamp" target="_blank" rel="noopener noreferrer">All DataCamp Files</a>
 
 ## <a href="https://www.tidymodels.org/learn/" target="_blank" rel="noopener noreferrer">Tidymodels</a> 
 
